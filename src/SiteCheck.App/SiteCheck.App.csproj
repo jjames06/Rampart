@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <Authors>Jesse Mosier-Bowers</Authors>
+    <Company>Operation Locked In</Company>
+    <Product>Site Check</Product>
+    <Description>Read-only HTTPS, certificate, header, and SPF check for a public hostname you operate.</Description>
+    <AssemblyTitle>Site Check</AssemblyTitle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SiteCheck.Core\SiteCheck.Core.csproj" />
+  </ItemGroup>
+
+</Project>
