@@ -64,7 +64,7 @@ Product names and versions are taken only from:
 - jQuery version strings in homepage script URLs
 - WordPress plugin directory names already present in homepage URLs
 
-Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded.
+Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded. If `/wp-admin/` and `/admin` do not answer 2xx or 3xx, that finding is **Present**: those common dashboards are not published. An open dashboard HTML response is **Needs attention**.
 
 CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
 

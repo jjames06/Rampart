@@ -93,6 +93,23 @@ public class LoginSurfaceTests
     }
 
     [Fact]
+    public void Missing_admin_paths_are_present()
+    {
+        var hits = LoginSurface.AdminPaths.Select(p => Hit(p, 404)).ToArray();
+        var f = LoginSurface.AdminSummary(hits);
+        Assert.Equal(FindingState.Present, f.State);
+        Assert.Contains("not published", f.Observation);
+    }
+
+    [Fact]
+    public void Blocked_admin_paths_are_present()
+    {
+        var hits = LoginSurface.AdminPaths.Select(p => Hit(p, 403)).ToArray();
+        var f = LoginSurface.AdminSummary(hits);
+        Assert.Equal(FindingState.Present, f.State);
+    }
+
+    [Fact]
     public void Admin_dashboard_html_is_attention()
     {
         var hits = new[] { Hit("/wp-admin/", 200, body: "<html id=\"wpadminbar\">Dashboard</html>") };

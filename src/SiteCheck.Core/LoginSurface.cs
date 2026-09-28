@@ -61,8 +61,9 @@ public static class LoginSurface
         {
             return new Finding(
                 "Admin pages",
-                FindingState.NotFound,
-                "Common public admin paths did not answer 2xx or 3xx: " + string.Join(", ", AdminPaths) + ".",
+                FindingState.Present,
+                "Common public admin paths did not answer 2xx or 3xx: " + string.Join(", ", AdminPaths)
+                    + ". Those dashboards are not published on this hostname.",
                 "GET each allowlisted admin path on the same public address, redirects disabled, body capped.",
                 "A custom admin URL is not found this way. That is not proof there is no admin.");
         }
