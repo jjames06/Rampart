@@ -12,7 +12,7 @@ Version **1.9.0**
   <a href="https://www.operationlockedin.com/rampart/get"><strong>Download</strong></a> ·
   <a href="https://www.operationlockedin.com/rampart/checks"><strong>What is checked</strong></a> ·
   <a href="docs/how-to-use.md"><strong>How to use</strong></a> ·
-  <a href="https://github.com/jjames06/Rampart/wiki"><strong>Handbook</strong></a> ·
+  <a href="https://jjames06.github.io/Rampart/"><strong>Handbook</strong></a> ·
   <a href="https://github.com/jjames06/Rampart/releases/latest"><strong>Latest release</strong></a> ·
   <a href="https://github.com/jjames06/Rampart/issues"><strong>Issues</strong></a> ·
   <a href="SECURITY.md"><strong>Security</strong></a>
