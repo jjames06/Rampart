@@ -2,7 +2,7 @@
 
 Rampart uses **two grants**, on purpose.
 
-The public download is the Windows program. Other platform source lives in this repository and is not a public binary yet.
+The recommended public download is the Windows program. Testing copies for Linux and macOS are on the same GitHub release, still under GNU GPLv3. iPhone and Android applications are in testing and will be listed on the App Store and Google Play when they are ready. Those store binaries will use the additional Apache License 2.0 grant below.
 
 ## Desktop (Windows, macOS, Linux): GNU GPLv3
 

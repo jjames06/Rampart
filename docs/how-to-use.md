@@ -2,13 +2,13 @@
 
 A rampart is the defensive wall of a fortress. Bastion hardens a Windows PC you administer. Rampart inspects a public hostname you operate.
 
-This is the operator handbook for the **public Windows program**. Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario, publishes `Rampart.exe`. Builds for other operating systems are in testing and are not a public download. Read this page before you run it against a hostname that is not a machine you already operate.
+This is the operator handbook for Rampart. Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario, publishes the recommended copy as `Rampart.exe` for 64-bit Windows. Testing copies for Linux and macOS are on the same GitHub release. Applications for iPhone and Android will be listed on the App Store and Google Play when they are ready. Read this page before you run it against a hostname that is not a machine you already operate.
 
 Rampart is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
 
 ## What you need
 
-You need a 64-bit PC running Windows 10 or Windows 11 and the file `Rampart.exe` from the GitHub release. You need the public hostname of the site, for example `www.example.com`.
+On Windows you need a 64-bit PC running Windows 10 or Windows 11 and `Rampart.exe` from the GitHub release. Testing copies for Linux (`Rampart-linux-x64.zip`) and macOS (`Rampart-osx-arm64.zip` or `Rampart-osx-x64.zip`) are on the same release. Unzip them, then on Linux run `chmod +x Rampart` before `./Rampart`. On macOS, open Rampart from Finder the first time if Gatekeeper asks. You need the public hostname of the site, for example `www.example.com`. Those extra-desktop copies are still under test. The recommended program remains the Windows EXE.
 
 You do not need an Operation Locked In account. You do not need a browser plugin. You do not need a cloud login. You do not need administrative rights. The program runs as a standard user (`asInvoker`). It will not ask Windows for elevation.
 

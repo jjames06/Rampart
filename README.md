@@ -2,13 +2,13 @@
 
 A rampart is the defensive wall of a fortress. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
 
-Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The **public download is the Windows desktop program** (`Rampart.exe`). Builds for other operating systems are in testing and are not offered yet. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage and common public sign-in paths present, and whether advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
+Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. Applications for iPhone and Android will be listed on the App Store and Google Play when they are ready. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage and common public sign-in paths present, and whether advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
 ## Licence
 
-The public Windows program is GNU GPLv3. The full legal text is in [`LICENSE`](LICENSE). Source for other platforms exists in this repository and is not a public download yet. When those binaries ship, desktop copies stay GPLv3; store binaries have an additional Apache License 2.0 grant in [`LICENSE.MOBILE`](LICENSE.MOBILE).
+Desktop copies (Windows, and the Linux and macOS testing zips) are GNU GPLv3. The full legal text is in [`LICENSE`](LICENSE). When iPhone and Android applications are listed on the App Store and Google Play, those store binaries will carry an additional Apache License 2.0 grant in [`LICENSE.MOBILE`](LICENSE.MOBILE). The source stays available under GPLv3 as well.
 
 Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why those licences were chosen: [`docs/licence.md`](docs/licence.md).
 
@@ -27,12 +27,12 @@ Check only hostnames you operate or for which you have written permission. Unaut
 - CVE catalogue: [docs/cve-catalogue.md](docs/cve-catalogue.md)
 - Building the executable: [docs/building.md](docs/building.md)
 - Licence: [docs/licence.md](docs/licence.md)
-- Extra-desktop and store work (in testing, not a public download): [docs/stores/SUBMIT.md](docs/stores/SUBMIT.md)
+- Extra-desktop testing copies and store work: [docs/stores/SUBMIT.md](docs/stores/SUBMIT.md)
 - Security policy: [SECURITY.md](SECURITY.md)
 
 ## Run a release build
 
-The GitHub release contains `Rampart.exe` together with `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. Double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
+The GitHub release contains `Rampart.exe` (Windows), testing zips for Linux and macOS, and `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. On Windows, double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
 
 To build from source on 64-bit Windows with the .NET 8 SDK:
 

@@ -1,6 +1,6 @@
 # Building Rampart
 
-You need the .NET 8 SDK (64-bit). The **public ship** is the Windows WPF EXE. The same SDK can publish an Avalonia UI for Linux and macOS for owner testing. Those copies are not a public download until they have been tested. iOS and Android need the .NET MAUI workload and a Mac for iOS.
+You need the .NET 8 SDK (64-bit). The **recommended public ship** is the Windows WPF EXE. The same SDK publishes testing copies of the Avalonia UI for Linux and macOS. Those zips go on the GitHub release with `TESTING.txt` and the GPLv3 files. iOS and Android need the .NET MAUI workload and a Mac for iOS. Those store applications will be listed on the App Store and Google Play when they are ready.
 
 Rebuild the local CVE catalogue (needs network once per release):
 
@@ -29,7 +29,7 @@ dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-
 dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-arm64 --self-contained true -o dist\osx-arm64
 ```
 
-`tools\publish.ps1` also writes those folders for owner testing. Do not attach them to the GitHub release until they have been tested. Notarize macOS copies with a Developer ID before you send them to someone else. Store and mobile steps: [stores/SUBMIT.md](stores/SUBMIT.md).
+`tools\publish.ps1` also writes those folders. Zip each folder with `LICENSE`, `NOTICE`, `THIRD-PARTY.md`, `LICENSE.MOBILE`, `how-to-use.md`, `lawful-use.md`, and `TESTING.txt`, then attach `Rampart-linux-x64.zip`, `Rampart-osx-arm64.zip`, and `Rampart-osx-x64.zip` to the v1.9.0 release. Notarize macOS copies with a Developer ID before you treat them as a finished Mac distribution. Store steps: [stores/SUBMIT.md](stores/SUBMIT.md).
 
 ## Tests
 

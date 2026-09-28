@@ -8,7 +8,7 @@
 
 **Downloads**
 
-- [v1.9.0 release](https://github.com/jjames06/oli-site-check/releases/tag/v1.9.0)
+- [v1.9.0 release](https://github.com/jjames06/oli-site-check/releases/tag/v1.9.0) (Windows plus Linux and macOS testing zips)
 - [Source](https://github.com/jjames06/oli-site-check)
 
 **On the site**

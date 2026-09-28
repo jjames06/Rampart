@@ -27,6 +27,7 @@ $pages = @(
     "What-is-checked.md",
     "Lawful-use.md",
     "Licence.md",
+    "Privacy.md",
     "_Sidebar.md",
     "_Footer.md"
 )

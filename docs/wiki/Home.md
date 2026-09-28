@@ -2,7 +2,7 @@
 
 A rampart is the defensive wall of a fortress. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
 
-The public download is **Rampart 1.9.0** for 64-bit Windows (`Rampart.exe`). Builds for other operating systems are in testing and are not offered on the release page.
+The recommended download is **Rampart 1.9.0** for 64-bit Windows (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. Applications for iPhone and Android will be listed on the App Store and Google Play when they are ready.
 
 Rampart is a read-only public-surface check. Tick both permission boxes. Check only a hostname you operate, or for which you have written permission.
 
@@ -18,7 +18,12 @@ Rampart is a read-only public-surface check. Tick both permission boxes. Check o
 
 [Rampart 1.9.0 on GitHub Releases](https://github.com/jjames06/oli-site-check/releases/tag/v1.9.0)
 
-The listing on [operationlockedin.com](https://www.operationlockedin.com/rampart) points at the same EXE.
+- Windows: `Rampart.exe` (recommended)
+- Linux x64 testing: `Rampart-linux-x64.zip`
+- macOS Apple silicon testing: `Rampart-osx-arm64.zip`
+- macOS Intel testing: `Rampart-osx-x64.zip`
+
+The listing on [operationlockedin.com](https://www.operationlockedin.com/rampart) points at the same files. Desktop copies are GNU GPLv3. Store binaries, when they ship, use an additional Apache License 2.0 grant.
 
 ## What it does
 
