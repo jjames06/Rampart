@@ -448,6 +448,10 @@ public static class Advice
             "Bypass Cloudflare cache for HTML document routes. Cache fingerprinted static files only, then purge after a deploy.");
 
         MissingHeader(
+            "Oracle PeopleSoft",
+            "Internet-facing PeopleSoft was advertised. Install the Oracle Critical Patch Update for CVE-2026-35273. A WAF rule is not the patch. Rampart does not send exploit traffic.");
+
+        MissingHeader(
             "Private files",
             "A path such as /.env or /.git/HEAD answered 200 with a short body. Remove that file from the public root and rotate any secret in it.");
 

@@ -146,6 +146,10 @@ public static class Checker
         }
         var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
         findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(exposedHits)));
+        var peopleSoftHits = await ProbeNamedPathsAsync(hostname, ip, PeopleSoftSurface.Paths, 8 * 1024, cancellationToken);
+        findings.Add(SafeFinding(
+            "Oracle PeopleSoft",
+            () => PeopleSoftSurface.Summary(peopleSoftHits, page.Body, cookies)));
         try
         {
             findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
@@ -650,12 +654,16 @@ public static class Checker
         return await Task.WhenAll(tasks);
     }
 
-    private static async Task<IReadOnlyList<FileHit>> ProbeExposedPathsAsync(
-        string hostname, IPAddress ip, CancellationToken ct)
+    private static Task<IReadOnlyList<FileHit>> ProbeExposedPathsAsync(
+        string hostname, IPAddress ip, CancellationToken ct) =>
+        ProbeNamedPathsAsync(hostname, ip, ExposedSurface.Paths, 8 * 1024, ct);
+
+    private static async Task<IReadOnlyList<FileHit>> ProbeNamedPathsAsync(
+        string hostname, IPAddress ip, IReadOnlyList<string> paths, int cap, CancellationToken ct)
     {
         using var handler = PinnedHandler(hostname, ip, 443);
         using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
-        var tasks = ExposedSurface.Paths.Select(async path =>
+        var tasks = paths.Select(async path =>
         {
             try
             {
@@ -663,7 +671,7 @@ public static class Checker
                 request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
                 request.Headers.Host = hostname;
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-                var body = await ReadCappedBodyAsync(response, 8 * 1024, ct);
+                var body = await ReadCappedBodyAsync(response, cap, ct);
                 return new FileHit(path, (int)response.StatusCode, body);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)

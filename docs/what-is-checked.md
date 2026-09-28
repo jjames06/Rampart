@@ -74,6 +74,8 @@ Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a 
 
 **Certificate key size.** An RSA leaf shorter than 2048 bits is **Needs attention**.
 
+**Oracle PeopleSoft.** GET `/psp/`, `/psc/`, `/ps/`, `/PSIGW/`, `/PSEMHUB/`. Homepage HTML and `PSJSESSIONID` are also read. If the hostname advertised PeopleSoft, the card is **Needs attention** and names CVE-2026-35273. Rampart does not send exploit traffic. Absence of those paths is **Present**.
+
 CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core when a version is advertised, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live. A library with no advertised version is not matched.
 
 A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance.

@@ -218,6 +218,23 @@ const extras = [
     ],
   },
   {
+    name: "Oracle PeopleSoft",
+    aliases: ["Oracle PeopleSoft", "PeopleSoft", "PeopleTools"],
+    extractors: [],
+    vulns: [
+      {
+        id: "CVE-2026-35273",
+        summary:
+          "Oracle PeopleSoft Enterprise PeopleTools 8.61 and 8.62. Critical remote issue. Oracle published a patch in the June 2026 Critical Patch Update. CISA added this CVE to the Known Exploited Vulnerabilities catalogue. A WAF workaround is not the patch.",
+        source: "https://nvd.nist.gov/vuln/detail/CVE-2026-35273",
+        severity: "critical",
+        ranges: [
+          { constraints: [{ op: ">=", version: "8.61.0" }, { op: "<", version: "8.63.0" }] },
+        ],
+      },
+    ],
+  },
+  {
     name: "Next.js",
     aliases: ["Next.js", "next"],
     extractors: [],

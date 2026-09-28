@@ -110,6 +110,7 @@ public static class FixGuides
         "SPF" or
         "DMARC" or
         "Private files" or
+        "Oracle PeopleSoft" or
         "WWW and apex" or
         "security.txt";
 
@@ -628,6 +629,15 @@ public static class FixGuides
                 L("When not to: the card says advertised versions did not match. That is not clearance."),
                 L("Upgrade the named product, or stop publishing the version in HTML generators and headers."),
                 L("This program does not send exploit traffic.")
+            },
+            "Oracle PeopleSoft" => new[]
+            {
+                L("When to do this: this hostname advertised a public PeopleSoft portal or cookie. That is an internet-facing HR or campus system."),
+                L("When not to: those paths 404 and the homepage does not name PeopleSoft. Then this card should be Present."),
+                L("Install Oracle's Critical Patch Update that covers CVE-2026-35273 for PeopleTools 8.61 and 8.62. A firewall or WAF rule that only blocks one request shape is not the patch."),
+                L("Oracle security alerts:", "https://www.oracle.com/security-alerts/"),
+                L("CISA Known Exploited Vulnerabilities catalogue:", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"),
+                L("Take the portal off the public internet if it does not need to be there. Rampart does not send exploit traffic and cannot see whether the CPU is installed.")
             },
             "Private files" => new[]
             {

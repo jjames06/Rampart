@@ -157,6 +157,16 @@ public static class Fingerprint
         {
             hints.Add(new StackHint("Wix", null, "Homepage HTML named static.wixstatic.com."));
         }
+        if ((html.Contains("PeopleSoft", StringComparison.OrdinalIgnoreCase)
+             || html.Contains("PSIGW", StringComparison.OrdinalIgnoreCase))
+            && hints.All(h => !h.Product.Equals("Oracle PeopleSoft", StringComparison.OrdinalIgnoreCase)))
+        {
+            var ver = Regex.Match(html, @"PeopleTools\s+([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+            hints.Add(new StackHint(
+                "Oracle PeopleSoft",
+                ver.Success ? ver.Groups[1].Value : null,
+                "Homepage HTML named PeopleSoft."));
+        }
     }
 
     private static void AddGenerator(List<StackHint> hints, string content)
