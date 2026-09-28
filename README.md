@@ -1,6 +1,6 @@
 # Site Check
 
-Operation Locked In. A Windows program that reports what a **public hostname you operate** presents on HTTPS, its certificate days, a short list of security headers, and whether SPF exists.
+Operation Locked In. A Windows program that reports what a **public hostname you operate** presents on HTTPS, its certificate, selected headers, SPF and DMARC, what the homepage advertises, and sourced CVE matches for those advertised versions. Next steps are listed only for what this run found.
 
 It is not a penetration test. It is not a crawl. It does not contact private or home-network addresses.
 
