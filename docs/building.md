@@ -1,6 +1,6 @@
 # Building Rampart
 
-You need the .NET 8 SDK (64-bit). The **recommended public ship** is the Windows WPF EXE. The same SDK publishes testing copies of the Avalonia UI for Linux and macOS. Those zips go on the GitHub release with `TESTING.txt` and the GPLv3 files. iOS and Android need the .NET MAUI workload and a Mac for iOS. Those store applications will be listed on the App Store and Google Play when they are ready.
+You need the .NET 8 SDK (64-bit). The **recommended public ship** is the Windows WPF EXE. The same SDK publishes testing copies of the Avalonia UI for Linux and macOS. Those zips go on the GitHub release with `TESTING.txt` and the GPLv3 files. iOS and Android need the .NET MAUI workload and a Mac for iOS. The iPhone and Android copies are being submitted to the App Store and Google Play soon.
 
 Rebuild the local CVE catalogue (needs network once per release):
 

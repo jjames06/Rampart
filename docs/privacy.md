@@ -1,6 +1,6 @@
 # Privacy
 
-Rampart runs on the device in front of you. The recommended copy is the Windows desktop executable. Testing copies for Linux and macOS are on the GitHub release. iPhone and Android applications will be listed on the App Store and Google Play when they are ready. The program does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service.
+Rampart runs on the device in front of you. The recommended copy is the Windows desktop executable. Testing copies for Linux and macOS are on the GitHub release. The iPhone and Android copies are being submitted to the App Store and Google Play soon. They are not listed there yet. The program does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service.
 
 ## What leaves this computer
 

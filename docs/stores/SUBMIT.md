@@ -1,6 +1,6 @@
 # Store and extra-desktop builds
 
-The **recommended public product** is the Windows EXE on the GitHub release. Testing zips for Linux and macOS are on that same release and on the Rampart page. They are still under test. iPhone and Android applications will be listed on the App Store and Google Play when they are ready. Do not upload store binaries until signing, privacy labels, and a Mac (for iOS) are in place.
+The **recommended public product** is the Windows EXE on the GitHub release. Testing zips for Linux and macOS are on that same release and on the Rampart page. They are still under test. The iPhone and Android copies are being submitted to the App Store and Google Play soon. They are not listed there yet. Do not upload store binaries until signing, privacy labels, and a Mac (for iOS) are in place.
 
 Rampart’s checker is `SiteCheck.Core`. UIs:
 

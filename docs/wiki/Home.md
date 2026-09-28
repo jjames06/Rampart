@@ -2,7 +2,7 @@
 
 A rampart is the defensive wall of a fortress. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
 
-The recommended download is **Rampart 1.9.0** for 64-bit Windows (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. Applications for iPhone and Android will be listed on the App Store and Google Play when they are ready.
+The recommended download is **Rampart 1.9.0** for 64-bit Windows (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are being submitted to the App Store and Google Play soon. They are not listed there yet.
 
 Rampart is a read-only public-surface check. Tick both permission boxes. Check only a hostname you operate, or for which you have written permission.
 
