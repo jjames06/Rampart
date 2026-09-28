@@ -15,3 +15,7 @@ The zips on the v1.9.0 release are testing copies. Linux needs `chmod +x Rampart
 ## iPhone and Android
 
 Source is in `src/SiteCheck.Maui`. Store listings are not public yet. [stores/SUBMIT.md](stores/SUBMIT.md).
+
+## What this program will not become
+
+Rampart will not grow into a port scanner, a crawler, or an exploit kit. It will not query NVD at run time. It will not POST to ToolPane, `wls-wsat`, or FortiGate `fgt_lang` to "prove" a CVE. Those limits are the product. Longer judgment: [PRODUCT.md](PRODUCT.md).

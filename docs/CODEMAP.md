@@ -129,3 +129,5 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 ## Licence
 
 Desktop: GNU GPLv3. Store binaries: additional Apache-2.0 (`LICENSE.MOBILE`). DnsClient and Retire.js data: Apache-2.0. GitHub Advisory ranges: CC BY 4.0. Do not query Cloudflare Radar (CC BY-NC vs GPLv3).
+
+Honest product judgment: `docs/PRODUCT.md`.

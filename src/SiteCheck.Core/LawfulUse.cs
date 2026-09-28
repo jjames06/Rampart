@@ -51,7 +51,11 @@ public static class LawfulUse
             "Read the homepage HTML for mixed http:// resources, form actions, canonical URLs, target=_blank links, and integrity attributes on https:// scripts",
             "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size",
             "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)",
-            "GET an allowlist of common public account, sign-in, and admin URLs on the same address (no passwords, no extra ports, redirects off)"
+            "GET an allowlist of common public account, sign-in, and admin URLs on the same address (no passwords, no extra ports, redirects off)",
+            "GET an allowlist of private-file paths (/.env, /.git/HEAD, /wp-config.php, /phpinfo.php, /server-status)",
+            "HEAD / on the www or apex sibling when that name has a public address",
+            "GET an allowlist of public Oracle PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/)",
+            "GET an allowlist of distinctive public enterprise-portal paths (SharePoint layouts, NetScaler logon, FortiGate /remote/login, and peers). Cards appear only when that product is advertised"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {
@@ -68,6 +72,7 @@ public static class LawfulUse
     public static IReadOnlyList<string> MethodsRefused() =>
     [
         "Exploit payloads, proof-of-concept attack traffic, or password guessing",
+        "SharePoint ToolPane, WebLogic /wls-wsat/, FortiGate fgt_lang probes, or BIG-IP /mgmt/tm/util/bash",
         "Port scanning beyond 443 and a single HEAD on 80",
         "Following redirects, crawling, posting credentials, or requesting xmlrpc.php, version.php, or plugin zip files",
         "Contacting private, loopback, link-local, CGNAT, or similar blocked addresses",
