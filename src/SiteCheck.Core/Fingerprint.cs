@@ -46,6 +46,10 @@ public static class Fingerprint
         {
             hints.Add(new StackHint("Cloudflare", null, "Cloudflare response headers were present."));
         }
+        if (headers.TryGetValue("X-Jenkins", out var jenkinsVer) && !string.IsNullOrWhiteSpace(jenkinsVer))
+        {
+            hints.Add(new StackHint("Jenkins", jenkinsVer.Trim(), "Header X-Jenkins was present."));
+        }
         AddEdgeFromHeaders(hints, headers);
 
         if (!string.IsNullOrEmpty(html))

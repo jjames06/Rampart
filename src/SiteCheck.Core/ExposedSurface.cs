@@ -25,7 +25,10 @@ public static class ExposedSurface
         "/phpinfo.php",
         "/server-status",
         "/composer.json",
-        "/package.json"
+        "/package.json",
+        "/.git/config",
+        "/actuator/env",
+        "/actuator/configprops"
     };
 
     public static Finding Summary(IReadOnlyList<FileHit> hits)

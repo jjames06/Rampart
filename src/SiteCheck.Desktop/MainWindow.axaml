@@ -39,7 +39,7 @@
     <ScrollViewer>
       <StackPanel Margin="24,20">
         <TextBlock TextWrapping="Wrap" Foreground="#C5D0DE" FontSize="15" LineHeight="24"
-                   Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths (including common sign-in, admin, and private-file paths), checks the www and apex pair, and asks DNS for mail records. Findings that need work include a How to fix this panel with copyable lines. Operation Locked In does not authorize use against a hostname without that permission."/>
+                   Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths (sign-in, admin, private files, advertised enterprise portals, and OpenID metadata), checks the www and apex pair, and asks DNS for mail records. Findings that need work include a How to fix this panel with copyable lines. Operation Locked In does not authorize use against a hostname without that permission."/>
 
         <Border Background="#162033" CornerRadius="18" Padding="24" Margin="0,22,0,0" BorderBrush="#243247" BorderThickness="1">
           <StackPanel Spacing="8">

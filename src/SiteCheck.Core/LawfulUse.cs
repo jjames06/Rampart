@@ -52,7 +52,7 @@ public static class LawfulUse
             "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size",
             "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)",
             "GET an allowlist of common public account, sign-in, and admin URLs on the same address (no passwords, no extra ports, redirects off)",
-            "GET an allowlist of private-file paths (/.env, /.env.local, /.git/HEAD, /wp-config.php, /phpinfo.php, /server-status, /composer.json, /package.json)",
+            "GET an allowlist of private-file paths (/.env, /.env.local, /.git/HEAD, /.git/config, /wp-config.php, /phpinfo.php, /server-status, /composer.json, /package.json, /actuator/env, /actuator/configprops)",
             "GET /.well-known/openid-configuration and /.well-known/oauth-authorization-server when those documents advertise an issuer (no token request)",
             "HEAD / on the www or apex sibling when that name has a public address",
             "GET an allowlist of public Oracle PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/)",
