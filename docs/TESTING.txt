@@ -1,0 +1,31 @@
+Rampart 1.9.0 extra-desktop testing copy
+========================================
+
+The recommended public program is the Windows file Rampart.exe.
+
+Windows
+-------
+Microsoft Defender (the antivirus scan) does not treat Rampart as malware.
+Microsoft Defender SmartScreen still warns on an unrecognized publisher when
+the Windows EXE is not Authenticode-signed, or when a new signed hash has no
+reputation yet. If you downloaded this from jjames06/oli-site-check or from
+https://www.operationlockedin.com/rampart, choose More info, then Run anyway.
+
+Linux
+-----
+chmod +x Rampart
+./Rampart
+
+macOS
+-----
+This testing zip is not notarized. Gatekeeper may say the app cannot be
+opened because the developer cannot be verified. That is the missing
+Developer ID signature, not a malware finding. Open Rampart from Finder,
+or remove the download quarantine:
+
+xattr -d com.apple.quarantine Rampart
+
+iPhone and Android
+------------------
+Those copies are ready. They still need to be submitted to the App Store
+and Google Play. They are not file downloads on this zip.

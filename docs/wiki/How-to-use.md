@@ -21,7 +21,7 @@ Do not type a hostname you do not control. Do not use this program as a scanner 
 ## Start the program
 
 1. Double-click `Rampart.exe` on your Desktop, or in the `dist` folder if you built from source.
-2. Windows SmartScreen may warn that the file is not Authenticode-signed. If you built it yourself, or downloaded it from the public repository `jjames06/oli-site-check`, choose **More info**, then **Run anyway**.
+2. Windows may show **Windows protected your PC**. That is Microsoft Defender SmartScreen, because the publisher is not Authenticode-signed yet. It is not a Defender malware detection. If you built the file yourself, or downloaded it from this page’s GitHub release `jjames06/oli-site-check`, choose **More info**, then **Run anyway**. Details: [signing.md](https://github.com/jjames06/oli-site-check/blob/main/docs/signing.md).
 3. A navy window titled **Rampart · Operation Locked In** should open, with the teal hairline under the title, matching the colours used on https://www.operationlockedin.com.
 
 If nothing opens, confirm you are on 64-bit Windows and that antivirus did not quarantine the file. Rebuild with `tools\publish.ps1` if you have the source. Email Info@operationlockedin.com if a rebuilt copy still will not start, and include the Windows version, not a screenshot of unrelated software.

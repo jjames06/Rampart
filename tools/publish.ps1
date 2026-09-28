@@ -8,6 +8,9 @@ if ($LASTEXITCODE -ne 0) { throw "Tests failed." }
 $out = Join-Path $root "dist"
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
 New-Item -ItemType Directory -Path $out | Out-Null
+
+# Single-file self-contained WPF. Compression is on so the public EXE stays a reasonable download.
+# SmartScreen is publisher reputation (Authenticode), not this packer flag. Defender scan is clean either way.
 & $dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --self-contained true `
   -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false `
   -p:EnableCompressionInSingleFile=true -o $out
@@ -19,16 +22,25 @@ if (Test-Path $app) {
   Rename-Item $app "Rampart.exe"
 }
 
+$sign = Join-Path $PSScriptRoot "sign-windows.ps1"
+if (Test-Path $named) {
+  & $sign -Path $named
+  if ($LASTEXITCODE -ne 0) { throw "Windows sign failed." }
+}
+
 function Publish-Desktop([string]$rid, [string]$folder) {
   $dest = Join-Path $out $folder
   & $dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r $rid --self-contained true -o $dest
   if ($LASTEXITCODE -ne 0) { throw "Publish $rid failed." }
-  $built = Get-ChildItem $dest -File | Where-Object { $_.Name -like "SiteCheck.Desktop*" -and $_.Extension -in @("", ".exe", ".dll") } | Select-Object -First 1
   $targetName = if ($rid -like "win*") { "Rampart.exe" } else { "Rampart" }
   $exe = Join-Path $dest "SiteCheck.Desktop.exe"
   $unix = Join-Path $dest "SiteCheck.Desktop"
   if (Test-Path $exe) {
     Copy-Item $exe (Join-Path $dest $targetName) -Force
+    if ($rid -like "win*") {
+      & $sign -Path (Join-Path $dest $targetName)
+      if ($LASTEXITCODE -ne 0) { throw "Sign $rid failed." }
+    }
   } elseif (Test-Path $unix) {
     Copy-Item $unix (Join-Path $dest $targetName) -Force
   }
@@ -37,6 +49,7 @@ function Publish-Desktop([string]$rid, [string]$folder) {
   }
   Copy-Item (Join-Path $root "docs\how-to-use.md") (Join-Path $dest "how-to-use.md") -Force
   Copy-Item (Join-Path $root "docs\lawful-use.md") (Join-Path $dest "lawful-use.md") -Force
+  Copy-Item (Join-Path $root "docs\TESTING.txt") (Join-Path $dest "TESTING.txt") -Force
   Copy-Item (Join-Path $root "licenses\APACHE-2.0.txt") $dest -Force
   "Built $dest"
 }
@@ -50,6 +63,32 @@ foreach ($name in @("LICENSE", "LICENSE.MOBILE", "NOTICE", "THIRD-PARTY.md")) {
 }
 Copy-Item (Join-Path $root "docs\how-to-use.md") (Join-Path $out "how-to-use.md") -Force
 Copy-Item (Join-Path $root "docs\lawful-use.md") (Join-Path $out "lawful-use.md") -Force
+Copy-Item (Join-Path $root "docs\TESTING.txt") (Join-Path $out "TESTING.txt") -Force
+Copy-Item (Join-Path $root "docs\signing.md") (Join-Path $out "signing.md") -Force
 Copy-Item (Join-Path $root "licenses\APACHE-2.0.txt") $out -Force
-Get-ChildItem $out -Filter Rampart.exe | ForEach-Object { "Built $($_.FullName) ($([math]::Round($_.Length/1MB,1)) MB)" }
-Get-ChildItem $out -Directory | ForEach-Object { "Folder $($_.FullName)" }
+
+function Zip-Folder([string]$folder, [string]$zipName) {
+  $src = Join-Path $out $folder
+  $zip = Join-Path $out $zipName
+  if (Test-Path $zip) { Remove-Item $zip -Force }
+  Compress-Archive -Path (Join-Path $src "*") -DestinationPath $zip -Force
+  "Zipped $zip"
+}
+Zip-Folder "linux-x64" "Rampart-linux-x64.zip"
+Zip-Folder "osx-x64" "Rampart-osx-x64.zip"
+Zip-Folder "osx-arm64" "Rampart-osx-arm64.zip"
+
+$sums = Join-Path $out "SHA256SUMS.txt"
+$lines = @()
+Get-ChildItem $out -File | Where-Object { $_.Name -match "^(Rampart\.exe|Rampart-.*\.zip)$" } | Sort-Object Name | ForEach-Object {
+  $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+  $lines += "$hash  $($_.Name)"
+}
+$lines -join "`n" | Set-Content -LiteralPath $sums -Encoding ascii
+"Wrote $sums"
+
+Get-ChildItem $out -Filter Rampart.exe | ForEach-Object {
+  $sig = Get-AuthenticodeSignature -LiteralPath $_.FullName
+  "Built $($_.FullName) ($([math]::Round($_.Length/1MB,1)) MB) Authenticode=$($sig.Status)"
+}
+Get-ChildItem $out -Filter *.zip | ForEach-Object { "Zip $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }

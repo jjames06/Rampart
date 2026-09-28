@@ -32,7 +32,7 @@ Check only hostnames you operate or for which you have written permission. Unaut
 
 ## Run a release build
 
-The GitHub release contains `Rampart.exe` (Windows), testing zips for Linux and macOS, and `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. On Windows, double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
+The GitHub release contains `Rampart.exe` (Windows), testing zips for Linux and macOS, and `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. On Windows, double-click the executable. If Microsoft Defender SmartScreen shows **Windows protected your PC**, that is an unsigned-publisher warning, not a malware finding. Choose **More info**, then **Run anyway**, for a copy from this repository. Then tick the permission box, enter a hostname such as `www.example.com`, and choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
 
 To build from source on 64-bit Windows with the .NET 8 SDK:
 
@@ -41,7 +41,7 @@ dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
 dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:EnableCompressionInSingleFile=true -o dist
 ```
 
-`tools\publish.ps1` runs the tests, publishes, names the file `Rampart.exe`, and copies the licence files beside it.
+`tools\publish.ps1` runs the tests, publishes, names the file `Rampart.exe`, Authenticode-signs it when a certificate is present, writes SHA256SUMS, and copies the licence files beside it. SmartScreen notes: [docs/signing.md](docs/signing.md).
 
 ## What this program will not do
 

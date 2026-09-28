@@ -19,7 +19,9 @@ dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --se
 
 The executable is self-contained. The person who runs it does not install the .NET runtime. The program requests no administrative elevation (`asInvoker`). Per-monitor DPI awareness is set in the application manifest.
 
-Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this project before. Compression of the single file is on.
+Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this project before. Compression of the single file stays on so the download stays a reasonable size. SmartScreen is about Authenticode, not that flag.
+
+After the EXE is named `Rampart.exe`, `tools\sign-windows.ps1` Authenticode-signs it when `RAMPART_SIGN_PFX` or a Code Signing certificate is present. Keep the product version at 1.9.0 when you only add a signature. Full notes: [signing.md](signing.md).
 
 ## Linux and macOS
 
@@ -41,4 +43,6 @@ dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
 
 ## Signing
 
-Release builds are not Authenticode-signed yet. Windows SmartScreen may warn. The operator handbook explains **More info**, then **Run anyway**, for copies that came from the public repository.
+The grey **Windows protected your PC** box is Microsoft Defender SmartScreen (unrecognized publisher), not a Defender malware finding. A Defender scan of `Rampart.exe` reports no threats. The public 1.9.0 EXE was `NotSigned`.
+
+Sign with an OV/EV Authenticode certificate or Microsoft Trusted Signing, then replace the v1.9.0 `Rampart.exe` asset. Until that certificate is on this PC, `tools\sign-windows.ps1` warns and the handbook still says **More info**, then **Run anyway**. See [signing.md](signing.md).

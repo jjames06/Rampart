@@ -52,7 +52,9 @@ xcrun notarytool submit Rampart.zip --apple-id YOUR_APPLE_ID --team-id TEAMID --
 xcrun stapler staple Rampart
 ```
 
-On Linux, `chmod +x Rampart` then run it. GTK/X11 or Wayland is enough; no extra .NET runtime.
+On Linux, `chmod +x Rampart` then run it. GTK/X11 or Wayland is enough; no extra .NET runtime. There is no SmartScreen on Linux.
+
+Windows SmartScreen on `Rampart.exe` is an unsigned-publisher warning. Defender antivirus reports no threats. Sign the Windows EXE with Authenticode and keep version 1.9.0: [signing.md](../signing.md).
 
 ## Build Android (Windows or Mac, after the MAUI workload)
 
