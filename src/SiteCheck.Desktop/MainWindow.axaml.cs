@@ -212,7 +212,6 @@ public partial class MainWindow : Window
 
     private static List<FindingSectionView> ToSections(IReadOnlyList<Finding> findings, IReadOnlyList<NextStep> nextSteps)
     {
-        var byRelated = nextSteps.ToLookup(s => s.Related, StringComparer.OrdinalIgnoreCase);
         var sections = new List<FindingSectionView>();
         FindingState? last = null;
         foreach (var f in findings.OrderBy(x => ReportText.Rank(x.State)))
@@ -222,7 +221,7 @@ public partial class MainWindow : Window
                 sections.Add(new FindingSectionView { Title = ReportText.SectionName(f.State) });
                 last = f.State;
             }
-            sections[^1].Cards.Add(ToView(f, byRelated[f.Title].FirstOrDefault()));
+            sections[^1].Cards.Add(ToView(f, FindingGuide.For(f, nextSteps)));
         }
         return sections;
     }
@@ -239,8 +238,8 @@ public partial class MainWindow : Window
             FindingState.Attention => amber,
             _ => muted
         };
-        var hasFix = step?.Lines is { Count: > 0 } && (f.State != FindingState.Present || f.Title == "Admin pages");
-        var hasWhen = step != null && (!string.IsNullOrWhiteSpace(step.WhenTo) || !string.IsNullOrWhiteSpace(step.WhenNot));
+        var hasFix = FindingGuide.ShowsHowTo(f, step);
+        var hasWhen = FindingGuide.ShowsWhen(step);
         var lines = new List<FixLineView>();
         if (hasFix && step!.Lines != null)
         {

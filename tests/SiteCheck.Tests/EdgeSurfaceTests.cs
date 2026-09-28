@@ -79,5 +79,16 @@ public class EdgeSurfaceTests
         Assert.Contains(admin.Lines!, l => l.Copy == "https://www.operationlockedin.com/admin");
         Assert.Contains(admin.Lines!, l => l.Copy != null && l.Copy.Contains("wp-admin"));
         Assert.Contains("Next.js", admin.WhenNot);
+        var finding = findings[0];
+        Assert.True(FindingGuide.ShowsHowTo(finding, admin));
+        Assert.True(FindingGuide.ShowsWhen(admin));
+    }
+
+    [Fact]
+    public void Present_hsts_does_not_show_how_to()
+    {
+        var f = new Finding("Strict-Transport-Security", FindingState.Present, "obs", "method", "caveat");
+        var step = new NextStep("Fix HSTS", "body", "Strict-Transport-Security", Lines: new[] { new FixLine("Set the header.") });
+        Assert.False(FindingGuide.ShowsHowTo(f, step));
     }
 }

@@ -66,14 +66,16 @@ public static class ReportText
             sb.AppendLine(f.Observation);
             sb.AppendLine("How this was gathered: " + f.Method);
             sb.AppendLine("What this does not mean: " + f.Caveat);
-            var guide = report.NextSteps.FirstOrDefault(s =>
-                s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase)
-                && s.Lines is { Count: > 0 }
-                && f.State != FindingState.Present);
-            if (guide != null)
+            var guide = FindingGuide.For(f, report.NextSteps);
+            if (FindingGuide.ShowsHowTo(f, guide) && guide!.Lines != null)
             {
+                if (FindingGuide.ShowsWhen(guide))
+                {
+                    sb.AppendLine("When to do this: " + guide.WhenTo);
+                    sb.AppendLine("When to skip: " + guide.WhenNot);
+                }
                 sb.AppendLine("How to fix this");
-                foreach (var line in guide.Lines!)
+                foreach (var line in guide.Lines)
                 {
                     sb.AppendLine("  " + line.Text);
                     if (!string.IsNullOrWhiteSpace(line.Copy))

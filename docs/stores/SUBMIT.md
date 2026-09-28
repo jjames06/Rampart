@@ -2,7 +2,9 @@
 
 The **recommended public product** is the Windows EXE on the GitHub release. Testing zips for Linux and macOS are on that same release and on the Rampart page. They are still under test. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play. Do not upload store binaries until signing, privacy labels, and a Mac (for iOS) are in place.
 
-Rampart’s checker is `SiteCheck.Core`. UIs:
+Rampart’s checker is `SiteCheck.Core`. How-to-fix copy lives there (`FixGuides`, `FindingGuide`). Every UI must call `FindingGuide.ShowsHowTo` / `ShowsWhen` so Windows, Linux, macOS, iPhone, and Android stay in lockstep. Do not add How-to-fix wording in only one UI.
+
+UIs:
 
 | UI | Platforms | Licence for that binary |
 |---|---|---|

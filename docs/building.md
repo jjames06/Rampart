@@ -23,6 +23,16 @@ Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this 
 
 After the EXE is named `Rampart.exe`, `tools\sign-windows.ps1` Authenticode-signs it when `RAMPART_SIGN_PFX` or a Code Signing certificate is present. Keep the product version at 1.9.0 when you only add a signature. Full notes: [signing.md](signing.md).
 
+## User interfaces
+
+`SiteCheck.Core` owns findings and How to fix this. `FindingGuide` decides which cards show the panel. Apply UI card changes to all three shells:
+
+- `src/SiteCheck.App` (Windows WPF, `Rampart.exe`)
+- `src/SiteCheck.Desktop` (Avalonia Linux and macOS testing zips)
+- `src/SiteCheck.Maui` (iPhone and Android)
+
+Saved reports go through `ReportText.Format`, so they pick up the same How to fix this lines.
+
 ## Linux and macOS
 
 ```
