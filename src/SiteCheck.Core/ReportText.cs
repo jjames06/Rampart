@@ -12,6 +12,25 @@ public static class ReportText
         sb.AppendLine($"Checked: {report.CheckedAt:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine("Public addresses used: " + string.Join(", ", report.PublicAddresses));
         sb.AppendLine();
+        if (report.Stack.Count > 0)
+        {
+            sb.AppendLine("Advertised stack (from headers and homepage only)");
+            foreach (var s in report.Stack)
+            {
+                sb.AppendLine($"  {s.Product}" + (s.Version is null ? "" : " " + s.Version) + "  (" + s.Evidence + ")");
+            }
+            sb.AppendLine();
+        }
+        if (report.NextSteps.Count > 0)
+        {
+            sb.AppendLine("What to do next (only items that apply to this run)");
+            foreach (var step in report.NextSteps)
+            {
+                sb.AppendLine($"  {step.Title}");
+                sb.AppendLine("  " + step.Body);
+                sb.AppendLine();
+            }
+        }
         foreach (var f in report.Findings)
         {
             sb.AppendLine($"{f.Title}  ({StateLabel(f.State)})");
@@ -33,6 +52,7 @@ public static class ReportText
         FindingState.Present => "Present",
         FindingState.NotFound => "Not found",
         FindingState.Incomplete => "Could not complete",
+        FindingState.Attention => "Needs attention",
         _ => state.ToString()
     };
 }

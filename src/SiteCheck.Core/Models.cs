@@ -4,7 +4,8 @@ public enum FindingState
 {
     Present,
     NotFound,
-    Incomplete
+    Incomplete,
+    Attention
 }
 
 /// <summary>
@@ -17,11 +18,23 @@ public sealed record Finding(
     string Method,
     string Caveat);
 
+public sealed record NextStep(
+    string Title,
+    string Body,
+    string Related);
+
+public sealed record StackHint(
+    string Product,
+    string? Version,
+    string Evidence);
+
 public sealed record CheckReport(
     string Hostname,
     DateTimeOffset CheckedAt,
     IReadOnlyList<string> PublicAddresses,
     IReadOnlyList<Finding> Findings,
+    IReadOnlyList<NextStep> NextSteps,
+    IReadOnlyList<StackHint> Stack,
     IReadOnlyList<string> Limits);
 
 public sealed class CheckException : Exception

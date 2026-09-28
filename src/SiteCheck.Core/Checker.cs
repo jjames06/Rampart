@@ -32,45 +32,83 @@ public static class Checker
         var hostname = Hostname.Parse(rawHost)
             ?? throw new CheckException("Use a public hostname such as example.com. Do not enter an IP address, localhost, or a home network name.");
 
-        using var timeout = new CancellationTokenSource(TimeoutMs);
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
-
-        var publicIps = await ResolvePublicAsync(hostname, linked.Token);
+        var publicIps = await ResolvePublicAsync(hostname, cancellationToken);
         if (publicIps.Count == 0)
         {
             throw new CheckException("That hostname has no public Internet address, or it only points at a private address. This program does not contact private networks.");
         }
 
         var ip = publicIps[0];
-        var certTask = ReadCertificateAsync(hostname, ip, linked.Token);
-        var httpTask = ProbeHttpsAsync(hostname, ip, linked.Token);
-        var spfTask = LookupSpfAsync(hostname, linked.Token);
-        await Task.WhenAll(certTask, httpTask, spfTask);
+        var certTask = ReadCertificateAsync(hostname, ip, cancellationToken);
+        var httpTask = ProbeHttpsAsync(hostname, ip, cancellationToken);
+        var pageTask = ReadHomepageAsync(hostname, ip, cancellationToken);
+        var spfTask = LookupSpfAsync(hostname, cancellationToken);
+        var dmarcTask = LookupDmarcAsync(hostname, cancellationToken);
+        var http80Task = ProbeHttpPort80Async(hostname, ip, cancellationToken);
+        await Task.WhenAll(certTask, httpTask, pageTask, spfTask, dmarcTask, http80Task);
 
         var cert = await certTask;
         var http = await httpTask;
+        var page = await pageTask;
         var spf = await spfTask;
+        var dmarc = await dmarcTask;
+        var http80 = await http80Task;
+
+        var headers = MergeHeaders(http.Headers, page.Headers);
+        var stack = Fingerprint.FromPublicSurface(headers, page.Body);
+        var plugins = Fingerprint.WordPressPluginSlugs(page.Body);
 
         var findings = new List<Finding>
         {
             HttpsFinding(http),
             CertificateFinding(hostname, cert),
+            TlsFinding(cert),
+            HttpRedirectFinding(http80),
         };
-        findings.AddRange(HeaderFindings(http));
+        findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
+        findings.Add(CookieFinding(headers));
+        findings.Add(ServerDisclosureFinding(headers));
         findings.Add(SpfFinding(spf));
+        findings.Add(DmarcFinding(dmarc));
+        findings.AddRange(CveFindings(stack));
+        if (plugins.Count > 0)
+        {
+            findings.Add(new Finding(
+                "Plugins",
+                FindingState.Attention,
+                "Homepage URLs named these WordPress plugin directories: " + string.Join(", ", plugins) + ".",
+                "Read script and link URLs from the first 256 KB of GET /. Plugin files were not downloaded.",
+                "A path on the homepage is not proof the plugin is vulnerable. It is only evidence it is linked."));
+        }
+
+        var certDays = cert.NotAfter is null
+            ? (int?)null
+            : (int)Math.Floor((cert.NotAfter.Value - DateTimeOffset.UtcNow).TotalDays);
+
+        var next = Advice.Build(
+            hostname,
+            findings,
+            stack,
+            plugins,
+            certDays,
+            cert.TlsProtocol,
+            http80.Status,
+            http80.Location);
 
         return new CheckReport(
             hostname,
             DateTimeOffset.UtcNow,
             publicIps.Select(a => a.ToString()).ToArray(),
             findings,
+            next,
+            stack,
             new[]
             {
-                "This is a short read-only check, not a penetration test and not a guarantee.",
+                "This is a short read-only check of public HTTPS, DNS, and the homepage. It is not a red-team engagement, not a crawl, and not a guarantee.",
                 "It contacts only public addresses for the hostname you typed, and only after you confirm permission.",
-                "It does not follow redirects, crawl pages, guess logins, or send exploit traffic.",
-                "Present or not found describes what this program observed. It does not mean the site is safe or unsafe.",
-                "Unauthorized access to a computer system is an offence in Canada (Criminal Code s. 342.1) and similar laws elsewhere. Check only hostnames you operate or have written permission to check.",
+                "It does not follow redirects, guess logins, brute-force plugins, or send exploit traffic.",
+                "CVE matches use a small sourced catalogue against versions this host advertised. Absence of a match is not clearance.",
+                "Unauthorized access to a computer system is an offence in Canada (Criminal Code s. 342.1) and similar laws elsewhere.",
                 "Paid website work still begins after a written quote."
             });
     }
@@ -94,6 +132,7 @@ public static class Checker
         IReadOnlyList<string> Names,
         string? Issuer,
         bool Trusted,
+        string? TlsProtocol,
         string? Error);
 
     private static async Task<CertResult> ReadCertificateAsync(string hostname, IPAddress ip, CancellationToken ct)
@@ -119,7 +158,7 @@ public static class Checker
 
             if (ssl.RemoteCertificate is null)
             {
-                return new CertResult(null, Array.Empty<string>(), null, false, "No certificate was presented.");
+                return new CertResult(null, Array.Empty<string>(), null, false, ssl.SslProtocol.ToString(), "No certificate was presented.");
             }
 
             using var cert = new X509Certificate2(ssl.RemoteCertificate);
@@ -131,11 +170,12 @@ public static class Checker
                 names,
                 issuer,
                 trustErrors == SslPolicyErrors.None,
+                ssl.SslProtocol.ToString(),
                 null);
         }
         catch (Exception ex) when (ex is SocketException or AuthenticationException or IOException or OperationCanceledException)
         {
-            return new CertResult(null, Array.Empty<string>(), null, false, "The TLS handshake did not complete.");
+            return new CertResult(null, Array.Empty<string>(), null, false, null, "The TLS handshake did not complete.");
         }
     }
 
@@ -157,9 +197,98 @@ public static class Checker
         return names.Distinct().ToArray();
     }
 
-    private sealed record HttpResult(int? Status, IReadOnlyDictionary<string, string> Headers, string Note);
+    private sealed record HttpResult(
+        int? Status,
+        IReadOnlyDictionary<string, string> Headers,
+        string Note,
+        string? Body = null,
+        string? Location = null);
+
+    private static Dictionary<string, string> MergeHeaders(
+        IReadOnlyDictionary<string, string> a,
+        IReadOnlyDictionary<string, string> b)
+    {
+        var d = new Dictionary<string, string>(a, StringComparer.OrdinalIgnoreCase);
+        foreach (var kv in b)
+        {
+            if (!d.ContainsKey(kv.Key)) d[kv.Key] = kv.Value;
+        }
+        return d;
+    }
+
+    private static SocketsHttpHandler PinnedHandler(string hostname, IPAddress ip, int port) =>
+        new()
+        {
+            AllowAutoRedirect = false,
+            ConnectTimeout = TimeSpan.FromMilliseconds(TimeoutMs),
+            SslOptions =
+            {
+                TargetHost = hostname,
+                RemoteCertificateValidationCallback = (_, _, _, _) => true
+            },
+            ConnectCallback = async (_, token) =>
+            {
+                var socket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+                try
+                {
+                    await socket.ConnectAsync(ip, port, token);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch
+                {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+        };
 
     private static async Task<HttpResult> ProbeHttpsAsync(string hostname, IPAddress ip, CancellationToken ct)
+    {
+        try
+        {
+            using var handler = PinnedHandler(hostname, ip, 443);
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+            using var request = new HttpRequestMessage(HttpMethod.Head, $"https://{hostname}/");
+            request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+            request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
+            request.Headers.Host = hostname;
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            var headers = ReadHeaders(response);
+            var status = (int)response.StatusCode;
+            var note = status is >= 300 and < 400
+                ? $"HTTPS answered with a redirect ({status}). This program does not follow redirects."
+                : "The hostname answered on HTTPS at the first public address.";
+            headers.TryGetValue("location", out var loc);
+            return new HttpResult(status, headers, note, Location: loc);
+        }
+        catch (Exception)
+        {
+            return new HttpResult(null, new Dictionary<string, string>(), "HTTPS did not complete within the time limit.");
+        }
+    }
+
+    private static async Task<HttpResult> ReadHomepageAsync(string hostname, IPAddress ip, CancellationToken ct)
+    {
+        try
+        {
+            using var handler = PinnedHandler(hostname, ip, 443);
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"https://{hostname}/");
+            request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+            request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
+            request.Headers.Host = hostname;
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            var headers = ReadHeaders(response);
+            var body = await ReadCappedBodyAsync(response, 256 * 1024, ct);
+            return new HttpResult((int)response.StatusCode, headers, "Read the homepage body.", body);
+        }
+        catch (Exception)
+        {
+            return new HttpResult(null, new Dictionary<string, string>(), "Homepage GET did not complete.");
+        }
+    }
+
+    private static async Task<HttpResult> ProbeHttpPort80Async(string hostname, IPAddress ip, CancellationToken ct)
     {
         try
         {
@@ -167,17 +296,12 @@ public static class Checker
             {
                 AllowAutoRedirect = false,
                 ConnectTimeout = TimeSpan.FromMilliseconds(TimeoutMs),
-                SslOptions =
-                {
-                    TargetHost = hostname,
-                    RemoteCertificateValidationCallback = (_, _, _, _) => true
-                },
-                ConnectCallback = async (context, token) =>
+                ConnectCallback = async (_, token) =>
                 {
                     var socket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
                     try
                     {
-                        await socket.ConnectAsync(ip, 443, token);
+                        await socket.ConnectAsync(ip, 80, token);
                         return new NetworkStream(socket, ownsSocket: true);
                     }
                     catch
@@ -188,30 +312,42 @@ public static class Checker
                 }
             };
             using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
-            using var request = new HttpRequestMessage(HttpMethod.Head, $"https://{hostname}/");
+            using var request = new HttpRequestMessage(HttpMethod.Head, $"http://{hostname}/");
             request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
-            request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
             request.Headers.Host = hostname;
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var h in response.Headers)
-            {
-                headers[h.Key] = string.Join(", ", h.Value);
-            }
-            foreach (var h in response.Content.Headers)
-            {
-                headers[h.Key] = string.Join(", ", h.Value);
-            }
-            var status = (int)response.StatusCode;
-            var note = status is >= 300 and < 400
-                ? $"HTTPS answered with a redirect ({status}). This program does not follow redirects."
-                : "The hostname answered on HTTPS at the first public address.";
-            return new HttpResult(status, headers, note);
+            var headers = ReadHeaders(response);
+            headers.TryGetValue("location", out var loc);
+            return new HttpResult((int)response.StatusCode, headers, "Port 80 answered.", Location: loc);
         }
         catch (Exception)
         {
-            return new HttpResult(null, new Dictionary<string, string>(), "HTTPS did not complete within the time limit.");
+            return new HttpResult(null, new Dictionary<string, string>(), "Port 80 did not answer. That can be correct if the host only speaks HTTPS.");
         }
+    }
+
+    private static Dictionary<string, string> ReadHeaders(HttpResponseMessage response)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var h in response.Headers)
+            headers[h.Key] = string.Join(", ", h.Value);
+        foreach (var h in response.Content.Headers)
+            headers[h.Key] = string.Join(", ", h.Value);
+        return headers;
+    }
+
+    private static async Task<string> ReadCappedBodyAsync(HttpResponseMessage response, int cap, CancellationToken ct)
+    {
+        await using var stream = await response.Content.ReadAsStreamAsync(ct);
+        var buffer = new byte[cap];
+        var read = 0;
+        while (read < cap)
+        {
+            var n = await stream.ReadAsync(buffer.AsMemory(read, cap - read), ct);
+            if (n == 0) break;
+            read += n;
+        }
+        return Encoding.UTF8.GetString(buffer, 0, read);
     }
 
     private sealed record SpfResult(IReadOnlyList<string> Names, string? Record);
@@ -227,6 +363,17 @@ public static class Checker
             if (spf != null) return new SpfResult(names, spf.Length > 240 ? spf[..240] : spf);
         }
         return new SpfResult(names, null);
+    }
+
+    private static async Task<SpfResult> LookupDmarcAsync(string hostname, CancellationToken ct)
+    {
+        var apex = hostname.StartsWith("www.", StringComparison.Ordinal) && hostname.Split('.').Length > 2
+            ? hostname[4..]
+            : hostname;
+        var name = "_dmarc." + apex;
+        var txt = await QueryTxtAsync(name, ct);
+        var rec = txt.FirstOrDefault(r => r.StartsWith("v=DMARC1", StringComparison.OrdinalIgnoreCase));
+        return new SpfResult(new[] { name }, rec is null ? null : rec.Length > 240 ? rec[..240] : rec);
     }
 
     private static Task<IReadOnlyList<string>> QueryTxtAsync(string name, CancellationToken ct) =>
@@ -330,12 +477,12 @@ public static class Checker
             "A named, unexpired certificate does not prove every subdomain or mail server is covered, and it does not prove the operator of the site is who they claim.");
     }
 
-    private static IEnumerable<Finding> HeaderFindings(HttpResult http)
+    private static IEnumerable<Finding> HeaderFindings(int? status, IReadOnlyDictionary<string, string> headers)
     {
-        var csp = http.Headers.TryGetValue("Content-Security-Policy", out var cspVal) ? cspVal : "";
+        var csp = headers.TryGetValue("Content-Security-Policy", out var cspVal) ? cspVal : "";
         foreach (var name in HeaderNames)
         {
-            var present = http.Headers.ContainsKey(name);
+            var present = headers.ContainsKey(name);
             if (name == "X-Frame-Options" && csp.Contains("frame-ancestors", StringComparison.OrdinalIgnoreCase))
             {
                 present = true;
@@ -352,15 +499,151 @@ public static class Checker
             };
             yield return new Finding(
                 name,
-                http.Status is null ? FindingState.Incomplete : present ? FindingState.Present : FindingState.NotFound,
-                http.Status is null
+                status is null ? FindingState.Incomplete : present ? FindingState.Present : FindingState.NotFound,
+                status is null
                     ? "Headers were not read because HTTPS did not complete."
                     : present
                         ? $"{name} is present. {hint}"
-                        : $"{name} was not present on HEAD /. {hint}",
-                "Read response headers from HTTP HEAD / on HTTPS. Names are compared without regard to case. Redirects are not followed, so headers on a later URL are not included.",
+                        : $"{name} was not present on HEAD / or GET /. {hint}",
+                "Read response headers from HTTPS HEAD / and GET /. Names are compared without regard to case. Redirects are not followed.",
                 "A missing header is a fact about this response, not proof of a breach. Extra headers on other paths are not shown.");
         }
+    }
+
+    private static Finding TlsFinding(CertResult cert)
+    {
+        if (string.IsNullOrEmpty(cert.TlsProtocol))
+        {
+            return new Finding(
+                "TLS",
+                FindingState.Incomplete,
+                "No TLS protocol was recorded.",
+                "Read SslStream.SslProtocol after AuthenticateAsClient with TLS 1.2 and 1.3 offered.",
+                "The client offered only TLS 1.2 and 1.3. An old-only server may fail the handshake instead of negotiating TLS 1.0.");
+        }
+        var old = cert.TlsProtocol is "Tls" or "Tls11" or "Ssl2" or "Ssl3";
+        return new Finding(
+            "TLS",
+            old ? FindingState.Attention : FindingState.Present,
+            $"The handshake used {cert.TlsProtocol}.",
+            "Read SslStream.SslProtocol after AuthenticateAsClient. The client offered TLS 1.2 and 1.3 only.",
+            "This is the version used for this one connection, not a scan of every cipher.");
+    }
+
+    private static Finding HttpRedirectFinding(HttpResult http80)
+    {
+        if (http80.Status is null)
+        {
+            return new Finding(
+                "HTTP",
+                FindingState.Present,
+                http80.Note,
+                "Opened the same public address on port 80 and sent HEAD /. No other ports were tried.",
+                "A closed port 80 is common. It does not prove HTTPS is forced from every client.");
+        }
+        var toHttps = http80.Location != null && http80.Location.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        var state = toHttps ? FindingState.Present : FindingState.NotFound;
+        return new Finding(
+            "HTTP",
+            state,
+            toHttps
+                ? $"Port 80 redirected to HTTPS ({http80.Status})."
+                : $"Port 80 answered with status {http80.Status}" + (http80.Location is null ? "." : $" and Location {http80.Location}."),
+            "Opened the same public address on port 80 and sent HEAD /. Redirects were not followed.",
+            "This is not a full HTTP site crawl.");
+    }
+
+    private static Finding CookieFinding(IReadOnlyDictionary<string, string> headers)
+    {
+        if (!headers.TryGetValue("Set-Cookie", out var raw) || string.IsNullOrWhiteSpace(raw))
+        {
+            return new Finding(
+                "Cookie flags",
+                FindingState.Present,
+                "No Set-Cookie header on the homepage response.",
+                "Read Set-Cookie on HTTPS HEAD / and GET /.",
+                "Cookies set on other paths are not shown.");
+        }
+        var parts = raw.Split(',', StringSplitOptions.TrimEntries);
+        var weak = raw.IndexOf("HttpOnly", StringComparison.OrdinalIgnoreCase) < 0
+                   || raw.IndexOf("Secure", StringComparison.OrdinalIgnoreCase) < 0;
+        return new Finding(
+            "Cookie flags",
+            weak ? FindingState.NotFound : FindingState.Present,
+            weak
+                ? "A Set-Cookie header was present without both HttpOnly and Secure on this response."
+                : "Set-Cookie on this response included HttpOnly and Secure.",
+            "Read Set-Cookie on HTTPS HEAD / and GET /. Flags are searched as substrings.",
+            "Comma-separated cookies can be parsed imperfectly. Treat this as a hint and confirm in the browser developer tools.");
+    }
+
+    private static Finding ServerDisclosureFinding(IReadOnlyDictionary<string, string> headers)
+    {
+        headers.TryGetValue("Server", out var server);
+        headers.TryGetValue("X-Powered-By", out var powered);
+        if (string.IsNullOrEmpty(server) && string.IsNullOrEmpty(powered))
+        {
+            return new Finding(
+                "Server disclosure",
+                FindingState.Present,
+                "No Server or X-Powered-By header on this response.",
+                "Read Server and X-Powered-By on HTTPS HEAD / and GET /.",
+                "Other headers can still name a framework.");
+        }
+        var bits = new List<string>();
+        if (!string.IsNullOrEmpty(server)) bits.Add("Server=" + server);
+        if (!string.IsNullOrEmpty(powered)) bits.Add("X-Powered-By=" + powered);
+        return new Finding(
+            "Server disclosure",
+            FindingState.Attention,
+            "This response names the stack: " + string.Join("; ", bits) + ".",
+            "Read Server and X-Powered-By on HTTPS HEAD / and GET /.",
+            "Removing a header is hygiene. It does not hide a vulnerable version by itself.");
+    }
+
+    private static IEnumerable<Finding> CveFindings(IReadOnlyList<StackHint> stack)
+    {
+        var hits = CveCatalog.Match(stack);
+        if (hits.Count == 0)
+        {
+            yield return new Finding(
+                "Known CVEs (advertised versions)",
+                FindingState.Present,
+                stack.Count == 0
+                    ? "The homepage and headers did not advertise a product version this catalogue knows."
+                    : "Advertised versions did not match the small sourced catalogue in this program.",
+                "Compared advertised versions from headers and homepage HTML with a local catalogue (Next.js ImageResponse RCE range, PHP end of life, jQuery 1.x/2.x). No plugin files were downloaded. NVD was not scraped live.",
+                "A clean result is not clearance. The catalogue is short on purpose so we do not invent matches.");
+            yield break;
+        }
+        foreach (var (entry, hint) in hits)
+        {
+            yield return new Finding(
+                entry.Id,
+                FindingState.Attention,
+                $"{entry.Product} {hint.Version} matches {entry.Id}. {entry.Summary}",
+                $"Version {hint.Version} was taken from: {hint.Evidence}. Matched locally against {entry.SourceUrl}.",
+                "A catalogue match is a prompt to upgrade. It is not proof that this host is exploitable, and this program does not send exploit traffic.");
+        }
+    }
+
+    private static Finding DmarcFinding(SpfResult dmarc)
+    {
+        if (dmarc.Record is null)
+        {
+            return new Finding(
+                "DMARC",
+                FindingState.NotFound,
+                $"No v=DMARC1 TXT record was found on {string.Join(" or ", dmarc.Names)}.",
+                "Asked Windows DNS for TXT on _dmarc. plus the apex name.",
+                "Missing DMARC is not proof that mail is forged. Publish SPF first.");
+        }
+        return new Finding(
+            "DMARC",
+            FindingState.Present,
+            "A DMARC record is published on " + string.Join(", ", dmarc.Names) + ".",
+            "Asked Windows DNS for TXT on _dmarc. plus the apex name.",
+            "This program does not parse p=none versus p=reject or rua mailboxes.");
     }
 
     private static Finding SpfFinding(SpfResult spf)

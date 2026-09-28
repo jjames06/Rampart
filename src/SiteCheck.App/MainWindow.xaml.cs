@@ -32,7 +32,9 @@ public partial class MainWindow : Window
         SaveButton.IsEnabled = false;
         StatusText.Text = "Looking up public addresses, then reading TLS and DNS. This stays on this computer.";
         FindingsList.ItemsSource = null;
+        NextList.ItemsSource = null;
         LimitsBox.Visibility = Visibility.Collapsed;
+        NextBox.Visibility = Visibility.Collapsed;
         _report = null;
 
         try
@@ -40,6 +42,11 @@ public partial class MainWindow : Window
             var report = await Checker.RunAsync(HostBox.Text);
             _report = report;
             FindingsList.ItemsSource = report.Findings.Select(ToView).ToList();
+            if (report.NextSteps.Count > 0)
+            {
+                NextList.ItemsSource = report.NextSteps;
+                NextBox.Visibility = Visibility.Visible;
+            }
             LimitsList.ItemsSource = report.Limits;
             LimitsBox.Visibility = Visibility.Visible;
             StatusText.Text = $"Checked {report.Hostname} at {report.CheckedAt:yyyy-MM-dd HH:mm} UTC using {string.Join(", ", report.PublicAddresses)}.";
@@ -91,6 +98,7 @@ public partial class MainWindow : Window
         {
             FindingState.Present => teal,
             FindingState.NotFound => amber,
+            FindingState.Attention => amber,
             _ => muted
         };
         return new FindingView

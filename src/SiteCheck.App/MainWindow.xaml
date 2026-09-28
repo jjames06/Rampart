@@ -11,7 +11,7 @@
             <TextBlock Text="OPERATION LOCKED IN" Foreground="{StaticResource TealBrush}" FontSize="11" FontWeight="SemiBold"/>
             <TextBlock Text="Site Check" FontSize="32" FontWeight="SemiBold" FontFamily="Georgia" Margin="0,6,0,0"/>
             <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="15" LineHeight="22" Margin="0,10,0,0"
-                       Text="A short, read-only look at a public hostname you operate. The program reports HTTPS, certificate days, a few security headers, and whether SPF exists. It does not crawl the site, follow redirects, or contact private networks."/>
+                       Text="A short, read-only look at a public hostname you operate. It reports HTTPS, the certificate, selected headers, SPF and DMARC, what the homepage advertises, and sourced CVE matches for those advertised versions. Next steps appear only for what this run found. It is not a red-team engagement."/>
 
             <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,22,0,0" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
                 <StackPanel>
@@ -30,6 +30,23 @@
                         <Button x:Name="SaveButton" Style="{StaticResource GhostButton}" Content="Save report" Margin="10,0,0,0" Click="Save_Click" IsEnabled="False"/>
                     </StackPanel>
                     <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0" Text="No check has been run yet."/>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="NextBox" Visibility="Collapsed" Background="{StaticResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,20,0,0" BorderBrush="{StaticResource TealBrush}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="What to do next" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Only steps that apply to this hostname and this run." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,8"/>
+                    <ItemsControl x:Name="NextList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,14">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15"/>
+                                    <TextBlock Text="{Binding Body}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" LineHeight="20"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
 
