@@ -1,3 +1,11 @@
+# CODEMAP FILE: .github/workflows/ci.yml
+# Product: Rampart — read-only public-surface hostname checker, public pin 1.9.0
+# Role: Windows CI. Runs SiteCheck.Tests on push and pull request to main.
+# Called by: GitHub Actions.
+# Calls: actions/checkout, actions/setup-dotnet, dotnet test.
+# Invariants: No live network against customer hosts. Do not bump 1.9.0 here.
+# Sisters: Bastion (bastion-hardening). Storefront bastion-web /rampart.
+# Map: docs/CODEMAP.md
 name: CI
 
 on:
