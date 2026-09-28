@@ -43,7 +43,7 @@ It is not a penetration test, not a red-team engagement, and not a guarantee. Pa
 
 Desktop copies (Windows, and the Linux and macOS testing zips) are GNU GPLv3. The full legal text is in [`LICENSE`](LICENSE). When iPhone and Android applications are listed on the App Store and Google Play, those store binaries will carry an additional Apache License 2.0 grant in [`LICENSE.MOBILE`](LICENSE.MOBILE). The source stays available under GPLv3 as well.
 
-Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why those licences were chosen: [`docs/licence.md`](docs/licence.md).
+Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why those licences were chosen: [`docs/licence.md`](docs/licence.md).
 
 There is no warranty. The window footer and **Licence and warranty** state that in the program itself.
 

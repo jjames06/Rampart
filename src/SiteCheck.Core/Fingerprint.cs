@@ -83,9 +83,21 @@ public static class Fingerprint
             hints.Add(new StackHint("IIS", null, $"Header {header}: {Trim(v)}"));
             return;
         }
+        var nginx = Regex.Match(v, @"nginx/([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+        if (nginx.Success)
+        {
+            hints.Add(new StackHint("nginx", nginx.Groups[1].Value, $"Header {header}: {Trim(v)}"));
+            return;
+        }
         if (v.Contains("nginx", StringComparison.OrdinalIgnoreCase))
         {
             hints.Add(new StackHint("nginx", null, $"Header {header}: {Trim(v)}"));
+            return;
+        }
+        var apache = Regex.Match(v, @"Apache/([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+        if (apache.Success)
+        {
+            hints.Add(new StackHint("Apache HTTP Server", apache.Groups[1].Value, $"Header {header}: {Trim(v)}"));
         }
     }
 

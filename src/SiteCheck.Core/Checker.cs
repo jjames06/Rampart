@@ -1078,6 +1078,16 @@ public static class Checker
 
     private static IEnumerable<Finding> CveFindings(IReadOnlyList<StackHint> stack)
     {
+        if (!AdvisoryDb.CatalogueLoaded)
+        {
+            yield return new Finding(
+                "Known CVEs (advertised versions)",
+                FindingState.Incomplete,
+                "The local advisory catalogue could not be read, so advertised versions were not compared.",
+                "The catalogue is embedded in the executable and is not fetched at run time.",
+                "This is a program defect, not a finding about the hostname.");
+            yield break;
+        }
         var hits = CveCatalog.Match(stack);
         if (hits.Count == 0)
         {
@@ -1087,7 +1097,7 @@ public static class Checker
                 stack.Count == 0
                     ? "The homepage and headers did not advertise a product version this catalogue knows."
                     : "Advertised versions did not match the small sourced catalogue in this program.",
-                $"Compared advertised versions from headers and homepage HTML with a local catalogue of {AdvisoryDb.ProductCount} products and {AdvisoryDb.AdvisoryCount} advisories (built {AdvisoryDb.Built}). JavaScript matches use Retire.js ranges on homepage URLs. Next.js matches use GitHub Advisory ranges. PHP end of life is included. Plugin files were not downloaded. NVD was not queried live.",
+                $"Compared advertised versions from headers and homepage HTML with a local catalogue of {AdvisoryDb.ProductCount} products and {AdvisoryDb.AdvisoryCount} advisories (built {AdvisoryDb.Built}). JavaScript matches use Retire.js ranges on homepage URLs. Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core use GitHub Advisory ranges when a version is advertised. PHP end of life is included. Plugin files were not downloaded. NVD was not queried live.",
                 "A clean result is not clearance. The catalogue is short on purpose so we do not invent matches.");
             yield break;
         }

@@ -74,7 +74,7 @@ Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a 
 
 **Certificate key size.** An RSA leaf shorter than 2048 bits is **Needs attention**.
 
-CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
+CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core when a version is advertised, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live. A library with no advertised version is not matched.
 
 A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance.
 

@@ -22,9 +22,24 @@ public static class AdvisoryDb
     private static readonly Lazy<FileDto> File = new(Load);
     private static readonly Lazy<IReadOnlyList<CompiledProduct>> Compiled = new(Compile);
 
-    public static string Built => File.Value.Built ?? "";
-    public static int ProductCount => File.Value.Products.Count;
-    public static int AdvisoryCount => File.Value.Products.Sum(p => p.Vulns?.Count ?? 0);
+    public static bool CatalogueLoaded
+    {
+        get
+        {
+            try
+            {
+                return File.Value.Products.Count >= 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+    }
+
+    public static string Built => CatalogueLoaded ? File.Value.Built ?? "" : "";
+    public static int ProductCount => CatalogueLoaded ? File.Value.Products.Count : 0;
+    public static int AdvisoryCount => CatalogueLoaded ? File.Value.Products.Sum(p => p.Vulns?.Count ?? 0) : 0;
 
     public static IReadOnlyList<StackHint> DetectFromHtml(string html)
     {
@@ -61,6 +76,18 @@ public static class AdvisoryDb
     }
 
     public static IReadOnlyList<(CveCatalog.Entry Entry, StackHint Hint)> Match(IEnumerable<StackHint> stack)
+    {
+        try
+        {
+            return MatchCore(stack);
+        }
+        catch (Exception)
+        {
+            return Array.Empty<(CveCatalog.Entry, StackHint)>();
+        }
+    }
+
+    private static IReadOnlyList<(CveCatalog.Entry Entry, StackHint Hint)> MatchCore(IEnumerable<StackHint> stack)
     {
         var hits = new List<(CveCatalog.Entry, StackHint)>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

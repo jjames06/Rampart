@@ -16,8 +16,15 @@ const outPath = join(root, "data", "advisories.json");
 
 const RETIRE_URL =
   "https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json";
-const GHSA_NEXT =
-  "https://api.github.com/advisories?ecosystem=npm&affects=next&per_page=100";
+const GHSA_NPM = [
+  ["next", "Next.js"],
+  ["react", "React"],
+  ["react-dom", "React"],
+  ["vue", "Vue.js"],
+  ["nuxt", "Nuxt"],
+  ["jquery", "jQuery"],
+  ["bootstrap", "Bootstrap"],
+];
 
 function displayName(key, rec) {
   if (key === "jquery") return "jQuery";
@@ -109,11 +116,13 @@ function parseGhsaRange(range) {
   return constraints;
 }
 
-async function ghsaNext() {
-  const products = [];
+async function ghsaNpm(pkg, display) {
   const vulns = [];
-  let url = GHSA_NEXT;
-  for (let page = 0; page < 5 && url; page++) {
+  let url =
+    "https://api.github.com/advisories?ecosystem=npm&affects=" +
+    encodeURIComponent(pkg) +
+    "&per_page=100";
+  for (let page = 0; page < 4 && url; page++) {
     const { json, res } = await fetchJson(url);
     const items = Array.isArray(json) ? json : [];
     for (const adv of items) {
@@ -122,7 +131,7 @@ async function ghsaNext() {
       if (!id) continue;
       const ranges = [];
       for (const vul of adv.vulnerabilities || []) {
-        if (vul.package?.name !== "next") continue;
+        if (vul.package?.name !== pkg) continue;
         const constraints = parseGhsaRange(vul.vulnerable_version_range);
         if (constraints.length) ranges.push({ constraints });
       }
@@ -139,13 +148,57 @@ async function ghsaNext() {
     const next = link.match(/<([^>]+)>;\s*rel="next"/);
     url = next ? next[1] : null;
   }
-  products.push({
-    name: "Next.js",
-    aliases: ["next", "Next.js"],
+  return {
+    name: display,
+    aliases: [pkg, display],
     extractors: [],
     vulns,
-  });
-  return products;
+  };
+}
+
+async function ghsaWordpress() {
+  const vulns = [];
+  let url = "https://api.github.com/advisories?search=wordpress&type=reviewed&per_page=100";
+  try {
+    for (let page = 0; page < 3 && url; page++) {
+      const { json, res } = await fetchJson(url);
+      const items = Array.isArray(json) ? json : [];
+      for (const adv of items) {
+        if (adv.withdrawn_at) continue;
+        const id = adv.ghsa_id;
+        if (!id) continue;
+        const ranges = [];
+        for (const vul of adv.vulnerabilities || []) {
+          const name = String(vul.package?.name || "").toLowerCase();
+          if (name !== "wordpress" && name !== "wordpress/wordpress") continue;
+          const constraints = parseGhsaRange(vul.vulnerable_version_range);
+          if (constraints.length) ranges.push({ constraints });
+        }
+        if (ranges.length === 0) continue;
+        vulns.push({
+          id,
+          summary: String(adv.summary || id).replace(/\s+/g, " ").trim().slice(0, 280),
+          source: adv.html_url || `https://github.com/advisories/${id}`,
+          severity: adv.severity || null,
+          ranges,
+        });
+      }
+      const link = res.headers.get("link") || "";
+      const next = link.match(/<([^>]+)>;\s*rel="next"/);
+      url = next ? next[1] : null;
+    }
+  } catch (err) {
+    console.error("WordPress GHSA fetch failed:", err.message);
+  }
+  if (vulns.length === 0) return [];
+  return [
+    {
+      name: "WordPress",
+      aliases: ["WordPress", "wordpress"],
+      extractors: [],
+      vulns,
+    },
+  ];
 }
 
 const extras = [
@@ -224,20 +277,27 @@ for (const [key, rec] of Object.entries(jsRepo)) {
   });
 }
 
-let nextProducts = [];
+const ghsaProducts = [];
+for (const [pkg, display] of GHSA_NPM) {
+  try {
+    ghsaProducts.push(await ghsaNpm(pkg, display));
+  } catch (err) {
+    console.error("GHSA fetch failed for", pkg, err.message);
+  }
+}
 try {
-  nextProducts = await ghsaNext();
+  ghsaProducts.push(...(await ghsaWordpress()));
 } catch (err) {
-  console.error("GHSA fetch failed, continuing with Retire.js only:", err.message);
+  console.error("WordPress GHSA failed:", err.message);
 }
 
 const file = {
   built: new Date().toISOString().slice(0, 10),
   sources: [
     "https://github.com/RetireJS/retire.js (Apache-2.0 jsrepository.json)",
-    "https://github.com/advisories (GitHub Advisory Database, npm package next)",
+    "https://github.com/advisories (GitHub Advisory Database: npm next, react, vue, nuxt, jquery, bootstrap; WordPress core when the generator names a version)",
   ],
-  products: mergeProducts([...jsProducts, ...nextProducts, ...extras]),
+  products: mergeProducts([...jsProducts, ...ghsaProducts, ...extras]),
 };
 
 writeFileSync(outPath, JSON.stringify(file));
