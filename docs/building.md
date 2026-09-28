@@ -1,6 +1,6 @@
 # Building Rampart
 
-You need the .NET 8 SDK (64-bit) and 64-bit Windows.
+You need the .NET 8 SDK (64-bit). Windows builds the WPF EXE. The same SDK publishes the Avalonia UI for Linux and macOS. iOS and Android need the .NET MAUI workload (and a Mac for iOS).
 
 Rebuild the local CVE catalogue (needs network once per release):
 
@@ -20,6 +20,16 @@ dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --se
 The executable is self-contained. The person who runs it does not install the .NET runtime. The program requests no administrative elevation (`asInvoker`). Per-monitor DPI awareness is set in the application manifest.
 
 Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this project before. Compression of the single file is on.
+
+## Linux and macOS
+
+```
+dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r linux-x64 --self-contained true -o dist\linux-x64
+dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-x64 --self-contained true -o dist\osx-x64
+dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-arm64 --self-contained true -o dist\osx-arm64
+```
+
+`tools\publish.ps1` also writes those folders. Notarize macOS copies with a Developer ID before you send them to someone else. Store and mobile steps: [stores/SUBMIT.md](stores/SUBMIT.md).
 
 ## Tests
 

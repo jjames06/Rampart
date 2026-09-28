@@ -337,14 +337,61 @@ public static class FixGuides
             "Sign-in form" => new[]
             {
                 L("When to do this: a public login page posts to http://. That sends passwords without TLS."),
+                L("When not to: the form already posts to https:// or to a relative path such as /api/auth/sign-in."),
                 L("Search the sign-in template for action=\"http://\" and change it to https:// or a relative path."),
-                L("In Next.js, check app/account/sign-in and any <form action=. In WordPress, set the site URL to https and re-save permalinks.")
+                L("In Next.js, open the account sign-in route (often app/account/sign-in) and any <form action=. Keep the action relative or https."),
+                L("In WordPress, set the site URL to https and re-save permalinks.", "https://example.com/wp-admin/options-general.php")
             },
             "Sign-in redirect" => new[]
             {
                 L("When to do this: GET on a login path returned Location: http://..."),
+                L("When not to: Location already starts with https:// on the same hostname."),
                 L("Change that redirect to https:// on the same hostname. In Next.js that is often next.config.ts redirects()."),
-                L("In Cloudflare, SSL/TLS, Edge Certificates, Always Use HTTPS should already catch http:// hops.")
+                L("Example redirect in next.config.ts:", "source: '/login'\ndestination: 'https://" + hostname + "/account/sign-in'\npermanent: false"),
+                L("In Cloudflare, SSL/TLS, Edge Certificates, Always Use HTTPS should already catch http:// hops.", "https://dash.cloudflare.com/")
+            },
+            "Sign-in mixed content" => new[]
+            {
+                L("When to do this: the sign-in HTML named an http:// script, stylesheet, or image."),
+                L("When not to: every src and href on that page is https:// or relative."),
+                L("Replace those http:// URLs with https:// or with a path that starts with /."),
+                L("In Next.js, search the account route and the root layout for http://. Keep next/image and public assets on HTTPS.")
+            },
+            "Sign-in framing" => new[]
+            {
+                L("When to do this: a public sign-in page answered 200 without X-Frame-Options and without CSP frame-ancestors."),
+                L("When not to: that route already sends X-Frame-Options: DENY or CSP frame-ancestors 'none' (or a short allowlist you intend)."),
+                L("Add this header on account and sign-in routes:", "X-Frame-Options: DENY"),
+                L("And keep this in Content-Security-Policy:", "frame-ancestors 'none'"),
+                L("In next.config.ts headers(), return those fields for /account/:path* as well as for / . Homepage headers do not automatically cover a different route unless the matcher includes it."),
+                L("Copyable Next.js matcher example:", "source: '/account/:path*'\nheaders: [\n  { key: 'X-Frame-Options', value: 'DENY' },\n  { key: 'Cache-Control', value: 'no-store' }\n]"),
+                L("In WordPress, set the header at the host or CDN for /wp-login.php and /wp-admin/. A security plugin can do this; test wp-admin after you change it.")
+            },
+            "Sign-in cookies" => new[]
+            {
+                L("When to do this: GET on a sign-in path already set a cookie without HttpOnly or Secure."),
+                L("When not to: no Set-Cookie was sent on GET. Many apps only set the session cookie after a successful POST, which Rampart does not send."),
+                L("Every session cookie needs these flags:", "HttpOnly; Secure; SameSite=Lax"),
+                L("In Better Auth (Next.js), keep cookies httpOnly, use Secure in production, and sameSite: \"lax\". On HTTPS, a __Host- prefix is the usual production name."),
+                L("Copyable Better Auth cookie flags:", "advanced: {\n  useSecureCookies: true,\n  cookiePrefix: \"__Host-oli\"\n}"),
+                L("In WordPress, confirm FORCE_SSL_ADMIN is true so auth cookies are Secure.", "define('FORCE_SSL_ADMIN', true);")
+            },
+            "Sign-in cache" => new[]
+            {
+                L("When to do this: a sign-in HTML response sent Cache-Control: public without no-store."),
+                L("When not to: the route already sends no-store, no-cache, or private."),
+                L("Send this on sign-in and account HTML:", "Cache-Control: no-store"),
+                L("In next.config.ts headers() for /account/:path* add Cache-Control: no-store. Dynamic App Router pages should already be uncached; this makes it explicit."),
+                L("In Cloudflare, skip cache for those paths: Cache Rules, then Bypass cache when URI Path starts with /account or /wp-login.php.", "https://dash.cloudflare.com/")
+            },
+            "Admin pages" => new[]
+            {
+                L("When to do this: /wp-admin/ or /admin answered 200 with dashboard markup to a signed-out GET."),
+                L("When not to: the path 404s, 401s, 403s, or 302s to a login page. That is the usual public surface."),
+                L("Confirm in a private browser window that you are signed out, then reload the admin URL."),
+                L("In WordPress, keep wp-login.php as the only public entry. Restrict /wp-admin/ by IP at the host or with Cloudflare WAF if you have a stable office address."),
+                L("Optional Cloudflare WAF custom rule (only if your office IP is stable):", "URI Path starts with /wp-admin and IP Source Address is not your.office.ip then Block"),
+                L("Do not post passwords into Rampart. This program never submits the login form.")
             },
             "change-password" => new[]
             {

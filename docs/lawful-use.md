@@ -8,6 +8,8 @@ Rampart exists to help a person **protect a public website they operate**, or a 
 
 Rampart is a **read-only public-surface assessment**. After you attest permission, it resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail and certificate-authority records. It then lists only the next steps that apply to what that run found.
 
+Every run also GETs a short allowlist of common public account, sign-in, and admin URLs on the same hostname (for example `/account/sign-in` and `/wp-login.php`). Redirects are not followed. Passwords are never sent. That is how Rampart notices a login form that posts to `http://`, a login page that can be framed, or an admin URL that looks like an open dashboard.
+
 The **Authorized public-surface assessment** option adds RFC public files (`/.well-known/security.txt`, `/robots.txt`, `/.well-known/change-password`) on the typed hostname, the MTA-STS policy file on `mta-sts.` plus the apex, and extra DNS (CAA, DKIM selectors, DNSSEC, MTA-STS, BIMI, TLS-RPT). Those files are published for the public to read. The program still does not crawl, follow redirects, or send a request body.
 
 ## What this program is not
@@ -20,7 +22,8 @@ This program does not:
 - guess passwords or brute-force logins
 - scan ports other than 443 and a single HEAD on 80
 - follow redirects or crawl the site
-- request `wp-admin`, `xmlrpc.php`, `version.php`, or plugin zip files
+- post credentials, guess passwords, or brute-force a login form
+- request `xmlrpc.php`, `version.php`, or plugin zip files
 - contact private or home-network addresses
 - upload your report
 

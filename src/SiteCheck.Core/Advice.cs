@@ -188,6 +188,38 @@ public static class Advice
             "A public sign-in path redirected to http://. Change Location to https:// on the same hostname.");
 
         MissingHeader(
+            "Sign-in mixed content",
+            "A public sign-in page named http:// scripts or styles. Serve those files over HTTPS or use relative paths.");
+
+        MissingHeader(
+            "Sign-in framing",
+            "Send X-Frame-Options: DENY or CSP frame-ancestors 'none' on account and sign-in routes so the login form cannot be framed.",
+            "In next.config.ts headers(), add X-Frame-Options: DENY (or rely on CSP frame-ancestors 'none') for /account/:path* and any other sign-in route.",
+            "In WordPress, send X-Frame-Options: DENY on wp-login.php at the host or CDN. Do not rely on the homepage header alone.");
+
+        MissingHeader(
+            "Sign-in cookies",
+            "Any Set-Cookie on a sign-in response needs HttpOnly, Secure, and SameSite=Lax or Strict.",
+            "In Better Auth / Next.js, keep session cookies httpOnly, Secure in production, and sameSite: \"lax\". Prefer the __Host- prefix on HTTPS.",
+            "In WordPress, confirm AUTH_COOKIE and SECURE_AUTH_COOKIE only go out over HTTPS. Set COOKIE_DOMAIN carefully.");
+
+        MissingHeader(
+            "Sign-in cache",
+            "Sign-in HTML should not be stored in a shared cache. Send Cache-Control: no-store (or private, no-cache) on those routes.");
+
+        var admin = findings.FirstOrDefault(x => x.Title == "Admin pages");
+        if (admin is { State: FindingState.Attention })
+        {
+            steps.Add(new NextStep(
+                "Put a login wall in front of the admin URL",
+                wordpress
+                    ? "wp-admin answered like a dashboard to a signed-out GET. Confirm you are signed out, then restrict wp-admin to your IP or put HTTP auth in front of it at the host."
+                    : "A common admin path answered 200 with dashboard markup. Require a login redirect, or restrict that path at the host or CDN.",
+                "Admin pages",
+                wordpress ? "WordPress" : HeaderEnv()));
+        }
+
+        MissingHeader(
             "Form action",
             "Change every form action that starts with http:// to https:// or a relative path so the submission stays on TLS.",
             "Search the App Router and any client forms for action=\"http://\".",

@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -17,28 +16,10 @@ public partial class MainWindow : Window
     private CheckReport? _report;
     private CancellationTokenSource? _runCts;
 
-    private UniformGrid? _findingsGrid;
-
     public MainWindow()
     {
         InitializeComponent();
         HostBox.Focus();
-    }
-
-    private void FindingsGrid_Loaded(object sender, RoutedEventArgs e)
-    {
-        _findingsGrid = sender as UniformGrid;
-        LayoutFindings();
-    }
-
-    private void Window_SizeChanged(object sender, SizeChangedEventArgs e) => LayoutFindings();
-
-    private void LayoutFindings()
-    {
-        if (_findingsGrid is null) return;
-        var w = ActualWidth;
-        _findingsGrid.Columns = w >= 1800 ? 3 : w >= 1100 ? 2 : 1;
-        _findingsGrid.Rows = 0;
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -92,7 +73,7 @@ public partial class MainWindow : Window
 
         SetBusy(true);
         StatusText.Text = "Resolving public Internet addresses.";
-        FindingsList.ItemsSource = null;
+        SectionList.ItemsSource = null;
         NextList.ItemsSource = null;
         StackList.ItemsSource = null;
         LimitsBox.Visibility = Visibility.Collapsed;
@@ -105,7 +86,7 @@ public partial class MainWindow : Window
         {
             var report = await Checker.RunAsync(HostBox.Text, progress, ct, SelectedScope());
             _report = report;
-            FindingsList.ItemsSource = ToViews(report.Findings, report.NextSteps);
+            SectionList.ItemsSource = ToSections(report.Findings, report.NextSteps);
             if (report.NextSteps.Count > 0)
             {
                 NextList.ItemsSource = report.NextSteps;
@@ -330,19 +311,21 @@ public partial class MainWindow : Window
         }
     }
 
-    private static List<FindingView> ToViews(IReadOnlyList<Finding> findings, IReadOnlyList<NextStep> nextSteps)
+    private static List<FindingSectionView> ToSections(IReadOnlyList<Finding> findings, IReadOnlyList<NextStep> nextSteps)
     {
         var byRelated = nextSteps.ToLookup(s => s.Related, StringComparer.OrdinalIgnoreCase);
-        var list = new List<FindingView>();
+        var sections = new List<FindingSectionView>();
         FindingState? last = null;
         foreach (var f in findings.OrderBy(x => ReportText.Rank(x.State)))
         {
-            var view = ToView(f, byRelated[f.Title].FirstOrDefault());
-            view.Section = last == f.State ? "" : ReportText.SectionName(f.State);
-            last = f.State;
-            list.Add(view);
+            if (last != f.State)
+            {
+                sections.Add(new FindingSectionView { Title = ReportText.SectionName(f.State) });
+                last = f.State;
+            }
+            sections[^1].Cards.Add(ToView(f, byRelated[f.Title].FirstOrDefault()));
         }
-        return list;
+        return sections;
     }
 
     private static FindingView ToView(Finding f, NextStep? step)
@@ -402,9 +385,14 @@ public sealed class FixLineView
     public Visibility CopyVisibility { get; set; } = Visibility.Collapsed;
 }
 
+public sealed class FindingSectionView
+{
+    public string Title { get; set; } = "";
+    public List<FindingView> Cards { get; set; } = new();
+}
+
 public sealed class FindingView
 {
-    public string Section { get; set; } = "";
     public string Title { get; set; } = "";
     public string State { get; set; } = "";
     public Brush StateBrush { get; set; } = Brushes.White;

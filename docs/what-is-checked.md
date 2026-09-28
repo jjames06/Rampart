@@ -26,7 +26,9 @@ When Cloudflare is proxied, the homepage HTML is also searched for `email-decode
 
 A TLS connection is opened to the working public address on port 443, using the typed hostname as SNI. The client offers TLS 1.2 and TLS 1.3 only. The leaf certificate is read from that handshake. Trust is evaluated against the Windows certificate store; the connection still records the certificate if trust fails, and the report says so.
 
-HTTP HEAD `/` is sent on that same address with no body and with redirects disabled. HTTP GET `/` is sent the same way. Compressed responses (gzip, deflate, Brotli) are decompressed before HTML is read, so fingerprints are taken from real markup. The body is truncated at 256 kilobytes. No other path is requested.
+HTTP HEAD `/` is sent on that same address with no body and with redirects disabled. HTTP GET `/` is sent the same way. Compressed responses (gzip, deflate, Brotli) are decompressed before HTML is read, so fingerprints are taken from real markup. The body is truncated at 256 kilobytes.
+
+The program then GETs a short **allowlist** of common public account, sign-in, and admin paths on that same address (`/account/sign-in`, `/account/sign-up`, `/account`, `/login`, `/signin`, `/sign-in`, `/signup`, `/register`, `/wp-login.php`, `/user/login`, `/auth/login`, `/wp-admin/`, `/admin`). Redirects are not followed. The body is capped at 64 kilobytes. Passwords are never sent. Those responses are checked for an `http://` form action, an `http://` Location, mixed `http://` resources, missing frame protection, weak Set-Cookie flags when a cookie was already set, and `Cache-Control: public` on login HTML. A custom login URL outside that list is not found. That is not proof the site has no accounts.
 
 Port 80 receives a single HEAD `/` on the same public address, only to see whether HTTP redirects to HTTPS.
 
@@ -62,7 +64,7 @@ Product names and versions are taken only from:
 - jQuery version strings in homepage script URLs
 - WordPress plugin directory names already present in homepage URLs
 
-Plugin files, `readme.html`, and `wp-admin` are not fetched.
+Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded.
 
 CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
 

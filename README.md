@@ -2,15 +2,17 @@
 
 A rampart is the defensive wall of a fortress. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
 
-Rampart is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**.
+Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The Windows, macOS, and Linux desktops, and the iOS and Android apps, share the same checker. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage and common public sign-in paths present, and whether advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
 ## Licence
 
-GNU General Public License version 3, or any later version. The full legal text is in [`LICENSE`](LICENSE). Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why GPLv3 was chosen: [`docs/licence.md`](docs/licence.md).
+**Desktop (Windows, macOS, Linux):** GNU General Public License version 3, or any later version. The full legal text is in [`LICENSE`](LICENSE).
 
-GPLv3 matches Bastion: this is free software you can run, study, and share under the same copyleft. It is not a paid SKU.
+**iOS and Android store binaries:** additional Apache License 2.0 grant in [`LICENSE.MOBILE`](LICENSE.MOBILE), because Apple’s App Store terms cannot sit on a GPLv3-only binary. The source stays public under GPLv3 as well. You may take either grant.
+
+Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why those licences were chosen: [`docs/licence.md`](docs/licence.md).
 
 There is no warranty. The window footer and **Licence and warranty** state that in the program itself.
 
@@ -27,6 +29,8 @@ Check only hostnames you operate or for which you have written permission. Unaut
 - CVE catalogue: [docs/cve-catalogue.md](docs/cve-catalogue.md)
 - Building the executable: [docs/building.md](docs/building.md)
 - Licence: [docs/licence.md](docs/licence.md)
+- Store builds (macOS, Linux, iOS, Android): [docs/stores/SUBMIT.md](docs/stores/SUBMIT.md)
+- App Store / Play privacy labels: [docs/stores/privacy-label.md](docs/stores/privacy-label.md)
 - Security policy: [SECURITY.md](SECURITY.md)
 
 ## Run a release build
@@ -44,8 +48,8 @@ dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --se
 
 ## What this program will not do
 
-It will not crawl every URL, follow redirects, open administrative paths, download plugin files, guess passwords, or send exploit traffic. It will not contact private or home-network addresses. A quiet report is not clearance.
+It will not crawl every URL, follow redirects, post credentials, download plugin zip files, guess passwords, or send exploit traffic. It GETs a short allowlist of common public sign-in and admin URLs. It will not contact private or home-network addresses. A quiet report is not clearance.
 
 ## Version
 
-This tree is Rampart 1.9.0. The User-Agent is `operation-locked-in-rampart/1.9.0`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Rampart 1.10.0. The User-Agent is `operation-locked-in-rampart/1.10.0`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

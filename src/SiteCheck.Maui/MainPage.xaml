@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SiteCheck.Maui.MainPage"
+             Title="Rampart"
+             BackgroundColor="#070B14">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="OPERATION LOCKED IN" TextColor="#5EEAD4" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+            <Label Text="Rampart" FontSize="32" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+            <Label Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. Reports stay on this phone. No exploit traffic."
+                   TextColor="#C5D0DE" LineBreakMode="WordWrap"/>
+
+            <Label Text="Hostname" FontAttributes="Bold"/>
+            <Entry x:Name="HostBox" Placeholder="www.example.com" TextColor="#F8FAFC" BackgroundColor="#0C1220"/>
+
+            <CheckBox x:Name="PermissionBox" Color="#2DD4BF" CheckedChanged="Consent_Changed"/>
+            <Label Text="I operate this hostname, or I have written permission from the person who operates it." LineBreakMode="WordWrap"/>
+
+            <CheckBox x:Name="LawBox" Color="#2DD4BF" CheckedChanged="Consent_Changed"/>
+            <Label Text="I will not use this program against a hostname without that permission. Unauthorized use can be an offence in Canada under Criminal Code section 342.1. This screen is not legal advice."
+                   LineBreakMode="WordWrap"/>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button x:Name="RunButton" Text="Check this hostname" Clicked="Run_Clicked" IsEnabled="False"/>
+                <Button x:Name="SaveButton" Text="Share report" Clicked="Save_Clicked" IsEnabled="False" BackgroundColor="Transparent" TextColor="#5EEAD4" BorderColor="#2DD4BF" BorderWidth="1"/>
+            </HorizontalStackLayout>
+
+            <Label x:Name="StatusText" TextColor="#5EEAD4" LineBreakMode="WordWrap"
+                   Text="Enter a public hostname, tick both permission boxes, then check."/>
+
+            <Label x:Name="SummaryText" IsVisible="False" TextColor="#C5D0DE" LineBreakMode="WordWrap"/>
+
+            <VerticalStackLayout x:Name="FindingsHost" Spacing="10"/>
+
+            <Label Text="Desktop copies are GNU GPLv3. This store binary is additionally licensed under Apache License 2.0 so it can sit on the App Store and Google Play. There is no warranty. Privacy: operationlockedin.com/privacy"
+                   TextColor="#C5D0DE" FontSize="12" LineBreakMode="WordWrap" Margin="0,12,0,0"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

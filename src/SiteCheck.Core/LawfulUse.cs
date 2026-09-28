@@ -41,7 +41,7 @@ public static class LawfulUse
             "Read the homepage HTML for mixed http:// resources, form actions, canonical URLs, target=_blank links, and integrity attributes on https:// scripts",
             "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size",
             "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)",
-            "GET common public sign-in paths on the same address (no passwords, no extra ports, redirects off)"
+            "GET an allowlist of common public account, sign-in, and admin URLs on the same address (no passwords, no extra ports, redirects off)"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {
@@ -59,7 +59,7 @@ public static class LawfulUse
     [
         "Exploit payloads, proof-of-concept attack traffic, or password guessing",
         "Port scanning beyond 443 and a single HEAD on 80",
-        "Following redirects, crawling, or requesting wp-admin, xmlrpc.php, version.php, or plugin zip files",
+        "Following redirects, crawling, posting credentials, or requesting xmlrpc.php, version.php, or plugin zip files",
         "Contacting private, loopback, link-local, CGNAT, or similar blocked addresses",
         "Uploading the report, or sending advertised versions to NVD, GitHub, or Cloudflare"
     ];

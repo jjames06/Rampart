@@ -2,7 +2,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SiteCheck.Desktop.App"
              RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <SolidColorBrush x:Key="NavyBrush">#070B14</SolidColorBrush>
+    <SolidColorBrush x:Key="Navy900Brush">#0C1220</SolidColorBrush>
+    <SolidColorBrush x:Key="CardBrush">#162033</SolidColorBrush>
+    <SolidColorBrush x:Key="TealBrush">#2DD4BF</SolidColorBrush>
+    <SolidColorBrush x:Key="TealSoftBrush">#5EEAD4</SolidColorBrush>
+    <SolidColorBrush x:Key="TextBrush">#F8FAFC</SolidColorBrush>
+    <SolidColorBrush x:Key="MutedBrush">#C5D0DE</SolidColorBrush>
+    <SolidColorBrush x:Key="LineBrush">#243247</SolidColorBrush>
+    <SolidColorBrush x:Key="AmberBrush">#FBBF24</SolidColorBrush>
+  </Application.Resources>
   <Application.Styles>
     <FluentTheme />
+    <Style Selector="Window">
+      <Setter Property="Background" Value="#070B14"/>
+      <Setter Property="Foreground" Value="#F8FAFC"/>
+      <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif"/>
+    </Style>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="#F8FAFC"/>
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="#070B14"/>
+      <Setter Property="Foreground" Value="#F8FAFC"/>
+      <Setter Property="BorderBrush" Value="#243247"/>
+      <Setter Property="Padding" Value="14,12"/>
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#2DD4BF"/>
+      <Setter Property="Foreground" Value="#070B14"/>
+      <Setter Property="Padding" Value="22,12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#5EEAD4"/>
+      <Setter Property="BorderBrush" Value="#2DD4BF"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="18,11"/>
+    </Style>
+    <Style Selector="Expander">
+      <Setter Property="Foreground" Value="#5EEAD4"/>
+    </Style>
   </Application.Styles>
 </Application>

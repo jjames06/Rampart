@@ -4,9 +4,12 @@ Courtice, Ontario, Canada
 Info@operationlockedin.com
 https://www.operationlockedin.com
 
-Rampart is licensed under the GNU General Public License version 3
-or, at your option, any later version. The full licence text is in the
-file LICENSE. There is no warranty.
+Desktop Rampart (Windows, macOS, Linux) is licensed under the GNU
+General Public License version 3 or, at your option, any later version.
+The full licence text is in the file LICENSE. There is no warranty.
+
+iOS and Android store binaries are additionally licensed under the
+Apache License, Version 2.0. See LICENSE.MOBILE and licenses/APACHE-2.0.txt.
 
 This product includes DnsClient.NET
 Copyright (c) MichaCo and contributors

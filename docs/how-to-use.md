@@ -2,13 +2,13 @@
 
 A rampart is the defensive wall of a fortress. Bastion hardens a Windows PC you administer. Rampart inspects a public hostname you operate.
 
-This is the operator handbook for Rampart, a Windows program written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. Read this page before you run the executable against a hostname that is not a machine you already operate.
+This is the operator handbook for Rampart, written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The same checker runs on Windows (WPF), on macOS and Linux (Avalonia), and in the iOS/Android project. Read this page before you run it against a hostname that is not a machine you already operate.
 
 Rampart is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
 
 ## What you need
 
-You need a 64-bit computer running Windows 10 or Windows 11. You need the file `Rampart.exe` from the GitHub release, or a copy you built yourself with `tools\publish.ps1`. You need the public hostname of the site, for example `www.example.com`.
+On Windows you need a 64-bit PC running Windows 10 or Windows 11 and the file `Rampart.exe`. On Linux use the `linux-x64` folder (`chmod +x Rampart`). On macOS use `osx-arm64` for Apple silicon or `osx-x64` for Intel; Gatekeeper will ask you to open it from Finder the first time. You need the public hostname of the site, for example `www.example.com`.
 
 You do not need an Operation Locked In account. You do not need a browser plugin. You do not need a cloud login. You do not need administrative rights. The program runs as a standard user (`asInvoker`). It will not ask Windows for elevation.
 
@@ -36,7 +36,7 @@ If nothing opens, confirm you are on 64-bit Windows and that antivirus did not q
 6. Tick **both** permission boxes. The first box is that you operate the hostname or have written permission from the person who does. The second box is that you will not use the program against a hostname you are not authorized to check, and that Operation Locked In does not authorize that use. Canadian Criminal Code section 342.1 is named on that box. The boxes are not legal advice.
 7. Choose **Check this hostname**, or press Enter. The primary button stays off until both boxes are ticked.
 
-The status line describes the current step: resolving public addresses, opening TLS, then reading HTTPS, the homepage, mail records, and HTTP on port 80. A thin teal bar shows that work is in progress. You cannot start a second check until this one finishes. To stop a check that is taking too long, choose **Stop this check** or press Escape. Stopping cancels further requests; it cannot unsend the packets already on the wire.
+The status line describes the current step: resolving public addresses, opening TLS, then reading HTTPS, the homepage, common public sign-in and admin paths, mail records, and HTTP on port 80. Sign-in checks are GET only. Passwords are never sent. If a login page needs work, open **How to fix this** on that card for copyable lines and dashboard links. A thin teal bar shows that work is in progress. You cannot start a second check until this one finishes. To stop a check that is taking too long, choose **Stop this check** or press Escape. Stopping cancels further requests; it cannot unsend the packets already on the wire.
 
 A check usually finishes in a few seconds. If you are on a VPN, it can take longer, up to about eight seconds per network step. That is expected.
 
@@ -86,7 +86,7 @@ The footer of the window states the copyright and that there is no warranty. **L
 
 ## What the program will never do
 
-It will not crawl every URL. It will not follow redirects. It will not open `wp-admin`, `xmlrpc.php`, or `version.php`. It will not download plugin zip files. It will not guess passwords. It will not send exploit traffic. It will not contact private or home-network addresses. It will not scrape the National Vulnerability Database live. Absence of a catalogue match is not clearance.
+It will not crawl every URL. It will not follow redirects. It will not post credentials or guess passwords. It will not request `xmlrpc.php` or `version.php`. It will not download plugin zip files. A GET of common public sign-in and admin URLs is an allowlist, not a crawl. It will not send exploit traffic. It will not contact private or home-network addresses. It will not scrape the National Vulnerability Database live. Absence of a catalogue match is not clearance.
 
 ## Keeping the CVE catalogue current
 

@@ -19,7 +19,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-rampart/1.9.0";
+    public const string UserAgent = "operation-locked-in-rampart/1.10.0";
 
     private static readonly string[] HeaderNames =
     {
@@ -128,10 +128,11 @@ public static class Checker
         findings.Add(HtmlSurface.Tabnabbing(page.Body));
         findings.Add(HtmlSurface.InsecureForms(page.Body));
         findings.Add(HtmlSurface.HttpCanonical(page.Body));
-        progress?.Report("Reading common public sign-in paths.");
+        progress?.Report("Reading common public sign-in and admin paths.");
         var loginHits = await ProbeLoginPathsAsync(hostname, ip, cancellationToken);
         findings.Add(LoginSurface.Summary(loginHits));
-        findings.AddRange(LoginSurface.FormAndRedirectIssues(loginHits));
+        findings.Add(LoginSurface.AdminSummary(loginHits));
+        findings.AddRange(LoginSurface.Issues(loginHits));
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, DKIM, MTA-STS, BIMI, TLS-RPT, DNSSEC).");
@@ -586,7 +587,7 @@ public static class Checker
         }
     }
 
-    private static async Task<IReadOnlyList<(string Path, int? Status, string? Location, string? Body)>> ProbeLoginPathsAsync(
+    private static async Task<IReadOnlyList<LoginHit>> ProbeLoginPathsAsync(
         string hostname, IPAddress ip, CancellationToken ct)
     {
         var tasks = LoginSurface.Paths.Select(async path =>
@@ -599,10 +600,10 @@ public static class Checker
                 request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
                 request.Headers.Host = hostname;
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-                var (headers, _) = ReadHeaders(response);
+                var (headers, cookies) = ReadHeaders(response);
                 headers.TryGetValue("location", out var loc);
                 var body = await ReadCappedBodyAsync(response, 64 * 1024, ct);
-                return (path, (int?)response.StatusCode, loc, body);
+                return new LoginHit(path, (int)response.StatusCode, loc, body, headers, cookies);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -610,7 +611,7 @@ public static class Checker
             }
             catch (Exception)
             {
-                return (path, (int?)null, (string?)null, (string?)null);
+                return new LoginHit(path, null, null, null, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), Array.Empty<string>());
             }
         });
         return await Task.WhenAll(tasks);

@@ -5,14 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.9.0</Version>
+    <Version>1.10.0</Version>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <Product>Rampart</Product>
     <Authors>Jesse Mosier-Bowers</Authors>
     <Company>Operation Locked In</Company>
     <Copyright>Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In</Copyright>
     <Description>Rampart desktop for Windows, macOS, and Linux (Avalonia).</Description>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>..\SiteCheck.App\Assets\sitecheck.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SiteCheck.Core\SiteCheck.Core.csproj" />
@@ -20,5 +21,8 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <EmbeddedResource Include="..\..\LICENSE" LogicalName="LICENSE" />
+    <EmbeddedResource Include="..\..\docs\lawful-use.md" LogicalName="LAWFUL-USE.md" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 </Project>

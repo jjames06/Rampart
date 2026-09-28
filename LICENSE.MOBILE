@@ -1,0 +1,20 @@
+Additional grant for Rampart mobile store binaries
+Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In
+
+Jesse Mosier-Bowers, as copyright holder of Rampart, additionally licenses
+the iOS and Android store binaries of Rampart under the Apache License,
+Version 2.0 (the file licenses/APACHE-2.0.txt in this repository).
+
+You may use, copy, modify, and distribute those mobile binaries under
+Apache License 2.0. You may also use the same source under the GNU
+General Public License version 3 (the file LICENSE). You choose which
+grant to take.
+
+Desktop builds (Windows, macOS, Linux) remain GNU GPLv3 only.
+
+This additional grant exists because Apple’s App Store terms add
+restrictions that GPLv3 does not allow a licensee to impose. Apache-2.0
+does not forbid those extra terms, so a store binary can be submitted
+in good faith. The source stays public either way.
+
+DnsClient.NET remains Apache License 2.0 in every build.
