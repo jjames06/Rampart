@@ -19,6 +19,8 @@ public class LawfulUseTests
         Assert.Contains("/.env", used, StringComparison.Ordinal);
         Assert.Contains("PeopleSoft", used, StringComparison.Ordinal);
         Assert.Contains("enterprise-portal", used, StringComparison.Ordinal);
+        Assert.Contains("openid-configuration", used, StringComparison.Ordinal);
+        Assert.Contains("package.json", used, StringComparison.Ordinal);
         Assert.DoesNotContain("ToolPane", used, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("security.txt", used, StringComparison.Ordinal);
     }

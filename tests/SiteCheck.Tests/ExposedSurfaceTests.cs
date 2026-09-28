@@ -33,6 +33,19 @@ public class ExposedSurfaceTests
     }
 
     [Fact]
+    public void Short_html_is_not_leaked()
+    {
+        Assert.False(ExposedSurface.LooksLeaked(new FileHit("/.env", 200, "<h1>Not found</h1>")));
+    }
+
+    [Fact]
+    public void Package_json_is_leaked()
+    {
+        var hit = new FileHit("/package.json", 200, "{\"name\":\"app\",\"private\":true}");
+        Assert.True(ExposedSurface.LooksLeaked(hit));
+    }
+
+    [Fact]
     public void Missing_files_are_present()
     {
         var hits = ExposedSurface.Paths.Select(p => new FileHit(p, 404, "not found")).ToArray();

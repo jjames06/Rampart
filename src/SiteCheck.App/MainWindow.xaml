@@ -68,7 +68,7 @@
                                    Text="Type a public hostname. You may paste a full https address; only the hostname is kept. Example: www.example.com"/>
                         <TextBlock Text="Scope" FontWeight="SemiBold" FontSize="13" Margin="0,18,0,10"/>
                         <RadioButton x:Name="StandardScope" GroupName="Scope" IsChecked="True" Checked="Scope_Changed">
-                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge, mail records, sign-in and admin paths, private-file paths, the www and apex pair, and the local CVE catalogue.</TextBlock>
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge, mail records, sign-in and admin paths, private-file paths, the www and apex pair, the local CVE catalogue, and advertised enterprise portals.</TextBlock>
                         </RadioButton>
                         <RadioButton x:Name="AssessmentScope" GroupName="Scope" Checked="Scope_Changed">
                             <TextBlock TextWrapping="Wrap" LineHeight="22">Authorized public-surface assessment. Adds RFC public files, the MTA-STS policy host, extra DNS (CAA, DKIM, DNSSEC, MTA-STS, BIMI, TLS-RPT), and Cloudflare dashboard settings visible on the homepage. Still read-only. Still no exploit traffic.</TextBlock>

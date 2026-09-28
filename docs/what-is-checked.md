@@ -66,7 +66,9 @@ Product names and versions are taken only from:
 
 Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded. If `/wp-admin/` and `/admin` do not answer 2xx or 3xx, that finding is **Present**: those common dashboards are not published. An open dashboard HTML response is **Needs attention**.
 
-**Private files.** GET `/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, and `/server-status`. A 200 with a short non-HTML body is **Needs attention**. An HTML 404 page that still returns 200 is treated as not leaked.
+**Private files.** GET `/.env`, `/.env.local`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, `/server-status`, `/composer.json`, and `/package.json`. A 200 with a **non-HTML** body is **Needs attention**. HTML, including an HTML 404 page that still returns 200, is treated as not leaked.
+
+**OpenID Provider.** GET `/.well-known/openid-configuration` and `/.well-known/oauth-authorization-server`. A card appears **only** when the body is JSON with an `issuer`. An `http://` issuer needs attention. No token is requested. Brochure 404s stay silent.
 
 **WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**. A 404 on the sibling means that name is not published and is **Present**.
 

@@ -657,14 +657,22 @@ public static class FixGuides
             },
             "Private files" => new[]
             {
-                L("When to do this: a path such as /.env or /.git/HEAD answered 200 with a short non-HTML body."),
-                L("When not to: those paths 404 or 403, or they return a normal HTML 404 page."),
+                L("When to do this: a path such as /.env, /.git/HEAD, /composer.json, or /package.json answered 200 with a non-HTML body."),
+                L("When not to: those paths 404 or 403, or they return HTML (including an HTML 404 page that still returns 200)."),
                 L("Remove the file from the public document root. Rotate any secret that was in it."),
                 L(vercel || nextJs
-                    ? "Do not put .env in the public folder. Keep secrets in the host environment."
+                    ? "Do not put .env or package.json in the public folder. Keep secrets in the host environment."
                     : "Keep secrets off the document root. A .env file belongs only on the server, not under the website folder."),
                 L("Confirm /.env in a private window.", "https://" + hostname + "/.env"),
-                L("Confirm /.git/HEAD the same way.", "https://" + hostname + "/.git/HEAD")
+                L("Confirm /package.json the same way.", "https://" + hostname + "/package.json")
+            },
+            "OpenID Provider" => new[]
+            {
+                L("When to do this: /.well-known/openid-configuration or oauth-authorization-server returned JSON with an issuer."),
+                L("When not to: those paths 404. A brochure site should not publish an identity provider. Rampart then shows no card."),
+                L("Confirm the issuer URL is https. An http:// issuer is not a public identity provider people should trust."),
+                L("Take the metadata off the public internet if this host is not meant to be an IdP."),
+                L("OpenID Discovery document:", "https://" + hostname + "/.well-known/openid-configuration")
             },
             "WWW and apex" => new[]
             {

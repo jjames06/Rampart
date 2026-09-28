@@ -220,10 +220,35 @@ const extras = [
       {
         id: "PHP-EOL",
         summary:
-          "PHP 5 and 7.x are past end of life. Public CVE volume on those lines is large. Move to a currently supported PHP 8 release from php.net.",
+          "PHP 5, 7, 8.0, and 8.1 are past end of life. Public CVE volume on those lines is large. Move to a currently supported PHP 8.2 or later release from php.net.",
         source: "https://www.php.net/supported-versions.php",
         severity: "high",
-        ranges: [{ atOrAbove: "5.0.0", below: "8.0.0" }],
+        ranges: [{ atOrAbove: "5.0.0", below: "8.2.0" }],
+      },
+    ],
+  },
+  {
+    name: "WordPress",
+    aliases: ["WordPress", "wordpress"],
+    extractors: [],
+    vulns: [
+      {
+        id: "CVE-2026-87902",
+        summary:
+          "WordPress core page-template resolution could include a chosen local PHP file (GHSA-7hp8-65ch-5whp). CISA lists this as known exploited. Upgrade to the patched branch (7.1.2, 7.0.6, 6.9.9, or the matching older-branch floor). This is a prompt from an advertised generator version, not RCE proof.",
+        source: "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp",
+        severity: "critical",
+        ranges: [
+          ["4.7.0", "4.7.37"], ["4.8.0", "4.8.32"], ["4.9.0", "4.9.33"],
+          ["5.0.0", "5.0.29"], ["5.1.0", "5.1.26"], ["5.2.0", "5.2.28"],
+          ["5.3.0", "5.3.25"], ["5.4.0", "5.4.23"], ["5.5.0", "5.5.22"],
+          ["5.6.0", "5.6.21"], ["5.7.0", "5.7.19"], ["5.8.0", "5.8.17"],
+          ["5.9.0", "5.9.18"], ["6.0.0", "6.0.16"], ["6.1.0", "6.1.14"],
+          ["6.2.0", "6.2.13"], ["6.3.0", "6.3.12"], ["6.4.0", "6.4.12"],
+          ["6.5.0", "6.5.12"], ["6.6.0", "6.6.9"], ["6.7.0", "6.7.9"],
+          ["6.8.0", "6.8.10"], ["6.9.0", "6.9.9"], ["7.0.0", "7.0.6"],
+          ["7.1.0", "7.1.2"],
+        ].map(([atOrAbove, below]) => ({ atOrAbove, below })),
       },
     ],
   },

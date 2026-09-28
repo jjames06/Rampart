@@ -19,26 +19,30 @@ public static class ExposedSurface
     public static readonly string[] Paths =
     {
         "/.env",
+        "/.env.local",
         "/.git/HEAD",
         "/wp-config.php",
         "/phpinfo.php",
-        "/server-status"
+        "/server-status",
+        "/composer.json",
+        "/package.json"
     };
 
     public static Finding Summary(IReadOnlyList<FileHit> hits)
     {
-        var leaked = hits.Where(LooksLeaked).Select(h => h.Path + " HTTP " + h.Status).Take(8).ToArray();
+        var mine = hits.Where(h => Paths.Contains(h.Path, StringComparer.Ordinal)).ToArray();
+        var leaked = mine.Where(LooksLeaked).Select(h => h.Path + " HTTP " + h.Status).Take(8).ToArray();
         if (leaked.Length > 0)
         {
             return new Finding(
                 "Private files",
                 FindingState.Attention,
-                "These paths answered 200 with a short non-HTML body: " + string.Join(", ", leaked) + ".",
+                "These paths answered 200 with a non-HTML body: " + string.Join(", ", leaked) + ".",
                 "GET each allowlisted path on the same public address, redirects disabled, body capped at 8 KB.",
-                "A custom backup name is not found this way. HTML 404 pages that still return 200 are treated as not leaked.");
+                "A custom backup name is not found this way. HTML responses, including HTML 404 pages that still return 200, are treated as not leaked.");
         }
 
-        if (hits.All(h => h.Status is null))
+        if (mine.Length == 0 || mine.All(h => h.Status is null))
         {
             return new Finding(
                 "Private files",
@@ -60,7 +64,7 @@ public static class ExposedSurface
     {
         if (hit.Status != 200 || string.IsNullOrWhiteSpace(hit.Body)) return false;
         var body = hit.Body.TrimStart();
-        if (body.StartsWith("<", StringComparison.Ordinal) && body.Length > 400) return false;
+        if (body.StartsWith("<", StringComparison.Ordinal)) return false;
         return true;
     }
 }

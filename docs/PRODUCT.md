@@ -38,7 +38,11 @@ Compared with commercial scanners it is **narrow and professionally finished in 
 
 ## Final pass (this document's generation)
 
-Code: authorization `MethodsUsed` / `MethodsRefused` now name private files, www/apex, PeopleSoft, enterprise portals, and the exploit paths that are never requested. Saved reports stay honest.
+Unexpected parser or network faults in Core become **Could not complete** or a friendly `CheckException`. They do not take the window down. Phone, Linux/macOS, and Windows share the same Core, the same scopes, and the same consent strings.
+
+Private-file GET now includes `.env.local`, `composer.json`, and `package.json`. HTML 200s are not treated as leaked secrets. OpenID Discovery is reported only when advertised. The local catalogue treats PHP 8.1 as end of life and names WordPress CVE-2026-87902 when a generator version is in range.
+
+Authorization `MethodsUsed` / `MethodsRefused` name those methods, plus the exploit paths that are never requested. Saved reports stay honest.
 
 Docs: this file, `what-is-checked.md`, `lawful-use.md`, `KNOWN-ISSUES.md`.
 

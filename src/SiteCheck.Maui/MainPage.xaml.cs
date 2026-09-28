@@ -19,15 +19,28 @@ namespace SiteCheck.Maui;
 public partial class MainPage : ContentPage
 {
     private CheckReport? _report;
+    private CancellationTokenSource? _runCts;
 
     public MainPage()
     {
         InitializeComponent();
+        PermissionLabel.Text = LawfulUse.OwnerAttestation;
+        LawLabel.Text = LawfulUse.RefusalAttestation;
     }
 
     private void Consent_Changed(object? sender, CheckedChangedEventArgs e)
     {
-        RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked;
+        RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked && _runCts is null;
+    }
+
+    private CheckScope SelectedScope() =>
+        AssessmentScope.IsChecked ? CheckScope.AuthorizedAssessment : CheckScope.Standard;
+
+    private void Cancel_Clicked(object? sender, EventArgs e)
+    {
+        try { _runCts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+        StatusText.Text = "Stopping this check.";
     }
 
     private async void Run_Clicked(object? sender, EventArgs e)
@@ -45,15 +58,20 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        _runCts?.Cancel();
+        _runCts?.Dispose();
+        _runCts = new CancellationTokenSource();
+        var ct = _runCts.Token;
         RunButton.IsEnabled = false;
         SaveButton.IsEnabled = false;
+        CancelButton.IsVisible = true;
         FindingsHost.Children.Clear();
         SummaryText.IsVisible = false;
         StatusText.Text = "Resolving public Internet addresses.";
         var progress = new Progress<string>(msg => MainThread.BeginInvokeOnMainThread(() => StatusText.Text = msg));
         try
         {
-            _report = await Task.Run(() => Checker.RunAsync(host, progress, CancellationToken.None, CheckScope.AuthorizedAssessment));
+            _report = await Checker.RunAsync(host, progress, ct, SelectedScope());
             var attn = _report.Findings.Count(f => f.State == FindingState.Attention);
             var missing = _report.Findings.Count(f => f.State == FindingState.NotFound);
             var incomplete = _report.Findings.Count(f => f.State == FindingState.Incomplete);
@@ -68,6 +86,10 @@ public partial class MainPage : ContentPage
             }
             SaveButton.IsEnabled = true;
         }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "The check was stopped. Nothing further was requested from the hostname.";
+        }
         catch (CheckException ex)
         {
             StatusText.Text = ex.Message;
@@ -78,6 +100,9 @@ public partial class MainPage : ContentPage
         }
         finally
         {
+            CancelButton.IsVisible = false;
+            _runCts?.Dispose();
+            _runCts = null;
             RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked;
         }
     }

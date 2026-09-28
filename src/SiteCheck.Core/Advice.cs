@@ -468,7 +468,11 @@ public static class Advice
 
         MissingHeader(
             "Private files",
-            "A path such as /.env or /.git/HEAD answered 200 with a short body. Remove that file from the public root and rotate any secret in it.");
+            "A path such as /.env, /.git/HEAD, composer.json, or package.json answered 200 with a non-HTML body. Remove that file from the public root and rotate any secret in it.");
+
+        MissingHeader(
+            "OpenID Provider",
+            "This hostname advertised OpenID Connect or OAuth metadata. Confirm the issuer is https and that this identity provider is meant to be public. Rampart does not request tokens.");
 
         MissingHeader(
             "WWW and apex",

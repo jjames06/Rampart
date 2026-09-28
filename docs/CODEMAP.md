@@ -73,6 +73,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Core/Models.cs` | Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record. |
 | `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
 | `src/SiteCheck.Core/EnterpriseSurface.cs` | Table of other internet-facing enterprise portals. Attention cards only when advertised. CISA KEV CVE as patch prompt. |
+| `src/SiteCheck.Core/WellKnownIdpSurface.cs` | GET-only OpenID/OAuth metadata. Attention only when JSON issuer is advertised. |
 | `src/SiteCheck.Core/PrivateIp.cs` | Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges. |
 | `src/SiteCheck.Core/ReportJson.cs` | Machine-readable sibling of ReportText for operators who archive JSON. |
 | `src/SiteCheck.Core/ReportProtect.cs` | Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile. |
