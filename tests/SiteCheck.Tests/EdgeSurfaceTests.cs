@@ -58,4 +58,26 @@ public class EdgeSurfaceTests
         Assert.Contains(filled[0].Lines!, l => l.Copy == "letsencrypt.org");
         Assert.Contains(filled[0].Lines!, l => l.Copy == "pki.goog");
     }
+
+    [Fact]
+    public void Admin_not_found_gets_copyable_how_to_lines()
+    {
+        var findings = new[]
+        {
+            new Finding(
+                "Admin pages",
+                FindingState.NotFound,
+                "Common public admin paths did not answer 2xx or 3xx: /wp-admin/, /admin.",
+                "GET each allowlisted admin path.",
+                "A custom admin URL is not found this way.")
+        };
+        var edge = new EdgeProfile(EdgeKind.CloudflareProxied, "Cloudflare", true, true, true);
+        var steps = Advice.Build("www.operationlockedin.com", findings, new[] { new StackHint("Next.js", "15", "x-powered-by") }, Array.Empty<string>(), 200, "Tls12", 301, "https://www.operationlockedin.com/", edge);
+        var admin = Assert.Single(steps, s => s.Related == "Admin pages");
+        Assert.NotNull(admin.Lines);
+        Assert.Contains(admin.Lines!, l => l.Copy == "https://www.operationlockedin.com/wp-admin/");
+        Assert.Contains(admin.Lines!, l => l.Copy == "https://www.operationlockedin.com/admin");
+        Assert.Contains(admin.Lines!, l => l.Copy != null && l.Copy.Contains("wp-admin"));
+        Assert.Contains("Next.js", admin.WhenNot);
+    }
 }

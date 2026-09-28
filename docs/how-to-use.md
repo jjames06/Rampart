@@ -52,6 +52,7 @@ Each finding card has four parts, in this order:
 2. **Observation**: what the program actually saw.
 3. **How this was gathered**: DNS, TLS handshake, HTTP HEAD or GET, or TXT lookup.
 4. **What this does not mean**: the caveat, so a missing header is not reported as a breach.
+5. **How to fix this**: full sentences for this hostname, with a Copy button on each code or URL line. Open it on every card that is not a clean Present. When to do this / when to skip sits above those lines.
 
 Read the states as follows:
 

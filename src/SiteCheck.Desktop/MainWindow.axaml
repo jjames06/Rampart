@@ -96,7 +96,7 @@
                               <TextBlock Text="{Binding WhenNot}" Foreground="#C5D0DE" TextWrapping="Wrap" Margin="0,8,0,0"/>
                             </StackPanel>
                           </Expander>
-                          <Expander Header="How to fix this" IsVisible="{Binding HasFix}" Margin="0,8,0,0">
+                          <Expander Header="How to fix this" IsVisible="{Binding HasFix}" IsExpanded="True" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                               <TextBlock Text="{Binding FixTitle}" FontFamily="Georgia" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
                               <TextBlock Text="{Binding FixBody}" Foreground="#C5D0DE" TextWrapping="Wrap" Margin="0,8,0,10"/>

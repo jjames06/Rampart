@@ -31,6 +31,112 @@ public static class FixGuides
         }).ToArray();
     }
 
+    /// <summary>
+    /// Every finding that is not a clean Present gets a How to fix this panel:
+    /// full sentences, when-to / when-not, and copyable lines.
+    /// </summary>
+    public static IReadOnlyList<NextStep> Ensure(
+        IReadOnlyList<Finding> findings,
+        IReadOnlyList<NextStep> steps,
+        string hostname,
+        EdgeProfile edge,
+        bool nextJs,
+        bool wordpress,
+        bool vercel,
+        bool cloudflare)
+    {
+        var filled = WithLines(steps, hostname, edge, nextJs, wordpress, vercel, cloudflare).ToList();
+        foreach (var f in findings)
+        {
+            if (f.State == FindingState.Present && f.Title != "Admin pages") continue;
+            var already = filled.Any(s => s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase));
+            if (!already && OptionalUntilAdvised(f.Title)) continue;
+            var existing = filled.FirstOrDefault(s => s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase));
+            IReadOnlyList<FixLine>? lines;
+            if (f.State == FindingState.Incomplete)
+            {
+                lines = Fallback(f, hostname, nextJs, wordpress);
+            }
+            else
+            {
+                lines = existing?.Lines is { Count: > 0 }
+                    ? existing.Lines
+                    : For(f.Title, hostname, edge, nextJs, wordpress, vercel, cloudflare);
+                if (lines is null || lines.Count == 0)
+                    lines = Fallback(f, hostname, nextJs, wordpress);
+            }
+            var note = Note(f.Title);
+            if (existing is null)
+            {
+                filled.Add(new NextStep(
+                    HowToTitle(f),
+                    HowToBody(f),
+                    f.Title,
+                    nextJs ? "Next.js" : wordpress ? "WordPress" : vercel ? "Vercel" : cloudflare ? "Cloudflare" : "This hostname",
+                    lines,
+                    WhenTo: note?.WhenTo,
+                    WhenNot: note?.WhenNot));
+            }
+            else
+            {
+                var i = filled.IndexOf(existing);
+                filled[i] = existing with
+                {
+                    Lines = lines,
+                    WhenTo = existing.WhenTo ?? note?.WhenTo,
+                    WhenNot = existing.WhenNot ?? note?.WhenNot
+                };
+            }
+        }
+        return filled;
+    }
+
+    private static bool OptionalUntilAdvised(string title) => title is
+        "Cross-Origin-Embedder-Policy" or
+        "MTA-STS DNS" or
+        "MTA-STS policy" or
+        "TLS-RPT" or
+        "BIMI" or
+        "change-password";
+
+    private static string HowToTitle(Finding f) => f.State switch
+    {
+        FindingState.Incomplete => "Finish the check for " + f.Title,
+        FindingState.NotFound => "Publish or confirm " + f.Title,
+        _ => "Address " + f.Title
+    };
+
+    private static string HowToBody(Finding f) =>
+        "The card above is the observation from this run. The lines below are the steps for this hostname only. Copy one line at a time. Do not paste passwords into Rampart.";
+
+    private static IReadOnlyList<FixLine> Fallback(Finding f, string hostname, bool nextJs, bool wordpress)
+    {
+        var lines = new List<FixLine>
+        {
+            L("Read the observation on this card first. It is what this run actually saw on " + hostname + "."),
+            L("Confirm in a private browser window:", "https://" + hostname + "/")
+        };
+        if (f.Title.StartsWith("CVE-", StringComparison.OrdinalIgnoreCase))
+        {
+            lines.Add(L("Look up the advisory, then upgrade the advertised product or stop publishing that version in HTML and headers."));
+            lines.Add(L("National Vulnerability Database entry:", "https://nvd.nist.gov/vuln/detail/" + f.Title));
+            lines.Add(L("This program does not send exploit traffic. A catalogue match is a prompt to upgrade, not proof the host is exploitable."));
+            return lines;
+        }
+        if (f.State == FindingState.Incomplete)
+        {
+            lines.Add(L("The network step did not finish. Confirm the hostname is public, that this computer can reach port 443, and that a firewall is not blocking Rampart."));
+            lines.Add(L("Run the check again after the host answers. A timeout is not proof the control is missing."));
+            return lines;
+        }
+        if (nextJs)
+            lines.Add(L("If this is a Next.js app, prefer a change in next.config.ts, middleware, or DNS over a random plugin."));
+        if (wordpress)
+            lines.Add(L("If this is WordPress, prefer the host or CDN over an untrusted security plugin. Test wp-admin after you change headers."));
+        lines.Add(L("When the change is live, run Rampart again on " + hostname + " and confirm this card moves to Present."));
+        return lines;
+    }
+
     public static NextStep? PublicEdgeStep(string hostname, EdgeProfile edge, bool vercel, bool nextJs)
     {
         var apex = Hostname.Apex(hostname);
@@ -93,6 +199,12 @@ public static class FixGuides
         "change-password" => (
             "Do this when people can sign in on this hostname.",
             "Skip on a brochure site with no accounts. A 404 is then correct."),
+        "Admin pages" => (
+            "Do this when /wp-admin/ or /admin showed a dashboard to a signed-out GET, or when you intended WordPress and those paths are missing.",
+            "Skip adding WordPress admin on a Next.js or brochure hostname. A 403 or 404 on /wp-admin/ and /admin is then the healthy public surface."),
+        "Sign-in pages" => (
+            "Do this when people can sign in on this hostname and none of the common login paths answered.",
+            "Skip on a brochure site with no accounts. Missing /login is then correct."),
         _ => null
     };
 
@@ -386,12 +498,127 @@ public static class FixGuides
             },
             "Admin pages" => new[]
             {
-                L("When to do this: /wp-admin/ or /admin answered 200 with dashboard markup to a signed-out GET."),
-                L("When not to: the path 404s, 401s, 403s, or 302s to a login page. That is the usual public surface."),
-                L("Confirm in a private browser window that you are signed out, then reload the admin URL."),
-                L("In WordPress, keep wp-login.php as the only public entry. Restrict /wp-admin/ by IP at the host or with Cloudflare WAF if you have a stable office address."),
-                L("Optional Cloudflare WAF custom rule (only if your office IP is stable):", "URI Path starts with /wp-admin and IP Source Address is not your.office.ip then Block"),
-                L("Do not post passwords into Rampart. This program never submits the login form.")
+                L("When to do this: /wp-admin/ or /admin answered 200 with dashboard markup to a signed-out GET, or you intended this hostname to be WordPress and those paths are missing."),
+                L("When not to: this is a Next.js or brochure site with no WordPress. Then /wp-admin/ and /admin should not exist. A 403 or 404 is the healthy public surface."),
+                L("Confirm /wp-admin/ in a private browser window while signed out.", "https://" + hostname + "/wp-admin/"),
+                L("Confirm /admin the same way.", "https://" + hostname + "/admin"),
+                L("If you see a dashboard while signed out, put a login redirect in front of it, or restrict the path at the host or CDN."),
+                L("If you do not run WordPress, keep probes from reaching an application. In Next.js middleware, return 404 for those paths."),
+                L("Copyable Next.js guard:", "if (path === \"/admin\" || path.startsWith(\"/admin/\") || path.includes(\"/wp-admin\")) {\n  return new NextResponse(null, { status: 404 });\n}"),
+                L("Optional Cloudflare WAF custom rule:", "(http.request.uri.path contains \"/wp-admin\") or (http.request.uri.path eq \"/admin\") then Block"),
+                L("Cloudflare dashboard:", "https://dash.cloudflare.com/"),
+                L("Do not type passwords into Rampart. This program never submits a login form.")
+            },
+            "Sign-in pages" => new[]
+            {
+                L("When to do this: people can sign in on this hostname and none of the common public login paths answered."),
+                L("When not to: this is a brochure site with no accounts. Then missing /login is correct. Accounts on Operation Locked In live under /account/sign-in."),
+                L("If you have accounts, publish one stable sign-in URL and send it HTTPS only.", "https://" + hostname + "/account/sign-in"),
+                L("In Next.js App Router that is usually app/account/sign-in/page.tsx. Do not also expose /login unless you redirect it."),
+                L("Copyable redirect in next.config.ts:", "source: '/login'\ndestination: '/account/sign-in'\npermanent: false"),
+                L("A custom login URL outside the allowlist is not found by this check. That is not proof there are no accounts.")
+            },
+            "HTTPS" => new[]
+            {
+                L("When to do this: this run did not complete HTTPS on a public address."),
+                L("When not to: you already load https://" + hostname + "/ in a browser from this network."),
+                L("Confirm DNS for " + hostname + " points at the intended host, and that port 443 is open."),
+                L("Issue a certificate that names this hostname. Let's Encrypt is the usual free path.", "https://letsencrypt.org/getting-started/"),
+                L("On Vercel, attach the domain in Project Settings, then Domains, and wait until the certificate is Issued.", "https://vercel.com/dashboard"),
+                L("This program does not change firewall rules for you.")
+            },
+            "Certificate" => new[]
+            {
+                L("When to do this: the certificate is missing, does not name this hostname, or is near expiry."),
+                L("When not to: the browser padlock already names " + hostname + " and automatic renewal is confirmed."),
+                L("Issue a certificate that includes this exact hostname, and www if you use it."),
+                L("Let's Encrypt via the host or Caddy/nginx is common. Wait for DNS to match before you request the certificate.", "https://letsencrypt.org/getting-started/"),
+                L("On Vercel, open Domains and confirm the certificate status is Issued.", "https://vercel.com/dashboard")
+            },
+            "Mixed content" => new[]
+            {
+                L("When to do this: the homepage HTML named an http:// script, stylesheet, or image."),
+                L("When not to: every src and href on the homepage is https:// or a relative path."),
+                L("Replace those http:// URLs with https:// or with a path that starts with /."),
+                L("In Next.js, search the App Router and public assets for http://. Keep next/image on HTTPS.")
+            },
+            "Subresource Integrity" => new[]
+            {
+                L("When to do this: a third-party https:// script on the homepage has no integrity attribute."),
+                L("When not to: the scripts are same-origin bundles such as /_next/static. Those often omit integrity on purpose."),
+                L("For a third-party CDN script, add integrity and crossorigin=\"anonymous\" on the script tag."),
+                L("Example:", "<script src=\"https://cdn.example/lib.js\" integrity=\"sha384-...\" crossorigin=\"anonymous\"></script>")
+            },
+            "DKIM" => new[]
+            {
+                L("When to do this: this domain sends mail and no DKIM TXT was found on common selector names."),
+                L("When not to: the name never sends mail."),
+                L("At the mail host, enable DKIM and publish the TXT record they give you (often selector._domainkey." + Hostname.Apex(hostname) + ")."),
+                L("In Cloudflare, add that TXT with the proxy grey (DNS only).", "https://dash.cloudflare.com/"),
+                L("Rampart only probes a short list of selector names. A custom selector can still be valid.")
+            },
+            "robots.txt" => new[]
+            {
+                L("When to do this: you want crawlers to have a public robots.txt on this hostname."),
+                L("When not to: you are happy with the default crawler behaviour. A missing file is hygiene, not a breach."),
+                L("Publish a UTF-8 file at this URL.", "https://" + hostname + "/robots.txt"),
+                L("A minimum file is:", "User-agent: *\nAllow: /"),
+                L(nextJs ? "In Next.js, add public/robots.txt or app/robots.ts, then deploy." : "A static file at /robots.txt is enough.")
+            },
+            "Plugins" => new[]
+            {
+                L("When to do this: the homepage linked WordPress plugin directories."),
+                L("When not to: you are not on WordPress, or those paths are leftover strings in CSS."),
+                L("In wp-admin, open Plugins, delete anything you do not use, and update what remains."),
+                L("A folder name on the homepage is not a CVE match. Rampart does not download plugin files.")
+            },
+            "Server disclosure" => new[]
+            {
+                L("When to do this: Server or X-Powered-By names a versioned stack you do not want public."),
+                L("When not to: Server is only cloudflare. That is expected on an orange-cloud hostname and next.config.ts cannot remove it."),
+                L("Turn off X-Powered-By in the app. In Next.js, poweredByHeader: false in next.config.ts."),
+                L("Copyable next.config.ts:", "poweredByHeader: false"),
+                L("Do not fight Cloudflare for the Server header. Transform Rules refuse Remove on Server.")
+            },
+            "Cross-Origin-Opener-Policy" => new[]
+            {
+                L("When to do this: you want this origin isolated from cross-origin popups."),
+                L("When not to: a page must be opened as a cross-origin popup and share window.opener."),
+                L(headerPlace),
+                L("Send this header:", "Cross-Origin-Opener-Policy: same-origin")
+            },
+            "Cross-Origin-Resource-Policy" => new[]
+            {
+                L("When to do this: other origins should not load this response as a resource unless you intend it."),
+                L("When not to: you intentionally embed this response on another origin."),
+                L(headerPlace),
+                L("Send this header:", "Cross-Origin-Resource-Policy: same-origin")
+            },
+            "Nameservers" => new[]
+            {
+                L("When to do this: NS lookup failed and you need to confirm who answers DNS for the zone."),
+                L("When not to: a resolver omitted NS from the answer section. That is not proof the zone has no nameservers."),
+                L("At the registrar, confirm the nameserver hostnames match the DNS host you intend."),
+                L("If the zone should be on Cloudflare, the nameservers look like ada.ns.cloudflare.com.", "https://dash.cloudflare.com/")
+            },
+            "Known CVEs (advertised versions)" => new[]
+            {
+                L("When to do this: this card listed a catalogue match for an advertised version."),
+                L("When not to: the card says advertised versions did not match. That is not clearance."),
+                L("Upgrade the named product, or stop publishing the version in HTML generators and headers."),
+                L("This program does not send exploit traffic.")
+            },
+            "Homepage" => new[]
+            {
+                L("When to do this: GET / did not complete, so the homepage type was not recorded."),
+                L("When not to: the homepage already answers in a browser."),
+                L("Confirm https://" + hostname + "/ loads, then run Rampart again.", "https://" + hostname + "/")
+            },
+            "Address family" => new[]
+            {
+                L("When to do this: you intended dual-stack and only IPv4 or only IPv6 was published."),
+                L("When not to: IPv4-only is common for a small site and is not a breach."),
+                L("At the DNS host, add AAAA only if the origin actually answers on IPv6.")
             },
             "change-password" => new[]
             {
@@ -406,7 +633,7 @@ public static class FixGuides
                     ? "In Cloudflare: SSL/TLS, then Edge Certificates. Set minimum TLS version to 1.2. Prefer TLS 1.3."
                     : "In the host or CDN SSL settings, allow TLS 1.2 and 1.3 only. Prefer ECDHE with AES-GCM or ChaCha20.")
             },
-            _ => Array.Empty<FixLine>()
+            _ => Array.Empty<FixLine>() // Ensure() fills a fallback when For() has no named guide.
         };
     }
 

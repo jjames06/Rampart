@@ -178,7 +178,7 @@
                                                                 <TextBlock Text="{Binding WhenNot}" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0" FontSize="13" LineHeight="20"/>
                                                             </StackPanel>
                                                         </Expander>
-                                                        <Expander Visibility="{Binding FixVisibility}" Margin="0,12,0,0" IsExpanded="False">
+                                                        <Expander Visibility="{Binding FixVisibility}" Margin="0,12,0,0" IsExpanded="True">
                                                             <Expander.Header>
                                                                 <TextBlock Text="How to fix this" Foreground="{StaticResource TealSoftBrush}" FontSize="13" FontWeight="SemiBold"/>
                                                             </Expander.Header>

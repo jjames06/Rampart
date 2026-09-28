@@ -442,6 +442,6 @@ public static class Advice
             "Cloudflare HTML cache",
             "Bypass Cloudflare cache for HTML document routes. Cache fingerprinted static files only, then purge after a deploy.");
 
-        return FixGuides.WithLines(steps, hostname, edge, next, wordpress, vercel, cloudflare);
+        return FixGuides.Ensure(findings, steps, hostname, edge, next, wordpress, vercel, cloudflare);
     }
 }

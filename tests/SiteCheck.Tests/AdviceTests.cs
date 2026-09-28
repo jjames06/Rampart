@@ -73,9 +73,10 @@ public class AdviceTests
         };
         var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), null, null, null, null);
         Assert.Contains(steps, s => s.Related == "HTTPS");
-        Assert.DoesNotContain(steps, s => s.Related == "Strict-Transport-Security");
-        Assert.DoesNotContain(steps, s => s.Related == "Content-Security-Policy");
         Assert.Contains(steps, s => s.Related == "SPF");
+        var hsts = Assert.Single(steps, s => s.Related == "Strict-Transport-Security");
+        Assert.Contains("did not finish", string.Join(" ", hsts.Lines!.Select(l => l.Text)), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("next.config.ts", string.Join(" ", hsts.Lines!.Select(l => l.Text + l.Copy)), StringComparison.Ordinal);
     }
 
     [Fact]

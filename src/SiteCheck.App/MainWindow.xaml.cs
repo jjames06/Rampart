@@ -341,7 +341,7 @@ public partial class MainWindow : Window
             FindingState.Attention => (amber, (Brush)Application.Current.Resources["RailAttention"]),
             _ => (muted, incomplete)
         };
-        var hasFix = step != null && f.State != FindingState.Present;
+        var hasFix = step?.Lines is { Count: > 0 } && (f.State != FindingState.Present || f.Title == "Admin pages");
         var hasWhen = step != null && (!string.IsNullOrWhiteSpace(step.WhenTo) || !string.IsNullOrWhiteSpace(step.WhenNot));
         var lines = new List<FixLineView>();
         if (hasFix && step!.Lines != null)

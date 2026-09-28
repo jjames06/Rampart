@@ -72,7 +72,7 @@ public partial class MainPage : ContentPage
         stack.Children.Add(new Label { Text = f.Title, FontAttributes = FontAttributes.Bold, FontSize = 18 });
         stack.Children.Add(new Label { Text = ReportText.StateLabel(f.State), TextColor = Color.FromArgb("#2DD4BF"), FontSize = 12 });
         stack.Children.Add(new Label { Text = f.Observation, TextColor = Color.FromArgb("#C5D0DE"), LineBreakMode = LineBreakMode.WordWrap });
-        if (step != null && f.State != FindingState.Present)
+        if (step?.Lines is { Count: > 0 } && (f.State != FindingState.Present || f.Title == "Admin pages"))
         {
             stack.Children.Add(new Label { Text = "How to fix this", TextColor = Color.FromArgb("#5EEAD4"), FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 8, 0, 0) });
             stack.Children.Add(new Label { Text = step.Title, FontAttributes = FontAttributes.Bold, LineBreakMode = LineBreakMode.WordWrap });
