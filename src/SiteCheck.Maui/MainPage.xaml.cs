@@ -127,6 +127,7 @@ public partial class MainPage : ContentPage
     {
         if (_report is null) return;
         var text = ReportText.Format(_report);
+        // Share is the user's choice. The app sandbox is the at-rest boundary on phone; we do not pack the binary.
         await Share.Default.RequestAsync(new ShareTextRequest
         {
             Title = "Rampart report",

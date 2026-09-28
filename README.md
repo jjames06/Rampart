@@ -37,6 +37,7 @@ It is not a penetration test, not a red-team engagement, and not a guarantee. Pa
 | [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md) | SmartScreen, wiki, testing zips, stores |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Issues and pull requests |
 | [SECURITY.md](SECURITY.md) | What the program may contact, how to report a defect |
+| [docs/encryption.md](docs/encryption.md) | Licence versus TLS versus optional Windows report protection |
 
 ## Licence
 

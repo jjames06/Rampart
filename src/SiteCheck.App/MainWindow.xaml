@@ -78,7 +78,13 @@
                             <Button x:Name="CancelButton" Style="{StaticResource GhostButton}" Content="Stop this check" Margin="12,0,0,0" Click="Cancel_Click" Visibility="Collapsed"/>
                             <Button x:Name="CopyButton" Style="{StaticResource GhostButton}" Content="Copy report" Margin="12,0,0,0" Click="Copy_Click" IsEnabled="False"/>
                             <Button x:Name="SaveButton" Style="{StaticResource GhostButton}" Content="Save report" Margin="12,0,0,0" Click="Save_Click" IsEnabled="False"/>
+                            <Button x:Name="OpenButton" Style="{StaticResource GhostButton}" Content="Open report" Margin="12,0,0,0" Click="Open_Click"/>
                         </WrapPanel>
+                        <CheckBox x:Name="ProtectFileBox" Margin="0,12,0,0">
+                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextBrush}" FontSize="13" LineHeight="20">
+                                Protect a saved file for this Windows user only. Other accounts on this PC cannot read it. There is no recovery password.
+                            </TextBlock>
+                        </CheckBox>
                         <ProgressBar x:Name="BusyBar" Height="3" Margin="0,18,0,0" IsIndeterminate="True" Visibility="Collapsed"
                                      Foreground="{StaticResource TealBrush}" Background="#070B14" BorderThickness="0"/>
                         <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,0" LineHeight="22" FontSize="14"

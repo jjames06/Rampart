@@ -149,10 +149,14 @@ public partial class MainWindow : Window
         if (file is null) return;
         var json = file.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
         var body = json ? ReportJson.Format(_report) : ReportText.Format(_report);
+        var protect = ProtectFileBox?.IsChecked == true && ReportProtect.WindowsUserProtectAvailable;
+        if (protect) body = ReportProtect.ProtectForCurrentWindowsUser(body);
         await using var stream = await file.OpenWriteAsync();
         await using var writer = new StreamWriter(stream);
         await writer.WriteAsync(body);
-        StatusText.Text = "Report saved on this computer. Rampart does not upload it.";
+        StatusText.Text = protect
+            ? "Report saved and protected for this Windows user only. Rampart does not upload it."
+            : "Report saved on this computer. Rampart does not upload it.";
     }
 
     private void Lawful_Click(object? sender, RoutedEventArgs e) =>

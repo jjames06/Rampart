@@ -48,6 +48,8 @@
               <Button Name="CopyButton" Classes="ghost" Content="Copy report" Click="Copy_Click" IsEnabled="False"/>
               <Button Name="SaveButton" Classes="ghost" Content="Save report" Click="Save_Click" IsEnabled="False"/>
             </StackPanel>
+            <CheckBox Name="ProtectFileBox" Margin="0,10,0,0"
+                      Content="Protect a saved file for this Windows user only. Other accounts cannot read it. Linux and macOS testing copies save ordinary text."/>
             <TextBlock Name="StatusText" Foreground="#C5D0DE" TextWrapping="Wrap" Margin="0,8,0,0"
                        Text="No check has been run yet. Enter a public hostname, tick both permission boxes, then choose Check this hostname."/>
           </StackPanel>

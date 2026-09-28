@@ -40,6 +40,10 @@ The licence does not grant permission to use a computer system without authoriza
 
 There is no warranty. Sections 15 and 16 of GPLv3 apply to GPLv3 copies. Apache-2.0 sections 7, 8, and 9 apply to Apache-2.0 copies. The program is offered as-is. A quiet report is not a guarantee that a hostname is safe.
 
+## Encryption
+
+Licensing and encryption are separate. GPLv3 requires the desktop source to stay available, so the Windows, Linux, and macOS binaries are not obfuscated. TLS protects the check in transit. Windows may optionally protect a saved report for the current Windows user. Details: [encryption.md](encryption.md).
+
 ## Notices in the program
 
 The window footer states the copyright, that the desktop program is free software under GPLv3, and that there is no warranty. **Licence and warranty** shows the full GPLv3 text shipped inside the desktop executable. Mobile store listings point at `LICENSE.MOBILE` and the public privacy page.

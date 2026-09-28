@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -191,14 +192,46 @@ public partial class MainWindow : Window
         {
             var json = string.Equals(Path.GetExtension(dialog.FileName), ".json", StringComparison.OrdinalIgnoreCase);
             var body = json ? ReportJson.Format(_report) : ReportText.Format(_report);
+            var protect = ProtectFileBox?.IsChecked == true && ReportProtect.WindowsUserProtectAvailable;
+            if (protect) body = ReportProtect.ProtectForCurrentWindowsUser(body);
             File.WriteAllText(dialog.FileName, body, Encoding.UTF8);
-            StatusText.Text = json
-                ? "JSON report saved on this computer. Rampart does not upload it. Keep it on a disk you already protect if it names versions you have not yet updated."
-                : "Report saved on this computer. Rampart does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
+            StatusText.Text = protect
+                ? "Report saved and protected for this Windows user only. Rampart does not upload it. Other accounts on this PC cannot read the file."
+                : json
+                    ? "JSON report saved on this computer. Rampart does not upload it. Keep it on a disk you already protect if it names versions you have not yet updated."
+                    : "Report saved on this computer. Rampart does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
         }
         catch (Exception)
         {
             StatusText.Text = "The report could not be saved at that location. Choose another folder, or copy the report instead.";
+        }
+    }
+
+    private void Open_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Text or JSON (*.txt;*.json)|*.txt;*.json|All files (*.*)|*.*"
+        };
+        if (dialog.ShowDialog() != true) return;
+        try
+        {
+            var raw = File.ReadAllText(dialog.FileName, Encoding.UTF8);
+            var text = ReportProtect.LooksProtected(raw)
+                ? ReportProtect.UnprotectForCurrentWindowsUser(raw)
+                : raw;
+            ShowTextWindow("Saved report  ·  Rampart", text);
+            StatusText.Text = ReportProtect.LooksProtected(raw)
+                ? "Opened a file protected for this Windows user."
+                : "Opened a saved report. It is not a live check.";
+        }
+        catch (CryptographicException)
+        {
+            StatusText.Text = "This Windows user cannot open that protected file. Save it again while signed in as the account that created it.";
+        }
+        catch (Exception)
+        {
+            StatusText.Text = "That file could not be opened. Confirm it is a Rampart report from this computer.";
         }
     }
 

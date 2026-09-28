@@ -5,6 +5,7 @@
 - [What is checked](What-is-checked)
 - [Lawful use](Lawful-use)
 - [Licence](Licence)
+- [Encryption](https://github.com/jjames06/oli-site-check/blob/main/docs/encryption.md)
 - [Known issues](https://github.com/jjames06/oli-site-check/blob/main/docs/KNOWN-ISSUES.md)
 
 **Downloads**
