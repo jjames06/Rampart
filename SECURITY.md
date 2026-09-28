@@ -32,7 +32,7 @@ Unauthorized use of a computer system can be an offence in Canada (Criminal Code
 
 ## Reporting a problem in this program
 
-Open a private GitHub issue on `jjames06/oli-site-check` or email Info@operationlockedin.com. Describe the hostname class (not a live exploit) and what you expected. Do not attach exploit proof-of-concept traffic.
+Open a private GitHub issue on `jjames06/Rampart` or email Info@operationlockedin.com. Describe the hostname class (not a live exploit) and what you expected. Do not attach exploit proof-of-concept traffic.
 
 ## Keeping the CVE catalogue current
 

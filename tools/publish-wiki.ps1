@@ -15,16 +15,16 @@ if (-not (Test-Path (Join-Path $root "docs\wiki\Home.md"))) {
     throw "docs/wiki/Home.md not found."
 }
 
-$wikiDir = Join-Path $env:TEMP "oli-site-check.wiki-publish"
+$wikiDir = Join-Path $env:TEMP "Rampart.wiki-publish"
 if (Test-Path $wikiDir) { Remove-Item $wikiDir -Recurse -Force }
 
-$remote = "https://github.com/jjames06/oli-site-check.wiki.git"
+$remote = "https://github.com/jjames06/Rampart.wiki.git"
 try {
     git clone $remote $wikiDir
 } catch {
     throw @"
 Could not clone the wiki remote.
-Open https://github.com/jjames06/oli-site-check/wiki and click Create the first page
+Open https://github.com/jjames06/Rampart/wiki and click Create the first page
 (title: Home, any short body), Save once. Then re-run this script.
 "@
 }
@@ -51,7 +51,7 @@ try {
     if (git status --porcelain) {
         git commit -m "Sync Rampart 1.9.0 handbook from docs/wiki"
         git push
-        Write-Host "Wiki published: https://github.com/jjames06/oli-site-check/wiki"
+        Write-Host "Wiki published: https://github.com/jjames06/Rampart/wiki"
     } else {
         Write-Host "Wiki already up to date."
     }

@@ -20,7 +20,7 @@ GPLv3 is the right copyleft for Bastion and for desktop Rampart. Apple’s App S
 
 Rampart does not create an account and does not phone home. A check talks only to the hostname you typed (public DNS + HTTPS). Reports stay on the device. Public policy: https://www.operationlockedin.com/privacy
 
-The product-specific statement is [docs/privacy.md](../privacy.md). GitHub copy: https://github.com/jjames06/oli-site-check/blob/main/docs/privacy.md
+The product-specific statement is [docs/privacy.md](../privacy.md). GitHub copy: https://github.com/jjames06/Rampart/blob/main/docs/privacy.md
 
 App Store privacy nutrition / Play Data safety: **no data collected**. No advertising ID. Network: the operator-typed hostname only.
 

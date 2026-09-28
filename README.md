@@ -9,11 +9,12 @@ Version **1.9.0**
 
 <p align="center">
   <a href="https://www.operationlockedin.com/rampart"><strong>Official site</strong></a> ·
-  <a href="https://www.operationlockedin.com/rampart/download"><strong>Download</strong></a> ·
+  <a href="https://www.operationlockedin.com/rampart/get"><strong>Download</strong></a> ·
+  <a href="https://www.operationlockedin.com/rampart/checks"><strong>What is checked</strong></a> ·
   <a href="docs/how-to-use.md"><strong>How to use</strong></a> ·
-  <a href="docs/wiki/Home.md"><strong>Handbook</strong></a> ·
-  <a href="https://github.com/jjames06/oli-site-check/releases/latest"><strong>Latest release</strong></a> ·
-  <a href="https://github.com/jjames06/oli-site-check/issues"><strong>Issues</strong></a> ·
+  <a href="https://github.com/jjames06/Rampart/wiki"><strong>Handbook</strong></a> ·
+  <a href="https://github.com/jjames06/Rampart/releases/latest"><strong>Latest release</strong></a> ·
+  <a href="https://github.com/jjames06/Rampart/issues"><strong>Issues</strong></a> ·
   <a href="SECURITY.md"><strong>Security</strong></a>
 </p>
 
