@@ -18,9 +18,16 @@ public static class FixGuides
     {
         return steps.Select(s =>
         {
-            if (s.Lines is { Count: > 0 }) return s;
-            var lines = For(s.Related, hostname, edge, nextJs, wordpress, vercel, cloudflare);
-            return lines.Count == 0 ? s : s with { Lines = lines };
+            var lines = s.Lines is { Count: > 0 } ? s.Lines : For(s.Related, hostname, edge, nextJs, wordpress, vercel, cloudflare);
+            var note = Note(s.Related);
+            if ((lines is null || lines.Count == 0) && note is null) return s;
+            return s with
+            {
+                Lines = lines is { Count: > 0 } ? lines : s.Lines,
+                Optional = s.Optional || note != null,
+                WhenTo = s.WhenTo ?? note?.WhenTo,
+                WhenNot = s.WhenNot ?? note?.WhenNot
+            };
         }).ToArray();
     }
 
@@ -68,6 +75,26 @@ public static class FixGuides
                 L("If you prefer not to use Cloudflare, Bunny, Fastly, or Amazon CloudFront can sit in front of the same origin. Keep one public edge, not two competing proxies.")
             });
     }
+
+    private static (string WhenTo, string WhenNot)? Note(string related) => related switch
+    {
+        "Cross-Origin-Embedder-Policy" => (
+            "Do this when this origin uses SharedArrayBuffer or other APIs that need a cross-origin isolated context.",
+            "Skip on a typical brochure site. Rampart cannot see whether your JavaScript uses those APIs. require-corp will break third-party scripts that omit CORP."),
+        "BIMI" => (
+            "Do this when DMARC is already quarantine or reject and you want a brand logo in supporting inboxes.",
+            "Skip if you have no square SVG logo, if DMARC is still p=none, or if you will not buy a Verified Mark Certificate for Gmail."),
+        "MTA-STS DNS" or "MTA-STS policy" => (
+            "Do this when this domain receives mail (MX is published) and you want senders to use TLS for SMTP.",
+            "Skip if the name does not receive mail."),
+        "TLS-RPT" => (
+            "Do this with MTA-STS so providers can mail you SMTP TLS failure reports.",
+            "Skip if you do not receive mail or do not want extra report messages."),
+        "change-password" => (
+            "Do this when people can sign in on this hostname.",
+            "Skip on a brochure site with no accounts. A 404 is then correct."),
+        _ => null
+    };
 
     private static IReadOnlyList<FixLine> For(
         string related,
@@ -143,9 +170,11 @@ public static class FixGuides
             "Content-Security-Policy" => nextJs
                 ? new[]
                 {
-                    L("Keep using the shared CSP builder in the Next.js app. Do not add 'unsafe-eval' in production."),
-                    L("If script-src still includes unsafe-inline, that is expected on Next.js App Router until a per-request nonce is wired in middleware. Do not drop unsafe-inline until that nonce exists."),
-                    L("If Cloudflare Email Address Obfuscation or Web Analytics is injecting scripts, turn those features off instead of widening CSP.")
+                    L("Do not add 'unsafe-eval' in production."),
+                    L("Production script-src should use a per-request nonce from middleware (createCspNonce, x-nonce, NextResponse.next request headers) instead of 'unsafe-inline'."),
+                    L("Do not also send CSP from next.config.ts. A static header cannot carry a nonce, and two policies AND-combine."),
+                    L("In Cloudflare Managed Transforms, leave Add security headers Off. That feature can fight this CSP."),
+                    L("If Email Address Obfuscation or Web Analytics injects scripts, turn those Cloudflare features off instead of widening CSP.")
                 }
                 : new[]
                 {
@@ -257,6 +286,60 @@ public static class FixGuides
             {
                 L(headerPlace),
                 L("Disable camera, microphone, geolocation, and payment unless a page truly needs them.", "camera=(), microphone=(), geolocation=(), payment=()")
+            },
+            "Cross-Origin-Embedder-Policy" => nextJs
+                ? new[]
+                {
+                    L("When to do this: you need SharedArrayBuffer or a cross-origin isolated page. Operation Locked In uses credentialless so third-party Insights can still load."),
+                    L("When not to: a brochure site with no such APIs. require-corp will break embeds that do not send Cross-Origin-Resource-Policy."),
+                    L("In next.config.ts headers(), add:", "Cross-Origin-Embedder-Policy: credentialless"),
+                    L("Keep Cross-Origin-Opener-Policy: same-origin. Deploy, then open the homepage and confirm scripts still load."),
+                    L("Rampart cannot see your JavaScript. If the homepage goes blank, remove the header and re-deploy.")
+                }
+                : new[]
+                {
+                    L("When to do this: you need SharedArrayBuffer or similar isolation."),
+                    L("When not to: ordinary brochure or WordPress sites with ads, fonts, or embeds from other hosts."),
+                    L("Send this header on HTTPS responses:", "Cross-Origin-Embedder-Policy: credentialless")
+                },
+            "MTA-STS DNS" => new[]
+            {
+                L("When to do this: this domain receives mail (MX is published) and you want senders to use TLS on SMTP."),
+                L("When not to: the name does not receive mail, or you only send (SPF/DKIM) and never inbox."),
+                L("Open Cloudflare, zone for " + apex + ", DNS, then Records, then Add record.", "https://dash.cloudflare.com/"),
+                L("Type TXT. Name _mta-sts. Proxy DNS only (grey cloud). TTL Auto. Content:", "v=STSv1; id=20260928"),
+                L("Save. You also need the policy file on https://mta-sts." + apex + "/.well-known/mta-sts.txt (see MTA-STS policy).")
+            },
+            "MTA-STS policy" => new[]
+            {
+                L("When to do this: MX is published and _mta-sts TXT already exists."),
+                L("When not to: no inbound mail, or you are not ready to serve HTTPS on the mta-sts subdomain."),
+                L("In the Next.js app add public/.well-known/mta-sts.txt with:", "version: STSv1\nmode: testing\nmx: your-mx-host\nmax_age: 86400"),
+                L("Replace your-mx-host with the MX target Rampart listed (for Outlook that is often NAME-com.mail.protection.outlook.com)."),
+                L("In Vercel: Settings, then Domains, then add:", "mta-sts." + apex),
+                L("In Cloudflare: DNS, Records, Add record. Type CNAME. Name mta-sts. Target cname.vercel-dns.com. Proxy orange or grey. TTL Auto."),
+                L("Wait until https://mta-sts." + apex + "/.well-known/mta-sts.txt loads. Start with mode testing. After a week with no mail loss, change testing to enforce and raise the id= on the TXT record.")
+            },
+            "TLS-RPT" => new[]
+            {
+                L("When to do this: you turned on MTA-STS and want a mailbox for SMTP TLS failure reports."),
+                L("When not to: no inbound mail, or you do not want extra report mail at Info@."),
+                L("Cloudflare: DNS, Records, Add record. Type TXT. Name _smtp._tls. Proxy DNS only. Content:", "v=TLSRPTv1; rua=mailto:Info@" + apex)
+            },
+            "BIMI" => new[]
+            {
+                L("When to do this: DMARC is already p=quarantine or p=reject, you have a square SVG logo, and you want that logo in supporting inboxes (Yahoo, some others). Gmail usually also wants a paid Verified Mark Certificate."),
+                L("When not to: DMARC is p=none, you have no SVG logo, or you do not care about inbox logos. Rampart cannot see whether a VMC exists."),
+                L("Put an SVG Tiny 1.2 square logo on HTTPS with no scripts. Example path:", "https://" + hostname + "/brand/bimi.svg"),
+                L("Cloudflare: DNS, Records, Add record. Type TXT. Name default._bimi. Proxy DNS only. Content:", "v=BIMI1; l=https://" + hostname + "/brand/bimi.svg"),
+                L("Do not orange-cloud this TXT. A VMC (a=https://...) is optional and usually several hundred dollars per year.")
+            },
+            "change-password" => new[]
+            {
+                L("When to do this: people can sign in on this hostname. Password managers use /.well-known/change-password to jump to the change-password screen."),
+                L("When not to: a brochure site with no accounts. A 404 is then correct."),
+                L("In next.config.ts redirects(), add a temporary (permanent: false) redirect:", "/.well-known/change-password -> /account/profile"),
+                L("The destination must be the page where a signed-in person changes their password. Deploy, then open:", "https://" + hostname + "/.well-known/change-password")
             },
             "TLS" => new[]
             {

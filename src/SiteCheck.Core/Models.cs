@@ -34,7 +34,10 @@ public sealed record NextStep(
     string Body,
     string Related,
     string Environment = "This hostname",
-    IReadOnlyList<FixLine>? Lines = null);
+    IReadOnlyList<FixLine>? Lines = null,
+    bool Optional = false,
+    string? WhenTo = null,
+    string? WhenNot = null);
 
 public enum EdgeKind
 {

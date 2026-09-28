@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -15,10 +16,27 @@ public partial class MainWindow : Window
     private CheckReport? _report;
     private CancellationTokenSource? _runCts;
 
+    private WrapPanel? _findingsWrap;
+
     public MainWindow()
     {
         InitializeComponent();
         HostBox.Focus();
+    }
+
+    private void FindingsWrap_Loaded(object sender, RoutedEventArgs e)
+    {
+        _findingsWrap = sender as WrapPanel;
+        LayoutFindings();
+    }
+
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e) => LayoutFindings();
+
+    private void LayoutFindings()
+    {
+        if (_findingsWrap is null) return;
+        var inner = Math.Max(440, ActualWidth - 72);
+        _findingsWrap.ItemWidth = inner >= 1180 ? Math.Floor((inner - 16) / 2) : inner;
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -338,7 +356,8 @@ public partial class MainWindow : Window
             FindingState.Attention => (amber, (Brush)Application.Current.Resources["RailAttention"]),
             _ => (muted, incomplete)
         };
-        var hasFix = step != null && f.State != FindingState.Present && f.State != FindingState.Incomplete;
+        var hasFix = step != null && f.State != FindingState.Present;
+        var hasWhen = step != null && (!string.IsNullOrWhiteSpace(step.WhenTo) || !string.IsNullOrWhiteSpace(step.WhenNot));
         var lines = new List<FixLineView>();
         if (hasFix && step!.Lines != null)
         {
@@ -366,7 +385,10 @@ public partial class MainWindow : Window
             FixVisibility = hasFix ? Visibility.Visible : Visibility.Collapsed,
             FixTitle = step?.Title ?? "",
             FixBody = step?.Body ?? "",
-            FixLines = lines
+            FixLines = lines,
+            WhenTo = step?.WhenTo ?? "",
+            WhenNot = step?.WhenNot ?? "",
+            WhenVisibility = hasWhen ? Visibility.Visible : Visibility.Collapsed
         };
     }
 }
@@ -393,4 +415,7 @@ public sealed class FindingView
     public string FixTitle { get; set; } = "";
     public string FixBody { get; set; } = "";
     public List<FixLineView> FixLines { get; set; } = new();
+    public string WhenTo { get; set; } = "";
+    public string WhenNot { get; set; } = "";
+    public Visibility WhenVisibility { get; set; } = Visibility.Collapsed;
 }

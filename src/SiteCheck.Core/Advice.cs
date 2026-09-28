@@ -153,9 +153,12 @@ public static class Advice
         {
             steps.Add(new NextStep(
                 "Add Cross-Origin-Embedder-Policy only if you need isolation",
-                "COOP is already present. COEP (require-corp or credentialless) is the second header for a cross-origin isolated context. Brochure sites usually skip this. Add it only if you need SharedArrayBuffer or a similar isolated feature, and test every third-party embed afterward.",
+                "COOP is already present. COEP (credentialless or require-corp) is the second header for a cross-origin isolated context.",
                 "Cross-Origin-Embedder-Policy",
-                HeaderEnv()));
+                HeaderEnv(),
+                Optional: true,
+                WhenTo: "Do this when this origin uses SharedArrayBuffer, high-resolution timers, or other APIs that require a cross-origin isolated context. Operation Locked In brochure sites use credentialless so Vercel Insights and fonts keep loading.",
+                WhenNot: "Skip require-corp on a marketing site with third-party scripts or embeds. Skip entirely if you do not need those APIs. Rampart cannot see whether your JavaScript uses SharedArrayBuffer."));
         }
 
         MissingHeader(
@@ -246,6 +249,10 @@ public static class Advice
                 "TLS-RPT",
                 "Add a TXT record on _smtp._tls. plus the apex, for example v=TLSRPTv1; rua=mailto:your-mailbox, so providers can report failed SMTP TLS.",
                 "In Cloudflare: DNS, then Records, then TXT on _smtp._tls. Example: v=TLSRPTv1; rua=mailto:you@your-domain. This is not an HTTP header.");
+
+            MissingDns(
+                "BIMI",
+                "BIMI is a brand logo in supporting inboxes. It needs DMARC at quarantine or reject, an SVG Tiny logo on HTTPS, and a TXT record on default._bimi. plus the apex. A Verified Mark Certificate is optional and costly.");
         }
 
         MissingHeader(

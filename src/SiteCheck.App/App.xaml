@@ -23,6 +23,8 @@
         <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource Muted}"/>
         <SolidColorBrush x:Key="LineBrush" Color="{StaticResource Line}"/>
         <SolidColorBrush x:Key="AmberBrush" Color="{StaticResource Amber}"/>
+        <DropShadowEffect x:Key="CardShadow" Color="#000000" BlurRadius="28" ShadowDepth="8" Direction="270" Opacity="0.55"/>
+        <DropShadowEffect x:Key="SoftGlow" Color="#2DD4BF" BlurRadius="18" ShadowDepth="0" Opacity="0.28"/>
         <SolidColorBrush x:Key="RailPresent" Color="#2DD4BF"/>
         <SolidColorBrush x:Key="RailAttention" Color="#FBBF24"/>
         <SolidColorBrush x:Key="RailIncomplete" Color="#9AABC0"/>
