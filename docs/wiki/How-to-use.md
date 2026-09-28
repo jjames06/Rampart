@@ -2,7 +2,7 @@
 
 A rampart is the defensive wall of a fortress. Bastion hardens a Windows PC you administer. Rampart inspects a public hostname you operate.
 
-This is the operator handbook for Rampart. Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario, publishes the recommended copy as `Rampart.exe` for 64-bit Windows. Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are being submitted to the App Store and Google Play soon. They are not listed there yet. Read this page before you run it against a hostname that is not a machine you already operate.
+This is the operator handbook for Rampart. Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario, publishes the recommended copy as `Rampart.exe` for 64-bit Windows. Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play. Read this page before you run it against a hostname that is not a machine you already operate.
 
 Rampart is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
 
