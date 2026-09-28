@@ -19,9 +19,24 @@ public class HostnameTests
     [InlineData("http://192.168.1.1")]
     [InlineData("example.com:443")]
     [InlineData("not a host")]
+    [InlineData("")]
     public void Parse_rejects_private_and_invalid(string raw)
     {
         Assert.Null(Hostname.Parse(raw));
+    }
+
+    [Fact]
+    public void Parse_converts_international_names_to_punycode()
+    {
+        var parsed = Hostname.Parse("https://münchen.de/path");
+        Assert.Equal("xn--mnchen-3ya.de", parsed);
+    }
+
+    [Fact]
+    public void Parse_strips_userinfo_and_never_keeps_a_password()
+    {
+        Assert.Equal("example.com", Hostname.Parse("https://user@example.com/login"));
+        Assert.Equal("example.com", Hostname.Parse("https://user:pass@example.com/login"));
     }
 
     [Fact]
@@ -29,6 +44,15 @@ public class HostnameTests
     {
         Assert.Equal(new[] { "www.example.com", "example.com" }, Hostname.SpfLookupNames("www.example.com"));
         Assert.Equal(new[] { "example.com" }, Hostname.SpfLookupNames("example.com"));
+    }
+
+    [Fact]
+    public void Safe_dns_names_allow_dmarc_and_reject_injection()
+    {
+        Assert.True(Hostname.IsSafeDnsName("example.com"));
+        Assert.True(Hostname.IsSafeDnsName("_dmarc.example.com"));
+        Assert.False(Hostname.IsSafeDnsName("example.com; calc.exe"));
+        Assert.False(Hostname.IsSafeDnsName("-type=TXT evil.com"));
     }
 
     [Fact]

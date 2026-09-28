@@ -25,6 +25,8 @@ public static class Advice
         {
             var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
             if (f is null || f.State == FindingState.Present) return;
+            // Incomplete header reads mean HTTPS did not finish. Do not invent a header fix list on top of that.
+            if (f.State == FindingState.Incomplete && title != "HTTPS") return;
             var body = generic;
             if (next && nextJs != null) body = nextJs;
             else if (wordpress && wp != null) body = wp;
@@ -103,6 +105,13 @@ public static class Advice
             steps.Add(new NextStep(
                 "Publish DMARC after SPF is in place",
                 "Add a TXT record on _dmarc. followed by the apex, for example v=DMARC1; p=none; rua=mailto:your-mailbox, then move to quarantine once reports look right. Do not start with p=reject until you have read a week of reports.",
+                "DMARC"));
+        }
+        else if (dmarc is { State: FindingState.Attention })
+        {
+            steps.Add(new NextStep(
+                "Move DMARC off monitor-only when reports look right",
+                "This hostname publishes DMARC with p=none. After a week of rua reports with no unexpected sources, raise the policy to quarantine, then reject. Do not jump to p=reject on the first day.",
                 "DMARC"));
         }
 

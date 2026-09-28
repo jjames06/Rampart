@@ -14,8 +14,10 @@ namespace SiteCheck.Core;
 /// </summary>
 public static class Checker
 {
-    public const int TimeoutMs = 4500;
-    public const string UserAgent = "operation-locked-in-site-check/1.0";
+    public const int TimeoutMs = 8000;
+    public const int MaxTlsAttempts = 3;
+    public const int MaxBodyBytes = 256 * 1024;
+    public const string UserAgent = "operation-locked-in-site-check/1.2";
 
     private static readonly string[] HeaderNames =
     {
@@ -27,27 +29,49 @@ public static class Checker
         "Permissions-Policy"
     };
 
-    public static async Task<CheckReport> RunAsync(string rawHost, CancellationToken cancellationToken = default)
+    public static async Task<CheckReport> RunAsync(
+        string rawHost,
+        IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         var hostname = Hostname.Parse(rawHost)
             ?? throw new CheckException("Use a public hostname such as example.com. Do not enter an IP address, localhost, or a home network name.");
 
+        progress?.Report("Resolving public Internet addresses.");
         var publicIps = await ResolvePublicAsync(hostname, cancellationToken);
         if (publicIps.Count == 0)
         {
             throw new CheckException("That hostname has no public Internet address, or it only points at a private address. This program does not contact private networks.");
         }
 
-        var ip = publicIps[0];
-        var certTask = ReadCertificateAsync(hostname, ip, cancellationToken);
+        var orderedIps = publicIps
+            .OrderBy(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 0 : 1)
+            .ToArray();
+
+        progress?.Report("Opening TLS on a public address.");
+        IPAddress? workingIp = null;
+        CertResult cert = new(null, Array.Empty<string>(), null, false, null, "The TLS handshake did not complete.");
+        foreach (var candidate in orderedIps.Take(MaxTlsAttempts))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var attempt = await ReadCertificateAsync(hostname, candidate, cancellationToken);
+            if (attempt.NotAfter != null || attempt.TlsProtocol != null)
+            {
+                workingIp = candidate;
+                cert = attempt;
+                break;
+            }
+        }
+        var ip = workingIp ?? orderedIps[0];
+
+        progress?.Report("Reading HTTPS headers, the homepage, mail records, and HTTP on port 80.");
         var httpTask = ProbeHttpsAsync(hostname, ip, cancellationToken);
         var pageTask = ReadHomepageAsync(hostname, ip, cancellationToken);
         var spfTask = LookupSpfAsync(hostname, cancellationToken);
         var dmarcTask = LookupDmarcAsync(hostname, cancellationToken);
         var http80Task = ProbeHttpPort80Async(hostname, ip, cancellationToken);
-        await Task.WhenAll(certTask, httpTask, pageTask, spfTask, dmarcTask, http80Task);
+        await Task.WhenAll(httpTask, pageTask, spfTask, dmarcTask, http80Task);
 
-        var cert = await certTask;
         var http = await httpTask;
         var page = await pageTask;
         var spf = await spfTask;
@@ -66,7 +90,8 @@ public static class Checker
             HttpRedirectFinding(http80),
         };
         findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
-        findings.Add(CookieFinding(headers));
+        var cookies = (http.Cookies ?? Array.Empty<string>()).Concat(page.Cookies ?? Array.Empty<string>()).ToArray();
+        findings.Add(HeaderFacts.CookieFinding(cookies));
         findings.Add(ServerDisclosureFinding(headers));
         findings.Add(SpfFinding(spf));
         findings.Add(DmarcFinding(dmarc));
@@ -165,13 +190,20 @@ public static class Checker
             var names = ReadDnsNames(cert);
             var issuer = cert.GetNameInfo(X509NameType.SimpleName, true);
             if (string.IsNullOrWhiteSpace(issuer)) issuer = cert.Issuer;
+            var notAfter = cert.NotAfter.Kind == DateTimeKind.Unspecified
+                ? new DateTimeOffset(DateTime.SpecifyKind(cert.NotAfter, DateTimeKind.Local))
+                : new DateTimeOffset(cert.NotAfter);
             return new CertResult(
-                new DateTimeOffset(DateTime.SpecifyKind(cert.NotAfter, DateTimeKind.Local)).ToUniversalTime(),
+                notAfter.ToUniversalTime(),
                 names,
                 issuer,
                 trustErrors == SslPolicyErrors.None,
                 ssl.SslProtocol.ToString(),
                 null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex) when (ex is SocketException or AuthenticationException or IOException or OperationCanceledException)
         {
@@ -202,7 +234,8 @@ public static class Checker
         IReadOnlyDictionary<string, string> Headers,
         string Note,
         string? Body = null,
-        string? Location = null);
+        string? Location = null,
+        IReadOnlyList<string>? Cookies = null);
 
     private static Dictionary<string, string> MergeHeaders(
         IReadOnlyDictionary<string, string> a,
@@ -220,6 +253,7 @@ public static class Checker
         new()
         {
             AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.All,
             ConnectTimeout = TimeSpan.FromMilliseconds(TimeoutMs),
             SslOptions =
             {
@@ -253,13 +287,17 @@ public static class Checker
             request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
             request.Headers.Host = hostname;
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-            var headers = ReadHeaders(response);
+            var (headers, cookies) = ReadHeaders(response);
             var status = (int)response.StatusCode;
             var note = status is >= 300 and < 400
                 ? $"HTTPS answered with a redirect ({status}). This program does not follow redirects."
-                : "The hostname answered on HTTPS at the first public address.";
+                : "The hostname answered on HTTPS at a public address.";
             headers.TryGetValue("location", out var loc);
-            return new HttpResult(status, headers, note, Location: loc);
+            return new HttpResult(status, headers, note, Location: loc, Cookies: cookies);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -278,9 +316,13 @@ public static class Checker
             request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
             request.Headers.Host = hostname;
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-            var headers = ReadHeaders(response);
-            var body = await ReadCappedBodyAsync(response, 256 * 1024, ct);
-            return new HttpResult((int)response.StatusCode, headers, "Read the homepage body.", body);
+            var (headers, cookies) = ReadHeaders(response);
+            var body = await ReadCappedBodyAsync(response, MaxBodyBytes, ct);
+            return new HttpResult((int)response.StatusCode, headers, "Read the homepage body.", body, Cookies: cookies);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -295,6 +337,7 @@ public static class Checker
             using var handler = new SocketsHttpHandler
             {
                 AllowAutoRedirect = false,
+                AutomaticDecompression = DecompressionMethods.All,
                 ConnectTimeout = TimeSpan.FromMilliseconds(TimeoutMs),
                 ConnectCallback = async (_, token) =>
                 {
@@ -316,9 +359,13 @@ public static class Checker
             request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
             request.Headers.Host = hostname;
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-            var headers = ReadHeaders(response);
+            var (headers, _) = ReadHeaders(response);
             headers.TryGetValue("location", out var loc);
             return new HttpResult((int)response.StatusCode, headers, "Port 80 answered.", Location: loc);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -326,14 +373,22 @@ public static class Checker
         }
     }
 
-    private static Dictionary<string, string> ReadHeaders(HttpResponseMessage response)
+    private static (Dictionary<string, string> Headers, string[] Cookies) ReadHeaders(HttpResponseMessage response)
     {
         var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var cookies = new List<string>();
         foreach (var h in response.Headers)
+        {
+            if (h.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+            {
+                cookies.AddRange(h.Value);
+                continue;
+            }
             headers[h.Key] = string.Join(", ", h.Value);
+        }
         foreach (var h in response.Content.Headers)
             headers[h.Key] = string.Join(", ", h.Value);
-        return headers;
+        return (headers, cookies.ToArray());
     }
 
     private static async Task<string> ReadCappedBodyAsync(HttpResponseMessage response, int cap, CancellationToken ct)
@@ -377,66 +432,7 @@ public static class Checker
     }
 
     private static Task<IReadOnlyList<string>> QueryTxtAsync(string name, CancellationToken ct) =>
-        Task.Run(() =>
-        {
-            try
-            {
-                return QueryTxtWindows(name);
-            }
-            catch
-            {
-                return (IReadOnlyList<string>)Array.Empty<string>();
-            }
-        }, ct);
-
-    /// <summary>
-    /// TXT via nslookup on Windows so we do not take a third-party DNS package.
-    /// Parsed only for lines that look like TXT data. Empty on failure.
-    /// </summary>
-    private static IReadOnlyList<string> QueryTxtWindows(string name)
-    {
-        var psi = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = "nslookup",
-            Arguments = $"-type=TXT {name}",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        using var proc = System.Diagnostics.Process.Start(psi);
-        if (proc is null) return Array.Empty<string>();
-        var output = proc.StandardOutput.ReadToEnd();
-        proc.WaitForExit(TimeoutMs);
-        var records = new List<string>();
-        foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var trimmed = line.Trim();
-            if (!trimmed.Contains("text =", StringComparison.OrdinalIgnoreCase) && !trimmed.Contains("\"v=spf1", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-            var quoted = ExtractQuoted(trimmed);
-            if (!string.IsNullOrWhiteSpace(quoted)) records.Add(quoted);
-        }
-        return records;
-    }
-
-    private static string ExtractQuoted(string line)
-    {
-        var sb = new StringBuilder();
-        var inQuote = false;
-        foreach (var ch in line)
-        {
-            if (ch == '"')
-            {
-                inQuote = !inQuote;
-                continue;
-            }
-            if (inQuote) sb.Append(ch);
-        }
-        return sb.ToString().Trim();
-    }
+        DnsTxt.QueryAsync(name, ct);
 
     private static Finding HttpsFinding(HttpResult http)
     {
@@ -445,7 +441,7 @@ public static class Checker
             "HTTPS",
             ok ? FindingState.Present : FindingState.Incomplete,
             ok ? http.Note + (http.Status is null ? "" : $" HTTP status {http.Status}.") : http.Note,
-            "Opened a TLS connection to the first public address on port 443, then sent HTTP HEAD / with no request body and no redirect following.",
+            "Opened a TLS connection to a public address on port 443 (IPv4 first, then at most two further addresses if needed), then sent HTTP HEAD / with no request body and no redirect following.",
             "A response on HTTPS does not mean the site is well configured or that other ports and paths are safe.");
     }
 
@@ -457,8 +453,8 @@ public static class Checker
                 "Certificate",
                 FindingState.Incomplete,
                 cert.Error ?? "No certificate could be read.",
-                "Completed a TLS handshake to the first public address using this hostname as SNI, then read the leaf certificate.",
-                "A failed handshake can be a timeout, a firewall, or a name mismatch. This program does not retry other addresses.");
+                "Completed a TLS handshake to a public address using this hostname as SNI, then read the leaf certificate. IPv4 is tried before IPv6. Up to three public addresses are tried.",
+                "A failed handshake can be a timeout, a firewall, or a name mismatch.");
         }
 
         var days = (int)Math.Floor((cert.NotAfter.Value - DateTimeOffset.UtcNow).TotalDays);
@@ -487,6 +483,9 @@ public static class Checker
             {
                 present = true;
             }
+            var hstsDisabled = name == "Strict-Transport-Security"
+                && present
+                && HeaderFacts.HstsDisablesHttps(headers[name]);
             var hint = name switch
             {
                 "Strict-Transport-Security" => "Tells browsers to keep using HTTPS.",
@@ -497,15 +496,25 @@ public static class Checker
                 "Permissions-Policy" => "Turns off camera, microphone, and similar features.",
                 _ => name
             };
-            yield return new Finding(
-                name,
-                status is null ? FindingState.Incomplete : present ? FindingState.Present : FindingState.NotFound,
-                status is null
-                    ? "Headers were not read because HTTPS did not complete."
+            var state = status is null
+                ? FindingState.Incomplete
+                : hstsDisabled
+                    ? FindingState.Attention
+                    : present
+                        ? FindingState.Present
+                        : FindingState.NotFound;
+            var observation = status is null
+                ? "Headers were not read because HTTPS did not complete."
+                : hstsDisabled
+                    ? $"{name} is present with max-age at or below zero, which tells browsers to forget HTTPS. {hint}"
                     : present
                         ? $"{name} is present. {hint}"
-                        : $"{name} was not present on HEAD / or GET /. {hint}",
-                "Read response headers from HTTPS HEAD / and GET /. Names are compared without regard to case. Redirects are not followed.",
+                        : $"{name} was not present on HEAD / or GET /. {hint}";
+            yield return new Finding(
+                name,
+                state,
+                observation,
+                "Read response headers from HTTPS HEAD / and GET /. Names are compared without regard to case. Redirects are not followed. Compressed bodies are decompressed before HTML is read.",
                 "A missing header is a fact about this response, not proof of a breach. Extra headers on other paths are not shown.");
         }
     }
@@ -551,30 +560,6 @@ public static class Checker
                 : $"Port 80 answered with status {http80.Status}" + (http80.Location is null ? "." : $" and Location {http80.Location}."),
             "Opened the same public address on port 80 and sent HEAD /. Redirects were not followed.",
             "This is not a full HTTP site crawl.");
-    }
-
-    private static Finding CookieFinding(IReadOnlyDictionary<string, string> headers)
-    {
-        if (!headers.TryGetValue("Set-Cookie", out var raw) || string.IsNullOrWhiteSpace(raw))
-        {
-            return new Finding(
-                "Cookie flags",
-                FindingState.Present,
-                "No Set-Cookie header on the homepage response.",
-                "Read Set-Cookie on HTTPS HEAD / and GET /.",
-                "Cookies set on other paths are not shown.");
-        }
-        var parts = raw.Split(',', StringSplitOptions.TrimEntries);
-        var weak = raw.IndexOf("HttpOnly", StringComparison.OrdinalIgnoreCase) < 0
-                   || raw.IndexOf("Secure", StringComparison.OrdinalIgnoreCase) < 0;
-        return new Finding(
-            "Cookie flags",
-            weak ? FindingState.NotFound : FindingState.Present,
-            weak
-                ? "A Set-Cookie header was present without both HttpOnly and Secure on this response."
-                : "Set-Cookie on this response included HttpOnly and Secure.",
-            "Read Set-Cookie on HTTPS HEAD / and GET /. Flags are searched as substrings.",
-            "Comma-separated cookies can be parsed imperfectly. Treat this as a hint and confirm in the browser developer tools.");
     }
 
     private static Finding ServerDisclosureFinding(IReadOnlyDictionary<string, string> headers)
@@ -635,15 +620,18 @@ public static class Checker
                 "DMARC",
                 FindingState.NotFound,
                 $"No v=DMARC1 TXT record was found on {string.Join(" or ", dmarc.Names)}.",
-                "Asked Windows DNS for TXT on _dmarc. plus the apex name.",
+                "Requested TXT through the system DNS resolver (DnsClient) on _dmarc. plus the apex name. Only a parsed hostname is queried.",
                 "Missing DMARC is not proof that mail is forged. Publish SPF first.");
         }
+        var monitor = HeaderFacts.DmarcIsMonitorOnly(dmarc.Record);
         return new Finding(
             "DMARC",
-            FindingState.Present,
-            "A DMARC record is published on " + string.Join(", ", dmarc.Names) + ".",
-            "Asked Windows DNS for TXT on _dmarc. plus the apex name.",
-            "This program does not parse p=none versus p=reject or rua mailboxes.");
+            monitor ? FindingState.Attention : FindingState.Present,
+            monitor
+                ? "A DMARC record is published with p=none (monitor only) on " + string.Join(", ", dmarc.Names) + "."
+                : "A DMARC record is published on " + string.Join(", ", dmarc.Names) + ".",
+            "Requested TXT through the system DNS resolver (DnsClient) on _dmarc. plus the apex name. Only a parsed hostname is queried.",
+            "This program does not evaluate rua mailboxes or forensic reporting.");
     }
 
     private static Finding SpfFinding(SpfResult spf)
@@ -654,14 +642,14 @@ public static class Checker
                 "SPF",
                 FindingState.NotFound,
                 $"No v=spf1 TXT record was found on {string.Join(" or ", spf.Names)}.",
-                "Asked Windows DNS for TXT records on the hostname and, when the name starts with www, on the parent name. Only records that begin with v=spf1 are counted.",
-                "The absence of SPF is not proof that mail is forged. DKIM and DMARC are not checked.");
+                "Requested TXT through the system DNS resolver (DnsClient) on the hostname and, when the name starts with www, on the parent name. Only records that begin with v=spf1 are counted. Only parsed hostnames are queried.",
+                "The absence of SPF is not proof that mail is forged. DKIM is not checked here.");
         }
         return new Finding(
             "SPF",
             FindingState.Present,
             $"An SPF record is published on one of: {string.Join(", ", spf.Names)}.",
-            "Asked Windows DNS for TXT records on the hostname and, when the name starts with www, on the parent name. Only records that begin with v=spf1 are counted.",
-            "Publishing SPF does not prove mail will pass, and this program does not evaluate include: chains or DMARC.");
+            "Requested TXT through the system DNS resolver (DnsClient) on the hostname and, when the name starts with www, on the parent name. Only records that begin with v=spf1 are counted. Only parsed hostnames are queried.",
+            "Publishing SPF does not prove mail will pass, and this program does not evaluate include: chains.");
     }
 }

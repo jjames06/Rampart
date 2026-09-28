@@ -1,5 +1,9 @@
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
 using SiteCheck.Core;
@@ -9,14 +13,27 @@ namespace SiteCheck.App;
 public partial class MainWindow : Window
 {
     private CheckReport? _report;
+    private CancellationTokenSource? _runCts;
 
     public MainWindow()
     {
         InitializeComponent();
-        HostBox.GotFocus += (_, _) =>
+        HostBox.Focus();
+    }
+
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && _runCts != null)
         {
-            if (HostBox.Text == "www.example.com") HostBox.Clear();
-        };
+            e.Handled = true;
+            Cancel_Click(sender, e);
+            return;
+        }
+        if (e.Key == Key.Enter && RunButton.IsEnabled)
+        {
+            e.Handled = true;
+            Run_Click(sender, e);
+        }
     }
 
     private async void Run_Click(object sender, RoutedEventArgs e)
@@ -27,19 +44,32 @@ public partial class MainWindow : Window
             return;
         }
 
-        RunButton.IsEnabled = false;
-        CopyButton.IsEnabled = false;
-        SaveButton.IsEnabled = false;
-        StatusText.Text = "Looking up public addresses, then reading TLS and DNS. This stays on this computer.";
+        if (string.IsNullOrWhiteSpace(HostBox.Text))
+        {
+            StatusText.Text = "Enter a public hostname such as www.example.com.";
+            HostBox.Focus();
+            return;
+        }
+
+        _runCts?.Cancel();
+        _runCts?.Dispose();
+        _runCts = new CancellationTokenSource();
+        var ct = _runCts.Token;
+
+        SetBusy(true);
+        StatusText.Text = "Resolving public Internet addresses.";
         FindingsList.ItemsSource = null;
         NextList.ItemsSource = null;
+        StackList.ItemsSource = null;
         LimitsBox.Visibility = Visibility.Collapsed;
         NextBox.Visibility = Visibility.Collapsed;
+        SummaryBox.Visibility = Visibility.Collapsed;
         _report = null;
 
+        var progress = new Progress<string>(msg => StatusText.Text = msg);
         try
         {
-            var report = await Checker.RunAsync(HostBox.Text);
+            var report = await Checker.RunAsync(HostBox.Text, progress, ct);
             _report = report;
             FindingsList.ItemsSource = report.Findings.Select(ToView).ToList();
             if (report.NextSteps.Count > 0)
@@ -49,9 +79,22 @@ public partial class MainWindow : Window
             }
             LimitsList.ItemsSource = report.Limits;
             LimitsBox.Visibility = Visibility.Visible;
-            StatusText.Text = $"Checked {report.Hostname} at {report.CheckedAt:yyyy-MM-dd HH:mm} UTC using {string.Join(", ", report.PublicAddresses)}.";
+            SummaryTitle.Text = report.Hostname;
+            var extra = report.NextSteps.Count == 0
+                ? "No further steps were generated for this run."
+                : $"{report.NextSteps.Count} next step{(report.NextSteps.Count == 1 ? "" : "s")} apply to this run.";
+            SummaryBody.Text = $"Checked {report.CheckedAt:yyyy-MM-dd HH:mm} UTC using {string.Join(", ", report.PublicAddresses)}. {extra}";
+            StackList.ItemsSource = report.Stack
+                .Select(s => s.Version is null ? s.Product : $"{s.Product} {s.Version}")
+                .ToList();
+            SummaryBox.Visibility = Visibility.Visible;
+            StatusText.Text = SummaryBody.Text;
             CopyButton.IsEnabled = true;
             SaveButton.IsEnabled = true;
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "The check was stopped. Nothing further was requested from the hostname.";
         }
         catch (CheckException ex)
         {
@@ -59,53 +102,178 @@ public partial class MainWindow : Window
         }
         catch (Exception)
         {
-            StatusText.Text = "The check did not finish. Confirm the hostname is public and try again.";
+            StatusText.Text = "The check did not finish. Confirm the hostname is public, that you have permission, and try again.";
         }
         finally
         {
-            RunButton.IsEnabled = true;
+            SetBusy(false);
+            _runCts?.Dispose();
+            _runCts = null;
+        }
+    }
+
+    private void Cancel_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _runCts?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The run already finished.
+        }
+        StatusText.Text = "Stopping this check.";
+    }
+
+    private void SetBusy(bool busy)
+    {
+        RunButton.IsEnabled = !busy;
+        HostBox.IsEnabled = !busy;
+        PermissionBox.IsEnabled = !busy;
+        BusyBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        CancelButton.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        if (busy)
+        {
+            CopyButton.IsEnabled = false;
+            SaveButton.IsEnabled = false;
         }
     }
 
     private void Copy_Click(object sender, RoutedEventArgs e)
     {
         if (_report is null) return;
-        Clipboard.SetText(ReportText.Format(_report));
-        StatusText.Text = "Report copied. It contains observations, methods, and caveats. It is not a certificate of security.";
+        try
+        {
+            Clipboard.SetText(ReportText.Format(_report));
+            StatusText.Text = "Report copied. It contains observations, methods, caveats, and only the next steps that apply. It is not a certificate of security.";
+        }
+        catch (Exception)
+        {
+            StatusText.Text = "The clipboard was busy. Try Copy report again, or save the report to a file instead.";
+        }
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         if (_report is null) return;
+        var safeHost = string.Concat(_report.Hostname.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '-' : ch));
         var dialog = new SaveFileDialog
         {
             Filter = "Text file (*.txt)|*.txt",
-            FileName = $"site-check-{_report.Hostname}-{_report.CheckedAt:yyyyMMdd}.txt"
+            FileName = $"site-check-{safeHost}-{_report.CheckedAt:yyyyMMdd}.txt"
         };
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() != true) return;
+        try
         {
-            File.WriteAllText(dialog.FileName, ReportText.Format(_report));
-            StatusText.Text = "Report saved on this computer.";
+            File.WriteAllText(dialog.FileName, ReportText.Format(_report), Encoding.UTF8);
+            StatusText.Text = "Report saved on this computer. Site Check does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
         }
+        catch (Exception)
+        {
+            StatusText.Text = "The report could not be saved at that location. Choose another folder, or copy the report instead.";
+        }
+    }
+
+    private void Licence_Click(object sender, RoutedEventArgs e)
+    {
+        var text = LoadLicenceText();
+        var window = new Window
+        {
+            Title = "Licence and warranty  ·  Site Check",
+            Owner = this,
+            Width = 760,
+            Height = 640,
+            MinWidth = 520,
+            MinHeight = 400,
+            Background = (Brush)FindResource("NavyBrush"),
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
+        var box = new System.Windows.Controls.TextBox
+        {
+            Text = text,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.Wrap,
+            AcceptsReturn = true,
+            BorderThickness = new Thickness(0),
+            Background = (Brush)FindResource("Navy900Brush"),
+            Foreground = (Brush)FindResource("TextBrush"),
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 12,
+            Padding = new Thickness(20),
+            VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto
+        };
+        window.Content = box;
+        window.ShowDialog();
+    }
+
+    private void Email_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "mailto:Info@operationlockedin.com?subject=Site%20Check",
+                UseShellExecute = true
+            });
+        }
+        catch (Exception)
+        {
+            StatusText.Text = "Email Info@operationlockedin.com from your own mail program.";
+        }
+    }
+
+    private static string LoadLicenceText()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var name = assembly.GetManifestResourceNames()
+            .FirstOrDefault(n => n.EndsWith("LICENSE", StringComparison.OrdinalIgnoreCase));
+        if (name != null)
+        {
+            using var stream = assembly.GetManifestResourceStream(name);
+            if (stream != null)
+            {
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
+        }
+        return """
+            Site Check
+            Copyright (C) 2026 Jesse Mosier-Bowers, operating as Operation Locked In
+
+            This program is free software: you can redistribute it and/or modify
+            it under the terms of the GNU General Public License as published by
+            the Free Software Foundation, either version 3 of the License, or
+            (at your option) any later version.
+
+            This program is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+            GNU General Public License for more details.
+
+            You should have received a copy of the GNU General Public License
+            along with this program. If not, see https://www.gnu.org/licenses/.
+            """;
     }
 
     private static FindingView ToView(Finding f)
     {
         var teal = (Brush)Application.Current.Resources["TealBrush"];
         var muted = (Brush)Application.Current.Resources["MutedBrush"];
-        var amber = new SolidColorBrush(Color.FromRgb(0xF5, 0xD0, 0x8A));
-        var brush = f.State switch
+        var amber = (Brush)Application.Current.Resources["AmberBrush"];
+        var incomplete = (Brush)Application.Current.Resources["RailIncomplete"];
+        var (labelBrush, rail) = f.State switch
         {
-            FindingState.Present => teal,
-            FindingState.NotFound => amber,
-            FindingState.Attention => amber,
-            _ => muted
+            FindingState.Present => (teal, (Brush)Application.Current.Resources["RailPresent"]),
+            FindingState.NotFound => (amber, (Brush)Application.Current.Resources["RailAttention"]),
+            FindingState.Attention => (amber, (Brush)Application.Current.Resources["RailAttention"]),
+            _ => (muted, incomplete)
         };
         return new FindingView
         {
             Title = f.Title,
             State = ReportText.StateLabel(f.State),
-            StateBrush = brush,
+            StateBrush = labelBrush,
+            AccentBrush = rail,
             Observation = f.Observation,
             Method = f.Method,
             Caveat = f.Caveat
@@ -118,6 +286,7 @@ public sealed class FindingView
     public string Title { get; set; } = "";
     public string State { get; set; } = "";
     public Brush StateBrush { get; set; } = Brushes.White;
+    public Brush AccentBrush { get; set; } = Brushes.White;
     public string Observation { get; set; } = "";
     public string Method { get; set; } = "";
     public string Caveat { get; set; } = "";

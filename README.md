@@ -1,39 +1,48 @@
 # Site Check
 
-Operation Locked In. A Windows program that reports what a **public hostname you operate** presents on HTTPS, its certificate, selected headers, SPF and DMARC, what the homepage advertises, and sourced CVE matches for those advertised versions. Next steps are listed only for what this run found.
+Site Check is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which of a short list of security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a small sourced CVE catalogue. After the run, it lists **only the next steps that apply to that hostname**.
 
-It is not a penetration test. It is not a crawl. It does not contact private or home-network addresses.
-
-## What it checks
-
-| Observation | How it is gathered | What it does not mean |
-|---|---|---|
-| HTTPS answers | TLS to the first public address on port 443, then HTTP HEAD `/`. Redirects are not followed. | Other ports and paths are safe. |
-| Certificate days and names | Leaf certificate from that handshake. Days are whole UTC days. Trust uses the Windows store. | The operator of the site is who they claim. Every subdomain is covered. |
-| Selected headers | Response headers on that HEAD `/`. | Headers on other URLs. A missing header is not a breach. |
-| SPF | Windows DNS TXT on the hostname, and the parent if the name starts with `www`. Only `v=spf1` counts. | Mail will pass. DKIM and DMARC are not checked. |
-
-## Permission
-
-Check only hostnames you operate or have written permission to check. Unauthorized use of a computer is an offence in Canada (Criminal Code s. 342.1) and similar laws elsewhere.
-
-## Run
-
-Build a single-file 64-bit Windows executable (no extra runtime install):
-
-```
-powershell -NoProfile -File tools\publish.ps1
-```
-
-The EXE is written to `dist\SiteCheck.exe`. Tick the permission box, enter a hostname such as `www.operationlockedin.com`, then check.
-
-## Limits
-
-- Public DNS hostnames only. No IP literals, localhost, or `.local` names.
-- After DNS, private, loopback, link-local, and documentation addresses are refused.
-- Time limit is 4.5 seconds per step.
-- Results stay on this computer unless you copy or save the report.
+It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
 ## Licence
 
-GNU General Public License version 3. See `LICENSE`.
+GNU General Public License version 3, or any later version. The full legal text is in [`LICENSE`](LICENSE). Copyright and DnsClient attribution are in [`NOTICE`](NOTICE). DnsClient itself remains Apache License 2.0; see [`THIRD-PARTY.md`](THIRD-PARTY.md). Why GPLv3 was chosen: [`docs/licence.md`](docs/licence.md).
+
+GPLv3 matches Bastion: this is free software you can run, study, and share under the same copyleft. It is not a paid SKU.
+
+There is no warranty. The window footer and **Licence and warranty** state that in the program itself.
+
+## Lawful use
+
+Check only hostnames you operate or for which you have written permission. Unauthorized use of a computer system can be an offence in Canada (Criminal Code section 342.1) and under similar laws elsewhere.
+
+## Start here
+
+- Tutorial: [docs/how-to-use.md](docs/how-to-use.md)
+- What is checked, and how: [docs/what-is-checked.md](docs/what-is-checked.md)
+- Privacy: [docs/privacy.md](docs/privacy.md)
+- CVE catalogue: [docs/cve-catalogue.md](docs/cve-catalogue.md)
+- Building the executable: [docs/building.md](docs/building.md)
+- Licence: [docs/licence.md](docs/licence.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+
+## Run a release build
+
+The private GitHub release contains `SiteCheck.exe` together with `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. Double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
+
+To build from source on 64-bit Windows with the .NET 8 SDK:
+
+```
+dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
+dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:EnableCompressionInSingleFile=true -o dist
+```
+
+`tools\publish.ps1` runs the tests, publishes, names the file `SiteCheck.exe`, and copies the licence files beside it.
+
+## What this program will not do
+
+It will not crawl every URL, follow redirects, open administrative paths, download plugin files, guess passwords, or send exploit traffic. It will not contact private or home-network addresses. A quiet report is not clearance.
+
+## Version
+
+This tree is Site Check 1.2.0. The User-Agent is `operation-locked-in-site-check/1.2`.

@@ -54,6 +54,31 @@ public class AdviceTests
     }
 
     [Fact]
+    public void Incomplete_headers_do_not_spawn_header_fixes()
+    {
+        var findings = new[]
+        {
+            F("HTTPS", FindingState.Incomplete),
+            F("Strict-Transport-Security", FindingState.Incomplete),
+            F("Content-Security-Policy", FindingState.Incomplete),
+            F("SPF", FindingState.NotFound),
+        };
+        var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), null, null, null, null);
+        Assert.Contains(steps, s => s.Related == "HTTPS");
+        Assert.DoesNotContain(steps, s => s.Related == "Strict-Transport-Security");
+        Assert.DoesNotContain(steps, s => s.Related == "Content-Security-Policy");
+        Assert.Contains(steps, s => s.Related == "SPF");
+    }
+
+    [Fact]
+    public void Hsts_attention_still_gets_a_fix_step()
+    {
+        var findings = new[] { F("Strict-Transport-Security", FindingState.Attention) };
+        var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.Contains(steps, s => s.Related == "Strict-Transport-Security");
+    }
+
+    [Fact]
     public void Certificate_renewal_only_when_days_are_low()
     {
         var findings = new[] { F("Certificate", FindingState.Present) };

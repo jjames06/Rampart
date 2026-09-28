@@ -1,12 +1,16 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace SiteCheck.Core;
 
 /// <summary>
 /// Public DNS hostnames only. No IP literals, ports, or home-network suffixes.
+/// International names are converted to ASCII (punycode) before checks run.
 /// </summary>
 public static class Hostname
 {
+    private static readonly IdnMapping Idn = new();
+
     private static readonly Regex Label = new(
         "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
@@ -31,6 +35,17 @@ public static class Hostname
         if (s.Contains(':')) return null;
         s = s.TrimEnd('.');
         if (!s.Contains('.')) return null;
+        if (s.Any(c => c > 127))
+        {
+            try
+            {
+                s = Idn.GetAscii(s).ToLowerInvariant();
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
         if (Regex.IsMatch(s, @"^\d+\.\d+\.\d+\.\d+$")) return null;
         if (s.StartsWith('[') || s.Contains('%')) return null;
         foreach (var suffix in BlockedSuffixes)
@@ -42,6 +57,17 @@ public static class Hostname
         if (labels.Length is < 2 or > 10) return null;
         if (labels.Any(lab => !Label.IsMatch(lab))) return null;
         return s;
+    }
+
+    /// <summary>
+    /// True for names we will send to DNS: a parsed hostname, or _dmarc. plus a parsed apex.
+    /// </summary>
+    public static bool IsSafeDnsName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 253) return false;
+        if (name.StartsWith("_dmarc.", StringComparison.OrdinalIgnoreCase))
+            return Parse(name[7..]) != null;
+        return Parse(name) != null;
     }
 
     public static IReadOnlyList<string> SpfLookupNames(string hostname)
