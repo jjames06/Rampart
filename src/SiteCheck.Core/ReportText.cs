@@ -11,6 +11,12 @@ public static class ReportText
         sb.AppendLine($"Hostname: {report.Hostname}");
         sb.AppendLine($"Checked: {report.CheckedAt:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine("Public addresses used: " + string.Join(", ", report.PublicAddresses));
+        sb.AppendLine(
+            "Summary: "
+            + report.Findings.Count(f => f.State == FindingState.Attention) + " need attention, "
+            + report.Findings.Count(f => f.State == FindingState.NotFound) + " not found, "
+            + report.Findings.Count(f => f.State == FindingState.Incomplete) + " could not complete, "
+            + report.Findings.Count(f => f.State == FindingState.Present) + " present.");
         sb.AppendLine("Scope: " + report.Authorization.ScopeName);
         sb.AppendLine("Authorization recorded: " + report.Authorization.AcceptedAtUtc.ToString("yyyy-MM-dd HH:mm") + " UTC");
         sb.AppendLine();

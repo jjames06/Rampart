@@ -53,4 +53,34 @@ public class HeaderFactsTests
         Assert.False(HeaderFacts.DmarcIsMonitorOnly("v=DMARC1; p=quarantine"));
         Assert.False(HeaderFacts.DmarcIsMonitorOnly("v=DMARC1; p=reject"));
     }
+
+    [Theory]
+    [InlineData("v=spf1 include:_spf.google.com +all", true)]
+    [InlineData("v=spf1 mx ?all", true)]
+    [InlineData("v=spf1 mx all", true)]
+    [InlineData("v=spf1 include:_spf.google.com -all", false)]
+    [InlineData("v=spf1 include:_spf.google.com ~all", false)]
+    public void Spf_all_mechanism(string record, bool permissive)
+    {
+        Assert.Equal(permissive, HeaderFacts.SpfAllIsPermissive(record));
+    }
+
+    [Fact]
+    public void Hsts_short_max_age_is_under_180_days()
+    {
+        Assert.True(HeaderFacts.HstsMaxAgeIsShort("max-age=86400"));
+        Assert.False(HeaderFacts.HstsMaxAgeIsShort("max-age=63072000; includeSubDomains; preload"));
+        Assert.False(HeaderFacts.HstsMaxAgeIsShort("max-age=0"));
+        Assert.Equal(86400, HeaderFacts.HstsMaxAge("max-age=86400"));
+    }
+
+    [Fact]
+    public void Cors_star_and_xss_protection_helpers()
+    {
+        Assert.True(HeaderFacts.CorsAllowsAnyOrigin("*"));
+        Assert.False(HeaderFacts.CorsAllowsAnyOrigin("https://example.com"));
+        Assert.True(HeaderFacts.XssProtectionIsLegacyEnabled("1; mode=block"));
+        Assert.False(HeaderFacts.XssProtectionIsLegacyEnabled("0"));
+        Assert.False(HeaderFacts.XssProtectionIsLegacyEnabled(null));
+    }
 }

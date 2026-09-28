@@ -32,7 +32,6 @@ public static class Advice
             var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
             if (f is null || f.State == FindingState.Present) return;
             if (f.State == FindingState.Incomplete && title != "HTTPS") return;
-            if (f.State == FindingState.Attention && title != "Strict-Transport-Security") return;
             var body = generic;
             if (next && nextJs != null) body = nextJs;
             else if (wordpress && wp != null) body = wp;
@@ -45,7 +44,7 @@ public static class Advice
         {
             var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
             if (f is null || f.State == FindingState.Present) return;
-            if (f.State == FindingState.Incomplete) return;
+            if (f.State is FindingState.Incomplete or FindingState.Attention) return;
             var body = generic;
             if (cloudflare && cloudflareDns != null) body = cloudflareDns;
             else if (cloudflare)
@@ -133,6 +132,17 @@ public static class Advice
             "Cross-Origin-Resource-Policy",
             "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
 
+        var coop = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Opener-Policy");
+        var coep = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Embedder-Policy");
+        if (coop is { State: FindingState.Present } && coep is { State: FindingState.NotFound })
+        {
+            steps.Add(new NextStep(
+                "Add Cross-Origin-Embedder-Policy only if you need isolation",
+                "COOP is already present. COEP (require-corp or credentialless) is the second header for a cross-origin isolated context. Brochure sites usually skip this. Add it only if you need SharedArrayBuffer or a similar isolated feature, and test every third-party embed afterward.",
+                "Cross-Origin-Embedder-Policy",
+                HeaderEnv()));
+        }
+
         MissingHeader(
             "Mixed content",
             "Serve every script, stylesheet, and image over HTTPS. Replace http:// URLs in the homepage with https:// or relative paths.",
@@ -144,6 +154,40 @@ public static class Advice
             "Add integrity (and crossorigin) on third-party script tags, or host the script yourself. Same-origin bundles can skip this.",
             "Prefer bundling third-party code through next.config instead of a public CDN script tag.",
             "In WordPress, dequeue unused CDN scripts and host needed libraries from the theme with integrity hashes.");
+
+        MissingHeader(
+            "Tabnabbing",
+            "On every target=_blank link, set rel=\"noopener noreferrer\" so the opened page cannot rewrite window.opener.",
+            "In Next.js, <a target=\"_blank\"> should include rel=\"noopener noreferrer\". next/link passes rel through.",
+            "In WordPress, theme and plugin markup that opens a new tab needs rel=\"noopener noreferrer\".");
+
+        MissingHeader(
+            "Form action",
+            "Change every form action that starts with http:// to https:// or a relative path so the submission stays on TLS.",
+            "Search the App Router and any client forms for action=\"http://\".",
+            "In WordPress, set the site URL to https and re-save permalinks so form plugins inherit HTTPS.");
+
+        MissingHeader(
+            "Canonical URL",
+            "Change the homepage rel=canonical href from http:// to https:// on the same hostname.");
+
+        if (findings.Any(f => f.Title == "CORS" && f.State == FindingState.Attention))
+        {
+            steps.Add(new NextStep(
+                "Confirm Access-Control-Allow-Origin on this origin",
+                "The homepage sends Access-Control-Allow-Origin: *. That is acceptable for a public brochure page. If this origin also hosts an authenticated API, restrict the header to the exact front-end origin instead of *.",
+                "CORS",
+                HeaderEnv()));
+        }
+
+        if (findings.Any(f => f.Title == "X-XSS-Protection" && f.State == FindingState.Attention))
+        {
+            steps.Add(new NextStep(
+                "Remove or disable X-XSS-Protection",
+                "Set X-XSS-Protection to 0 or omit it. Current browsers ignore it, and a non-zero value can introduce XSS in old Internet Explorer.",
+                "X-XSS-Protection",
+                HeaderEnv()));
+        }
 
         MissingDns(
             "DNSSEC",
@@ -163,16 +207,58 @@ public static class Advice
 
         MissingDns(
             "DKIM",
-            "If this hostname sends mail, publish DKIM at the selector your mail provider specifies. This program only asked default, google, and selector1.");
+            "If this hostname sends mail, publish DKIM at the selector your mail provider specifies. This program asked default, google, selector1, selector2, k1, s1, s2, mail, dkim, and smtp.");
 
-        var spfBody =
-            $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.";
-        if (wordpress)
-            spfBody += " If WordPress sends mail through the host or a provider, that provider must appear in the SPF record.";
         MissingDns(
-            "SPF",
-            spfBody,
-            "In Cloudflare: DNS, then Records, then TXT on the mail name (often @). List only the services that send mail for you. This is not an HTTP header.");
+            "MX",
+            "If this hostname should receive mail, add MX records at the DNS host pointing at your mail provider. If it must not receive mail, publish a null MX (preference 0, exchange \".\") so other servers know not to deliver.",
+            "In Cloudflare: DNS, then Records, then MX. If the name should not receive mail, add a null MX (0 .). This is not an HTTP header.");
+
+        if (findings.Any(f => f.Title == "MX" && f.State == FindingState.Present))
+        {
+            MissingDns(
+                "MTA-STS DNS",
+                "This apex publishes MX, so inbound mail is expected. Publish a TXT record on _mta-sts. plus the apex (v=STSv1; id=...) and a policy file at https://mta-sts.your-apex/.well-known/mta-sts.txt after MX TLS is correct.",
+                "In Cloudflare: DNS, then Records, then TXT on _mta-sts. Use v=STSv1; id=a-unique-id. Serve the policy file on the mta-sts subdomain, not from next.config.ts.");
+
+            MissingHeader(
+                "MTA-STS policy",
+                "Publish https://mta-sts.your-apex/.well-known/mta-sts.txt with version: STSv1, mode: testing then enforce, and mx: lines that match your MX hosts. Point the mta-sts subdomain at a host that can serve that file over HTTPS.",
+                "The policy file must be served on the mta-sts subdomain of the apex (RFC 8461), not on www and not from next.config.ts headers.",
+                "Serve the policy on the mta-sts subdomain of the apex. A plugin on www is the wrong place.");
+
+            MissingDns(
+                "TLS-RPT",
+                "Add a TXT record on _smtp._tls. plus the apex, for example v=TLSRPTv1; rua=mailto:your-mailbox, so providers can report failed SMTP TLS.",
+                "In Cloudflare: DNS, then Records, then TXT on _smtp._tls. Example: v=TLSRPTv1; rua=mailto:you@your-domain. This is not an HTTP header.");
+        }
+
+        MissingHeader(
+            "change-password",
+            "If this hostname has accounts, publish https://your-host/.well-known/change-password that redirects to your password-change page (RFC 8615). A site without logins can omit this.",
+            "Add a rewrite from /.well-known/change-password to your account password page in next.config.ts.",
+            "Point /.well-known/change-password at the account password screen, or omit it if there are no accounts.");
+
+        var spf = findings.FirstOrDefault(x => x.Title == "SPF");
+        if (spf is { State: FindingState.Attention })
+        {
+            steps.Add(new NextStep(
+                "Tighten the SPF all mechanism",
+                "The published SPF record uses +all, all, or ?all, which does not restrict unexpected senders. After you have listed every legitimate include:, end the record with ~all (soft fail) or -all (fail). Do not use +all on a production name.",
+                "SPF",
+                "DNS host"));
+        }
+        else
+        {
+            var spfBody =
+                $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.";
+            if (wordpress)
+                spfBody += " If WordPress sends mail through the host or a provider, that provider must appear in the SPF record.";
+            MissingDns(
+                "SPF",
+                spfBody,
+                "In Cloudflare: DNS, then Records, then TXT on the mail name (often @). List only the services that send mail for you. This is not an HTTP header.");
+        }
 
         var dmarc = findings.FirstOrDefault(x => x.Title == "DMARC");
         if (dmarc is { State: FindingState.NotFound })
@@ -208,12 +294,21 @@ public static class Advice
                 "HTTP"));
         }
 
+        var tls = findings.FirstOrDefault(x => x.Title == "TLS");
         if (tlsProtocol is "Tls" or "Tls11" or "Ssl3")
         {
             steps.Add(new NextStep(
                 "Turn off old TLS",
                 "This handshake used an old TLS version. In the host or CDN SSL settings, allow TLS 1.2 and 1.3 only.",
                 "TLS"));
+        }
+        else if (tls is { State: FindingState.Attention })
+        {
+            steps.Add(new NextStep(
+                "Prefer modern TLS ciphers",
+                "This handshake used a cipher without forward secrecy, a CBC/RC4/3DES suite, or an RSA key shorter than 2048 bits. In the host or CDN SSL settings, prefer TLS 1.3, or TLS 1.2 with ECDHE and AES-GCM or ChaCha20. Issue a new certificate if the RSA key is under 2048 bits.",
+                "TLS",
+                cloudflare ? "Cloudflare" : HeaderEnv()));
         }
 
         if (findings.Any(f => f.Title == "Cookie flags" && f.State != FindingState.Present))

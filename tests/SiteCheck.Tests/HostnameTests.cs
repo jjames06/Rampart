@@ -52,6 +52,9 @@ public class HostnameTests
         Assert.True(Hostname.IsSafeDnsName("example.com"));
         Assert.True(Hostname.IsSafeDnsName("_dmarc.example.com"));
         Assert.True(Hostname.IsSafeDnsName("default._domainkey.example.com"));
+        Assert.True(Hostname.IsSafeDnsName("_mta-sts.example.com"));
+        Assert.True(Hostname.IsSafeDnsName("default._bimi.example.com"));
+        Assert.True(Hostname.IsSafeDnsName("_smtp._tls.example.com"));
         Assert.False(Hostname.IsSafeDnsName("example.com; calc.exe"));
         Assert.False(Hostname.IsSafeDnsName("-type=TXT evil.com"));
         Assert.False(Hostname.IsSafeDnsName("evil._domainkey.localhost"));

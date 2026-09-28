@@ -18,19 +18,27 @@ HTTP HEAD `/` is sent on that same address with no body and with redirects disab
 
 Port 80 receives a single HEAD `/` on the same public address, only to see whether HTTP redirects to HTTPS.
 
-An **Authorized public-surface assessment** also requests `/.well-known/security.txt` and `/robots.txt` (capped, no redirect), DNS CAA on the hostname, and TXT on common DKIM selectors (`default`, `google`, `selector1`) under `_domainkey` plus the apex. Those names must still pass `IsSafeDnsName`.
+An **Authorized public-surface assessment** also requests `/.well-known/security.txt`, `/robots.txt`, and `/.well-known/change-password` on the typed hostname (capped, no redirect), plus `/.well-known/mta-sts.txt` on the RFC 8461 policy host `mta-sts.` plus the apex. It asks DNS for CAA on the hostname and apex, TXT on common DKIM selectors under `_domainkey`, DS and DNSKEY on the apex, MTA-STS (`_mta-sts.`), BIMI (`default._bimi.`), and SMTP TLS reporting (`_smtp._tls.`). Those names must still pass `IsSafeDnsName`. The `mta-sts` subdomain is resolved and contacted only if it has a public address.
 
 ## Mail records
 
-TXT records are requested through the system DNS resolver (DnsClient) for the hostname and, when the name starts with `www`, for the parent. Only records that begin with `v=spf1` count as SPF. DMARC is requested on `_dmarc.` plus the apex. Only `v=DMARC1` counts. Include chains are not evaluated. A DMARC record with `p=none` is reported as **Needs attention** (monitor-only), not as a finished policy.
+TXT records are requested through the system DNS resolver (DnsClient) for the hostname and, when the name starts with `www`, for the parent. Only records that begin with `v=spf1` count as SPF. An SPF `all` mechanism of `+all`, `all`, or `?all` is **Needs attention**. DMARC is requested on `_dmarc.` plus the apex. Only `v=DMARC1` counts. Include chains are not evaluated. A DMARC record with `p=none` is reported as **Needs attention** (monitor-only), not as a finished policy.
 
-DNS names passed to the resolver are either a parsed hostname or `_dmarc.` plus a parsed apex. Arbitrary strings are not sent.
+MX and NS are requested on the apex. The mail server itself is not contacted. A null MX (preference 0 and a dot) is recorded as a published refusal to accept mail.
+
+DNS names passed to the resolver are a parsed hostname, `_dmarc.` plus a parsed apex, `_mta-sts.` plus a parsed apex, `_smtp._tls.` plus a parsed apex, or a selector under `_domainkey` or `_bimi` plus a parsed apex. Arbitrary strings are not sent.
+
+## TLS details
+
+The handshake records the protocol, the negotiated cipher suite, ALPN, and the leaf public-key algorithm and size. TLS 1.0/1.1, CBC/RC4/3DES, RSA key-exchange without forward secrecy, and RSA keys shorter than 2048 bits are **Needs attention**. This is the suite used for this one connection, not a scan of every suite the server still offers.
 
 ## Headers and cookies
 
-The program looks for Strict-Transport-Security, Content-Security-Policy, X-Content-Type-Options, X-Frame-Options (or CSP `frame-ancestors`), Referrer-Policy, and Permissions-Policy. HSTS with `max-age` at or below zero is **Needs attention**, because it tells browsers to forget HTTPS.
+The program looks for Strict-Transport-Security, Content-Security-Policy, X-Content-Type-Options, X-Frame-Options (or CSP `frame-ancestors`), Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy, and Cross-Origin-Embedder-Policy. HSTS with `max-age` at or below zero, or shorter than 180 days, is **Needs attention**. Access-Control-Allow-Origin `*` on the homepage is **Needs attention**. A non-zero X-XSS-Protection value is **Needs attention**; omitting that header is correct.
 
 Each `Set-Cookie` value is read as its own cookie. Expires dates contain commas, so cookies are never split on commas. HttpOnly and Secure are the required flags on this check. Cookies on other paths are not shown.
+
+Homepage HTML is also searched for mixed `http://` resources, third-party scripts without integrity, `target=_blank` without `rel=noopener`, forms that post to `http://`, and an `http://` canonical URL.
 
 ## Fingerprints and CVEs
 

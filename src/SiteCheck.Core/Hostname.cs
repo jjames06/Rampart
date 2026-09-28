@@ -68,6 +68,18 @@ public static class Hostname
         if (string.IsNullOrWhiteSpace(name) || name.Length > 253) return false;
         if (name.StartsWith("_dmarc.", StringComparison.OrdinalIgnoreCase))
             return Parse(name[7..]) != null;
+        if (name.StartsWith("_mta-sts.", StringComparison.OrdinalIgnoreCase))
+            return Parse(name[9..]) != null;
+        if (name.StartsWith("_smtp._tls.", StringComparison.OrdinalIgnoreCase))
+            return Parse(name[11..]) != null;
+        const string bimi = "._bimi.";
+        var bimiAt = name.IndexOf(bimi, StringComparison.OrdinalIgnoreCase);
+        if (bimiAt > 0)
+        {
+            var selector = name[..bimiAt];
+            var apex = name[(bimiAt + bimi.Length)..];
+            return Label.IsMatch(selector) && Parse(apex) != null;
+        }
         const string marker = "._domainkey.";
         var idx = name.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
         if (idx > 0)

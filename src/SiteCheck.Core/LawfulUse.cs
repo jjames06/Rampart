@@ -36,14 +36,19 @@ public static class LawfulUse
             "HTTPS HEAD / and GET / (body capped) with redirects disabled",
             "HTTP HEAD / on port 80 to the same public address",
             "DNS TXT for SPF and DMARC on parsed names only",
+            "DNS MX and NS on the apex",
             "Compare advertised product versions with the local advisory catalogue",
-            "Read the homepage HTML for mixed http:// resources and for integrity attributes on https:// scripts"
+            "Read the homepage HTML for mixed http:// resources, form actions, canonical URLs, target=_blank links, and integrity attributes on https:// scripts",
+            "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {
-            list.Add("HTTPS GET /.well-known/security.txt and /robots.txt on the same public address (RFC public files, body capped)");
-            list.Add("DNS CAA on the hostname");
-            list.Add("DNS TXT on common DKIM selectors (default, google, selector1) at _domainkey plus the apex");
+            list.Add("HTTPS GET /.well-known/security.txt, /robots.txt, and /.well-known/change-password on the typed hostname (RFC public files, body capped)");
+            list.Add("HTTPS GET /.well-known/mta-sts.txt on mta-sts. plus the apex (RFC 8461 policy host, public addresses only)");
+            list.Add("DNS CAA on the hostname and, when the name starts with www, on the apex");
+            list.Add("DNS TXT on common DKIM selectors at _domainkey plus the apex");
+            list.Add("DNS DS and DNSKEY on the apex (presence only; the chain is not walked to the root)");
+            list.Add("DNS TXT for MTA-STS, BIMI, and SMTP TLS reporting on parsed names only");
         }
         return list;
     }

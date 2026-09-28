@@ -112,6 +112,49 @@ public class AdviceTests
     }
 
     [Fact]
+    public void Mixed_content_attention_gets_a_fix_step()
+    {
+        var findings = new[] { F("Mixed content", FindingState.Attention) };
+        var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.Contains(steps, s => s.Related == "Mixed content");
+    }
+
+    [Fact]
+    public void Permissive_spf_is_tighten_not_add()
+    {
+        var findings = new[] { F("SPF", FindingState.Attention) };
+        var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.Contains(steps, s => s.Title.StartsWith("Tighten the SPF", StringComparison.Ordinal));
+        Assert.DoesNotContain(steps, s => s.Title.StartsWith("Fix SPF", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Mta_sts_steps_only_when_mx_is_present()
+    {
+        var withoutMx = Advice.Build("example.com", new[] { F("MTA-STS policy", FindingState.NotFound) }, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        var withMx = Advice.Build("example.com", new[]
+        {
+            F("MX", FindingState.Present),
+            F("MTA-STS policy", FindingState.NotFound),
+        }, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.DoesNotContain(withoutMx, s => s.Related == "MTA-STS policy");
+        Assert.Contains(withMx, s => s.Related == "MTA-STS policy");
+    }
+
+    [Fact]
+    public void Coep_is_optional_unless_coop_is_already_present()
+    {
+        var lonely = Advice.Build("example.com", new[] { F("Cross-Origin-Embedder-Policy", FindingState.NotFound) }, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        var together = Advice.Build("example.com", new[]
+        {
+            F("Cross-Origin-Opener-Policy", FindingState.Present),
+            F("Cross-Origin-Embedder-Policy", FindingState.NotFound),
+        }, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.DoesNotContain(lonely, s => s.Related == "Cross-Origin-Embedder-Policy");
+        Assert.Contains(together, s => s.Related == "Cross-Origin-Embedder-Policy");
+    }
+
+    [Fact]
     public void Certificate_renewal_only_when_days_are_low()
     {
         var findings = new[] { F("Certificate", FindingState.Present) };
@@ -145,6 +188,24 @@ public class FingerprintTests
         };
         var stack = Fingerprint.FromPublicSurface(headers, null);
         Assert.Contains(stack, s => s.Product == "Next.js");
+    }
+
+    [Fact]
+    public void Reads_next_from_homepage_markup()
+    {
+        var stack = Fingerprint.FromPublicSurface(new Dictionary<string, string>(), """<script src="/_next/static/chunks/main.js"></script>""");
+        Assert.Contains(stack, s => s.Product == "Next.js");
+    }
+
+    [Fact]
+    public void Reads_cloudfront_from_headers()
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["x-amz-cf-id"] = "abc"
+        };
+        var stack = Fingerprint.FromPublicSurface(headers, null);
+        Assert.Contains(stack, s => s.Product == "Amazon CloudFront");
     }
 }
 

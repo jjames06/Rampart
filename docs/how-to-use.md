@@ -32,7 +32,7 @@ If nothing opens, confirm you are on 64-bit Windows and that antivirus did not q
 2. Type the public hostname. You may paste a full `https://` address, including a path. The program keeps only the hostname. International names (for example a name with accents) are converted to ASCII (punycode) before anything is queried.
 3. Examples that work: `example.com`, `www.example.com`, `https://www.example.com/about`.
 4. Examples that are refused, on purpose: `127.0.0.1`, `localhost`, `router.local`, `192.168.0.1`, a home-network name ending in `.lan` or `.home`, a name with a port such as `example.com:443`, and a bare word with no dot. The program will not contact private, loopback, link-local, CGNAT, documentation, or multicast addresses. If a name has both a public address and a private address, only the public address is used.
-5. Choose **Standard public-surface check**, or **Authorized public-surface assessment** if you also want RFC public files (`security.txt`, `robots.txt`) and extra DNS (CAA, common DKIM selectors). Both modes are read-only. Neither sends exploit traffic.
+5. Choose **Standard public-surface check**, or **Authorized public-surface assessment** if you also want RFC public files (`security.txt`, `robots.txt`, `change-password`), the MTA-STS policy host, and extra DNS (CAA, DKIM, DNSSEC, MTA-STS, BIMI, TLS-RPT). Both modes are read-only. Neither sends exploit traffic.
 6. Tick **both** permission boxes. The first box is that you operate the hostname or have written permission from the person who does. The second box is that you will not use the program against a hostname you are not authorized to check, and that Operation Locked In does not authorize that use. Canadian Criminal Code section 342.1 is named on that box. The boxes are not legal advice.
 7. Choose **Check this hostname**, or press Enter. The primary button stays off until both boxes are ticked.
 
@@ -58,13 +58,13 @@ Read the states as follows:
 - **Present** means this check saw the control or record on the paths it requested.
 - **Not found** means this check did not see it on those paths. It does not mean the rest of the site is broken.
 - **Could not complete** means the network step timed out or failed. Try again, confirm the host is reachable from this computer, and confirm you are not blocked by a firewall that only allows browsers.
-- **Needs attention** means an advertised version matched a sourced catalogue entry, a certificate name did not match, HSTS is present with `max-age` at or below zero, DMARC is published as monitor-only (`p=none`), or the homepage disclosed plugin directory names.
+- **Needs attention** means an advertised version matched a sourced catalogue entry, a certificate name did not match, HSTS is present with `max-age` at or below zero or shorter than 180 days, DMARC is published as monitor-only (`p=none`), SPF uses `+all` or `?all`, a TLS cipher is legacy, homepage markup has mixed content, tabnabbing, or an http form, or the homepage disclosed plugin directory names.
 
 The left-hand colour on each card follows the state: teal for Present, amber for Not found and Needs attention, and slate for Could not complete.
 
 ## Copy or save a report
 
-**Copy report** places a plain-text report on the clipboard. **Save report** writes a `.txt` file where you choose. Barbican does not upload that file. It does not create an account. It does not phone home to Operation Locked In.
+**Copy report** places a plain-text report on the clipboard. **Save report** writes a `.txt` file, or a `.json` file if you choose that filter, where you choose. Barbican does not upload that file. It does not create an account. It does not phone home to Operation Locked In. The **This run** card counts how many findings need attention, were not found, could not complete, or are present.
 
 The saved file is ordinary text. It is not encrypted by this program, because you chose the location and you may need to open it in Notepad, email it to yourself, or attach it to a job note. If the report names plugin versions you have not yet updated, keep it on a disk you already protect (BitLocker on the system drive, or an encrypted working folder you already use). Do not post the report on a public ticket or a public git issue.
 

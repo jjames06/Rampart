@@ -23,7 +23,7 @@ Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this 
 
 ## Tests
 
-Unit tests cover hostname parsing (including international names and userinfo stripping), private-address refusal (including NAT64 and 6to4 embeddings), cookie flag reading that does not split on Expires commas, HSTS `max-age=0`, DMARC `p=none`, advice that does not invent header fixes when HTTPS never finished, fingerprints, and the CVE catalogue.
+Unit tests cover hostname parsing (including international names and userinfo stripping), private-address refusal (including NAT64 and 6to4 embeddings), cookie flag reading that does not split on Expires commas, HSTS `max-age=0` and short max-age, DMARC `p=none`, SPF `+all`, TLS cipher helpers, homepage tabnabbing and http forms, advice that does not invent header fixes when HTTPS never finished, fingerprints (including Next.js from `/_next/static`), and the CVE catalogue.
 
 ```
 dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release

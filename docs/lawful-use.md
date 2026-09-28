@@ -8,7 +8,7 @@ Barbican exists to help a person **protect a public website they operate**, or a
 
 Barbican is a **read-only public-surface assessment**. After you attest permission, it resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail and certificate-authority records. It then lists only the next steps that apply to what that run found.
 
-The **Authorized public-surface assessment** option adds RFC public files (`/.well-known/security.txt`, `/robots.txt`) and extra DNS (CAA, a few common DKIM selectors). Those files are published for the public to read. The program still does not crawl, follow redirects, or send a request body.
+The **Authorized public-surface assessment** option adds RFC public files (`/.well-known/security.txt`, `/robots.txt`, `/.well-known/change-password`) on the typed hostname, the MTA-STS policy file on `mta-sts.` plus the apex, and extra DNS (CAA, DKIM selectors, DNSSEC, MTA-STS, BIMI, TLS-RPT). Those files are published for the public to read. The program still does not crawl, follow redirects, or send a request body.
 
 ## What this program is not
 

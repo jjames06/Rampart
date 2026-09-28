@@ -36,11 +36,13 @@ public static class Fingerprint
         {
             hints.Add(new StackHint("Cloudflare", null, "Cloudflare response headers were present."));
         }
+        AddEdgeFromHeaders(hints, headers);
 
         if (!string.IsNullOrEmpty(html))
         {
             foreach (Match m in Generator.Matches(html)) AddGenerator(hints, m.Groups[1].Value);
             foreach (Match m in GeneratorAlt.Matches(html)) AddGenerator(hints, m.Groups[1].Value);
+            AddHtmlStack(hints, html);
             hints.AddRange(AdvisoryDb.DetectFromHtml(html));
         }
 
@@ -84,6 +86,64 @@ public static class Fingerprint
         if (v.Contains("nginx", StringComparison.OrdinalIgnoreCase))
         {
             hints.Add(new StackHint("nginx", null, $"Header {header}: {Trim(v)}"));
+        }
+    }
+
+    private static void AddEdgeFromHeaders(List<StackHint> hints, IReadOnlyDictionary<string, string> headers)
+    {
+        void Edge(string product, string header)
+        {
+            if (headers.TryGetValue(header, out _) && hints.All(h => !h.Product.Equals(product, StringComparison.OrdinalIgnoreCase)))
+                hints.Add(new StackHint(product, null, "Response header " + header + " was present."));
+        }
+
+        Edge("Amazon CloudFront", "x-amz-cf-id");
+        Edge("Amazon CloudFront", "x-amz-cf-pop");
+        Edge("Azure Front Door", "x-azure-ref");
+        Edge("Netlify", "x-nf-request-id");
+        Edge("Shopify", "x-shopify-stage");
+        Edge("Shopify", "x-shopid");
+        Edge("Sucuri", "x-sucuri-id");
+        Edge("Akamai", "x-akamai-transformed");
+        Edge("Fastly", "x-fastly-request-id");
+        Edge("GitHub Pages", "x-github-request-id");
+        Edge("Fly.io", "fly-request-id");
+        if (headers.TryGetValue("server", out var server)
+            && server.Contains("GitHub.com", StringComparison.OrdinalIgnoreCase)
+            && hints.All(h => !h.Product.Equals("GitHub Pages", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("GitHub Pages", null, "Server header named GitHub.com."));
+        }
+    }
+
+    private static void AddHtmlStack(List<StackHint> hints, string html)
+    {
+        if ((html.Contains("/_next/static", StringComparison.Ordinal)
+             || html.Contains("__NEXT_DATA__", StringComparison.Ordinal))
+            && hints.All(h => !h.Product.Equals("Next.js", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("Next.js", null, "Homepage HTML named /_next/static or __NEXT_DATA__."));
+        }
+        if ((html.Contains("/wp-content/", StringComparison.OrdinalIgnoreCase)
+             || html.Contains("/wp-includes/", StringComparison.OrdinalIgnoreCase))
+            && hints.All(h => !h.Product.Equals("WordPress", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("WordPress", null, "Homepage HTML named /wp-content/ or /wp-includes/."));
+        }
+        if (html.Contains("cdn.shopify.com", StringComparison.OrdinalIgnoreCase)
+            && hints.All(h => !h.Product.Equals("Shopify", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("Shopify", null, "Homepage HTML named cdn.shopify.com."));
+        }
+        if (html.Contains("squarespace.com", StringComparison.OrdinalIgnoreCase)
+            && hints.All(h => !h.Product.Equals("Squarespace", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("Squarespace", null, "Homepage HTML named squarespace.com."));
+        }
+        if (html.Contains("static.wixstatic.com", StringComparison.OrdinalIgnoreCase)
+            && hints.All(h => !h.Product.Equals("Wix", StringComparison.OrdinalIgnoreCase)))
+        {
+            hints.Add(new StackHint("Wix", null, "Homepage HTML named static.wixstatic.com."));
         }
     }
 

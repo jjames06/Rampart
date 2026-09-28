@@ -104,4 +104,56 @@ public static class HeaderFacts
         }
         return false;
     }
+
+    /// <summary>
+    /// True when the SPF all mechanism is +all or ?all (too open for production mail).
+    /// </summary>
+    public static bool SpfAllIsPermissive(string record)
+    {
+        foreach (var raw in record.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = raw.Trim();
+            if (p.Equals("+all", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("?all", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static long? HstsMaxAge(string value)
+    {
+        foreach (var part in value.Split(';'))
+        {
+            var p = part.Trim();
+            if (!p.StartsWith("max-age", StringComparison.OrdinalIgnoreCase)) continue;
+            var eq = p.IndexOf('=');
+            if (eq < 0) continue;
+            var raw = p[(eq + 1)..].Trim().Trim('"');
+            if (long.TryParse(raw, out var n)) return n;
+        }
+        return null;
+    }
+
+    /// <summary>True when max-age is present and shorter than 180 days.</summary>
+    public static bool HstsMaxAgeIsShort(string value)
+    {
+        var age = HstsMaxAge(value);
+        return age is >= 1 and < 15_552_000;
+    }
+
+    public static bool CorsAllowsAnyOrigin(string? value) =>
+        value != null && value.Trim() == "*";
+
+    /// <summary>
+    /// Modern browsers ignore X-XSS-Protection. A non-zero value on old IE can introduce XSS.
+    /// </summary>
+    public static bool XssProtectionIsLegacyEnabled(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var v = value.Trim();
+        return v != "0" && !v.StartsWith("0;", StringComparison.Ordinal);
+    }
 }

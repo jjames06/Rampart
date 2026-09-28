@@ -47,10 +47,10 @@
                                    Text="Type a public hostname. You may paste a full https address; only the hostname is kept. Example: www.example.com"/>
                         <TextBlock Text="Scope" FontWeight="SemiBold" FontSize="13" Margin="0,18,0,10"/>
                         <RadioButton x:Name="StandardScope" GroupName="Scope" IsChecked="True" Checked="Scope_Changed">
-                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, headers, cookies, SPF, DMARC, and the local CVE catalogue.</TextBlock>
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, TLS details, headers, cookies, homepage markup, SPF, DMARC, MX, nameservers, and the local CVE catalogue.</TextBlock>
                         </RadioButton>
                         <RadioButton x:Name="AssessmentScope" GroupName="Scope" Checked="Scope_Changed">
-                            <TextBlock TextWrapping="Wrap" LineHeight="22">Authorized public-surface assessment. Adds RFC public files (security.txt, robots.txt) and extra DNS (CAA, common DKIM selectors). Still read-only. Still no exploit traffic.</TextBlock>
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Authorized public-surface assessment. Adds RFC public files (security.txt, robots.txt, change-password), the MTA-STS policy host, and extra DNS (CAA, DKIM selectors, DNSSEC, MTA-STS, BIMI, TLS-RPT). Still read-only. Still no exploit traffic.</TextBlock>
                         </RadioButton>
                         <CheckBox x:Name="PermissionBox" Margin="0,8,0,0" Checked="Consent_Changed" Unchecked="Consent_Changed">
                             <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextBrush}" LineHeight="22" FontSize="14">

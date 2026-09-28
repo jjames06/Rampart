@@ -95,10 +95,14 @@ public partial class MainWindow : Window
             LimitsBox.Visibility = Visibility.Visible;
             SummaryTitle.Text = report.Hostname;
             SummaryScope.Text = report.Authorization.ScopeName;
+            var attn = report.Findings.Count(f => f.State == FindingState.Attention);
+            var missing = report.Findings.Count(f => f.State == FindingState.NotFound);
+            var incomplete = report.Findings.Count(f => f.State == FindingState.Incomplete);
+            var present = report.Findings.Count(f => f.State == FindingState.Present);
             var extra = report.NextSteps.Count == 0
                 ? "No further steps were generated for this run."
                 : $"{report.NextSteps.Count} next step{(report.NextSteps.Count == 1 ? "" : "s")} apply to this run.";
-            SummaryBody.Text = $"Checked {report.CheckedAt:yyyy-MM-dd HH:mm} UTC using {string.Join(", ", report.PublicAddresses)}. {extra}";
+            SummaryBody.Text = $"Checked {report.CheckedAt:yyyy-MM-dd HH:mm} UTC using {string.Join(", ", report.PublicAddresses)}. {attn} need attention, {missing} not found, {incomplete} could not complete, {present} present. {extra}";
             StackList.ItemsSource = report.Stack
                 .Select(s => s.Version is null ? s.Product : $"{s.Product} {s.Version}")
                 .ToList();
@@ -178,14 +182,18 @@ public partial class MainWindow : Window
         var safeHost = string.Concat(_report.Hostname.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '-' : ch));
         var dialog = new SaveFileDialog
         {
-            Filter = "Text file (*.txt)|*.txt",
+            Filter = "Text file (*.txt)|*.txt|JSON (*.json)|*.json",
             FileName = $"site-check-{safeHost}-{_report.CheckedAt:yyyyMMdd}.txt"
         };
         if (dialog.ShowDialog() != true) return;
         try
         {
-            File.WriteAllText(dialog.FileName, ReportText.Format(_report), Encoding.UTF8);
-            StatusText.Text = "Report saved on this computer. Site Check does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
+            var json = string.Equals(Path.GetExtension(dialog.FileName), ".json", StringComparison.OrdinalIgnoreCase);
+            var body = json ? ReportJson.Format(_report) : ReportText.Format(_report);
+            File.WriteAllText(dialog.FileName, body, Encoding.UTF8);
+            StatusText.Text = json
+                ? "JSON report saved on this computer. Barbican does not upload it. Keep it on a disk you already protect if it names versions you have not yet updated."
+                : "Report saved on this computer. Barbican does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
         }
         catch (Exception)
         {
