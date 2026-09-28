@@ -2,6 +2,8 @@
 
 Rampart uses **two grants**, on purpose.
 
+The public download is the Windows program. Other platform source lives in this repository and is not a public binary yet.
+
 ## Desktop (Windows, macOS, Linux): GNU GPLv3
 
 The Windows WPF app and the Avalonia app for macOS and Linux are licensed under the **GNU General Public License version 3**, or, at your option, any later version published by the Free Software Foundation. The complete legal text is `LICENSE`. A short copyright notice is in `NOTICE`.

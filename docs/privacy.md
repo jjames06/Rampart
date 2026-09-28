@@ -1,6 +1,6 @@
 # Privacy
 
-Rampart runs on the device in front of you (Windows, macOS, Linux, iOS, or Android). It does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service.
+The public program is the Windows desktop executable. It runs on the device in front of you. It does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service. Builds for other operating systems are in testing and are not a public download.
 
 ## What leaves this computer
 

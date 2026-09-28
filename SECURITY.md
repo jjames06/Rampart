@@ -8,13 +8,15 @@ Rampart is a read-only checker for a hostname the operator confirms they may tes
 - Open TLS 1.2 or 1.3 to a public address on port 443, with that hostname as SNI, IPv4 first, at most three addresses
 - Send HTTP HEAD `/` and one GET `/` (body capped at 256 kilobytes, compressed bodies decompressed) with redirects disabled
 - Send HTTP HEAD `/` on port 80 to the same public address
+- GET a short allowlist of common public account, sign-in, and admin URLs on that same address (body capped at 64 kilobytes, no passwords, redirects off)
 - Request TXT records for that hostname, its www parent, and `_dmarc.` plus the apex, only after `Hostname.IsSafeDnsName` accepts the name
 
 ## What the program must not do
 
 - Contact loopback, RFC 1918, link-local, CGNAT, documentation, multicast, unique-local, discard, local-use NAT64, or IPv4 that is only reachable by embedding it in well-known NAT64 or 6to4
 - Follow redirects
-- Request `wp-admin`, plugin zip files, or version.php
+- Request plugin zip files, xmlrpc.php, or version.php
+- Crawl, follow redirects, or POST credentials
 - Guess passwords or send exploit traffic
 - Upload reports
 - Scrape the National Vulnerability Database live

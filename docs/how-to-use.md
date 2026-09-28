@@ -2,13 +2,13 @@
 
 A rampart is the defensive wall of a fortress. Bastion hardens a Windows PC you administer. Rampart inspects a public hostname you operate.
 
-This is the operator handbook for Rampart, written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The same checker runs on Windows (WPF), on macOS and Linux (Avalonia), and in the iOS/Android project. Read this page before you run it against a hostname that is not a machine you already operate.
+This is the operator handbook for the **public Windows program**. Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario, publishes `Rampart.exe`. Builds for other operating systems are in testing and are not a public download. Read this page before you run it against a hostname that is not a machine you already operate.
 
 Rampart is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
 
 ## What you need
 
-On Windows you need a 64-bit PC running Windows 10 or Windows 11 and the file `Rampart.exe`. On Linux use the `linux-x64` folder (`chmod +x Rampart`). On macOS use `osx-arm64` for Apple silicon or `osx-x64` for Intel; Gatekeeper will ask you to open it from Finder the first time. You need the public hostname of the site, for example `www.example.com`.
+You need a 64-bit PC running Windows 10 or Windows 11 and the file `Rampart.exe` from the GitHub release. You need the public hostname of the site, for example `www.example.com`.
 
 You do not need an Operation Locked In account. You do not need a browser plugin. You do not need a cloud login. You do not need administrative rights. The program runs as a standard user (`asInvoker`). It will not ask Windows for elevation.
 
@@ -21,7 +21,7 @@ Do not type a hostname you do not control. Do not use this program as a scanner 
 ## Start the program
 
 1. Double-click `Rampart.exe` on your Desktop, or in the `dist` folder if you built from source.
-2. Windows SmartScreen may warn that the file is not Authenticode-signed. If you built it yourself, or downloaded it from the Operation Locked In private repository `jjames06/oli-site-check`, choose **More info**, then **Run anyway**.
+2. Windows SmartScreen may warn that the file is not Authenticode-signed. If you built it yourself, or downloaded it from the public repository `jjames06/oli-site-check`, choose **More info**, then **Run anyway**.
 3. A navy window titled **Rampart · Operation Locked In** should open, with the teal hairline under the title, matching the colours used on https://www.operationlockedin.com.
 
 If nothing opens, confirm you are on 64-bit Windows and that antivirus did not quarantine the file. Rebuild with `tools\publish.ps1` if you have the source. Email Info@operationlockedin.com if a rebuilt copy still will not start, and include the Windows version, not a screenshot of unrelated software.

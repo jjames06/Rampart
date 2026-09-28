@@ -1,6 +1,6 @@
 # Building Rampart
 
-You need the .NET 8 SDK (64-bit). Windows builds the WPF EXE. The same SDK publishes the Avalonia UI for Linux and macOS. iOS and Android need the .NET MAUI workload (and a Mac for iOS).
+You need the .NET 8 SDK (64-bit). The **public ship** is the Windows WPF EXE. The same SDK can publish an Avalonia UI for Linux and macOS for owner testing. Those copies are not a public download until they have been tested. iOS and Android need the .NET MAUI workload and a Mac for iOS.
 
 Rebuild the local CVE catalogue (needs network once per release):
 
@@ -29,7 +29,7 @@ dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-
 dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-arm64 --self-contained true -o dist\osx-arm64
 ```
 
-`tools\publish.ps1` also writes those folders. Notarize macOS copies with a Developer ID before you send them to someone else. Store and mobile steps: [stores/SUBMIT.md](stores/SUBMIT.md).
+`tools\publish.ps1` also writes those folders for owner testing. Do not attach them to the GitHub release until they have been tested. Notarize macOS copies with a Developer ID before you send them to someone else. Store and mobile steps: [stores/SUBMIT.md](stores/SUBMIT.md).
 
 ## Tests
 
@@ -41,4 +41,4 @@ dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
 
 ## Signing
 
-Release builds are not Authenticode-signed yet. Windows SmartScreen may warn. The operator handbook explains **More info**, then **Run anyway**, for copies that came from this private repository.
+Release builds are not Authenticode-signed yet. Windows SmartScreen may warn. The operator handbook explains **More info**, then **Run anyway**, for copies that came from the public repository.

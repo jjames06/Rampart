@@ -21,6 +21,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
     <EmbeddedResource Include="..\..\LICENSE" LogicalName="LICENSE" />
     <EmbeddedResource Include="..\..\docs\lawful-use.md" LogicalName="LAWFUL-USE.md" />
     <AvaloniaResource Include="Assets\**" />

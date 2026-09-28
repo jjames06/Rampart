@@ -1,5 +1,7 @@
 # Store and extra-desktop builds
 
+The **public product** is the Windows EXE on the GitHub release. Linux, macOS, iOS, and Android copies are in testing. Do not attach those binaries to the release, and do not list them on operationlockedin.com, until they have been tested.
+
 Rampart’s checker is `SiteCheck.Core`. UIs:
 
 | UI | Platforms | Licence for that binary |
