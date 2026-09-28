@@ -1,8 +1,18 @@
+// CODEMAP FILE: src/SiteCheck.Core/Fingerprint.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Product/version from Server/X-Powered-By/generator meta/script comments. Feeds AdvisoryDb. Plugin slugs are not versions.
+// Called by: Checker after headers + HTML.
+// Calls: StackHint records.
+// Invariants: No advertised version means no CVE match. Do not download wp-content/plugins to guess versions.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Text.RegularExpressions;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Public-surface fingerprints from headers and a capped homepage body only.
 /// Does not fetch plugin files, admin paths, or version.php.
 /// </summary>

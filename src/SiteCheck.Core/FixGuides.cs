@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/FixGuides.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Copyable how-to lines and when-to/when-not notes. Ensure() attaches a panel to every non-Present finding so Admin Not-found still explains itself.
+// Called by: Checker after Advice.Build. All three UIs render NextStep.Lines via FindingGuide.
+// Calls: EdgeProfile, hostname, stack booleans.
+// Invariants: How-to follows the advertised stack. Never tell a kit operator to create /account/sign-in. Never send Cloudflare steps to a Vercel-only origin.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Full-sentence, copyable how-to lines for a finding that needs work.
 /// Wording follows the advertised edge (Cloudflare, Vercel, origin) so the
 /// operator is not sent to the wrong dashboard.
@@ -32,6 +42,7 @@ public static class FixGuides
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// Every finding that is not a clean Present gets a How to fix this panel:
     /// full sentences, when-to / when-not, and copyable lines.
     /// </summary>
@@ -93,6 +104,7 @@ public static class FixGuides
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// NotFound cards that always need a how-to. Optional headers and brochure
     /// sign-in gaps stay observations unless Advice already added a step.
     /// </summary>

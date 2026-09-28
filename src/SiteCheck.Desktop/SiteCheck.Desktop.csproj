@@ -1,3 +1,14 @@
+<!--
+  CODEMAP FILE: src/SiteCheck.Desktop/SiteCheck.Desktop.csproj
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Role: Avalonia desktop csproj. Publishes linux-x64, osx-x64, osx-arm64 zips via tools/publish.ps1.
+  Called by: publish.ps1.
+  Calls: SiteCheck.Core.
+  Invariants: These zips are testing copies. Do not advertise them as store listings.
+  Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+  Map: docs/CODEMAP.md — read that file first for the run/load graph.
+-->
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

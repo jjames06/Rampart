@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/PeopleSoftSurface.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof.
+// Called by: Checker. Tests in PeopleSoftSurfaceTests.
+// Calls: Shared ProbeNamedPathsAsync.
+// Invariants: No WAF-bypass, no PeopleTools RCE payload, no POST. Attention if the hostname advertises PeopleSoft. Present if those paths are absent. WAF-only is not the patch.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Read-only public-surface hint that Oracle PeopleSoft is internet-facing.
 /// GET allowlist only. No POST, no WAF-bypass encoding, no exploit payload.
 /// A match is a prompt to confirm Oracle's Critical Patch Update, not proof of RCE.

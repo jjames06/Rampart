@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.Core/LawfulUse.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Consent checkbox strings and CheckScope names shown in every shell. Criminal Code s. 342.1 / 342.2 framing lives in docs/lawful-use.md; this file is UI copy only.
+// Called by: All three UIs bind these strings so wording cannot drift per platform.
+// Calls: None.
+// Invariants: Two boxes: operator/written permission AND refusal of unauthorized use. Authorized scope is extra DNS/RFC files, not a pentest mode.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 public enum CheckScope
@@ -7,6 +16,7 @@ public enum CheckScope
 }
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Lawful-use copy. This is product wording, not legal advice.
 /// Sources: Criminal Code (Canada) s. 342.1 and s. 342.2 (Justice Laws website,
 /// current to 2026-09-03); Burp Suite Community licence clause requiring

@@ -1,8 +1,18 @@
+// CODEMAP FILE: src/SiteCheck.Core/DnsTxt.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: SPF, DMARC, MX, NS, CAA, DNSSEC DS/RRSIG via DnsClient (UDP/TCP 53 to public resolvers).
+// Called by: Checker parallel with HTTPS.
+// Calls: DnsClient NuGet (Apache-2.0).
+// Invariants: Authorized scope may add extra RFC records. Do not AXFR. CAA how-to on kits is letsencrypt.org + pki.goog.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using DnsClient;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// TXT lookups through the system resolver via DnsClient. Names must pass IsSafeDnsName.
 /// </summary>
 public static class DnsTxt

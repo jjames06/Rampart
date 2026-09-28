@@ -1,8 +1,18 @@
+// CODEMAP FILE: src/SiteCheck.Core/HtmlSurface.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Homepage HTML (capped) for mixed content, missing SRI on third-party scripts, target=_blank without rel, form action, canonical host.
+// Called by: Checker after the GET / body.
+// Calls: Models.Finding.
+// Invariants: Do not download linked plugin files. Do not execute the HTML. Cap is Checker's MaxBodyBytes.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Text.RegularExpressions;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Read-only observations from the capped homepage HTML.
 /// Looks only at markup already fetched for GET /. Does not download scripts.
 /// </summary>

@@ -1,3 +1,11 @@
+# CODEMAP FILE: tools/publish-wiki.ps1
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+# Role: Push docs/wiki/* to the GitHub wiki remote.
+# Called by: Operator after handbook edits.
+# Calls: git clone of the .wiki repo.
+# Invariants: Wiki is a separate git remote. Do not put secrets in handbook pages.
+# Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+# Map: docs/CODEMAP.md — read that file first for the run/load graph.
 # Publish docs/wiki to the GitHub Wiki remote.
 # GitHub creates owner/repo.wiki.git only after the first page exists in the website UI.
 

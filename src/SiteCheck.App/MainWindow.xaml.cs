@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.App/MainWindow.xaml.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Windows WPF shell for Rampart.exe. Consent → Checker.RunAsync → FindingGuide → ReportProtect on save.
+// Called by: User. Enter runs, Escape cancels.
+// Calls: SiteCheck.Core only for the actual check.
+// Invariants: Must stay in lockstep with Desktop and Maui (same cards, same how-to). Do not add Windows-only findings.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -12,6 +21,11 @@ using SiteCheck.Core;
 
 namespace SiteCheck.App;
 
+/// <summary>
+/// Windows WPF shell for Rampart.exe. See docs/CODEMAP.md.
+/// Consent UI → Checker.RunAsync → FindingGuide for card chrome → ReportProtect on save.
+/// Must stay in lockstep with SiteCheck.Desktop and SiteCheck.Maui.
+/// </summary>
 public partial class MainWindow : Window
 {
     private CheckReport? _report;

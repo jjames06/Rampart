@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/ExposedSurface.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Allowlisted GET of paths that should 404: /.env, /.git/HEAD, phpinfo, wp-config, server-status, etc. Kits bake these 404s in @oli/site-kit blocked-paths.
+// Called by: Checker. Tests in ExposedSurfaceTests.
+// Calls: Shared ProbeNamedPathsAsync.
+// Invariants: GET only. A 200 with secret-shaped body is Attention. A 403 is not proof of absence. Never follow to an open directory index exploit.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// GET-only allowlist of paths that should not be public on a finished site.
 /// No POST, no directory brute force, no exploit payloads.
 /// </summary>

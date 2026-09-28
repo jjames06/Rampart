@@ -1,4 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!--
+  CODEMAP FILE: src/SiteCheck.Core/SiteCheck.Core.csproj
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Role: Shared class library. net8.0, DnsClient, ProtectedData, embedded advisories.json.
+  Called by: App, Desktop, Maui, Tests project references.
+  Calls: NuGet DnsClient 1.8.0 (Apache-2.0).
+  Invariants: Keep TargetFramework net8.0 (not windows-only) so Avalonia and MAUI can share it. LogicalName of the catalogue must stay advisories.json.
+  Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+  Map: docs/CODEMAP.md — read that file first for the run/load graph.
+-->
+
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>

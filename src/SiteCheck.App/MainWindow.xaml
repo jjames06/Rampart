@@ -1,3 +1,13 @@
+<!--
+  CODEMAP FILE: src/SiteCheck.App/MainWindow.xaml
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Role: Windows desktop layout: consent boxes, hostname, scope, findings grouped by FindingState, How to fix this expander, save/copy.
+  Called by: App.xaml StartupUri.
+  Calls: MainWindow.xaml.cs code-behind.
+  Invariants: Both consent boxes must exist here. Run stays disabled until both are checked. FindingGuide drives How to fix this visibility.
+  Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+  Map: docs/CODEMAP.md — read that file first for the run/load graph.
+-->
 <Window x:Class="SiteCheck.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

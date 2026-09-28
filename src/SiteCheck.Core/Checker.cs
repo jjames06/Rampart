@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.Core/Checker.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Orchestrator for one permissioned run. Parse host, resolve public A/AAAA, pin sockets, TLS leaf, parallel HEAD/GET and DNS, fingerprint, catalogue match, allowlisted extra GETs, then Advice + FixGuides.
+// Called by: SiteCheck.App.MainWindow, SiteCheck.Desktop.MainWindow, SiteCheck.Maui.MainPage. Never call from a background service without the two consent boxes.
+// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
+// Invariants: GET/HEAD only. Redirects off. Sockets pinned to a remaining public IP. Body cap 256 KiB. Timeout 8s. UA must stay operation-locked-in-rampart/1.9.0 until a numbered release. No exploit payloads, no POST, no private RFC1918/CGNAT.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
@@ -10,9 +19,12 @@ using System.Text;
 namespace SiteCheck.Core;
 
 /// <summary>
-/// Read-only checks against a public hostname the operator confirmed they may test.
-/// Never follows redirects. Never contacts blocked addresses. Never sends a request body.
-/// Never sends exploit traffic. Extra RFC public files run only in Authorized assessment.
+/// Orchestrator for one Rampart run. See docs/CODEMAP.md.
+/// Entry: <see cref="RunAsync"/>. Callers: SiteCheck.App, Desktop, Maui.
+/// Downstream: Hostname, PrivateIp, Fingerprint, AdvisoryDb, LoginSurface,
+/// ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
+/// Invariants: redirects off, sockets pinned to a public IP, GET/HEAD only, bodies capped,
+/// no exploit payloads. User-Agent must stay operation-locked-in-rampart/1.9.0 until a numbered release.
 /// </summary>
 public static class Checker
 {

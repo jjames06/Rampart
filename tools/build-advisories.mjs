@@ -1,4 +1,14 @@
 /**
+ * CODEMAP FILE: tools/build-advisories.mjs
+ * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+ * Role: Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …).
+ * Called by: Human/CI before publish: node tools/build-advisories.mjs from repo root.
+ * Calls: HTTPS GET to Retire.js raw + GitHub Advisory API at build time only.
+ * Invariants: Runtime Rampart never runs this. Do not add Cloudflare Radar (CC BY-NC). WordPress core ranges only when a version is advertised.
+ * Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+ * Map: docs/CODEMAP.md — read that file first for the run/load graph.
+ */
+/**
  * Builds data/advisories.json from:
  * - Retire.js jsrepository.json (Apache-2.0) for JavaScript libraries
  * - GitHub Advisory API for npm package "next"

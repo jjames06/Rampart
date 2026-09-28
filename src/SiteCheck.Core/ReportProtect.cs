@@ -1,9 +1,19 @@
+// CODEMAP FILE: src/SiteCheck.Core/ReportProtect.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile.
+// Called by: WPF save checkbox. Avalonia no-op off Windows.
+// Calls: ProtectedData (System.Security.Cryptography.ProtectedData).
+// Invariants: This is not product encryption and not a substitute for TLS. Do not pack the GPLv3 EXE inside an encrypted blob.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Security.Cryptography;
 using System.Text;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Optional at-rest protection for a saved report on Windows.
 /// Uses DPAPI for the current Windows user. The executable is not encrypted:
 /// GPLv3 desktop source stays public, and packing the EXE does not hide it.

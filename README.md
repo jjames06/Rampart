@@ -29,6 +29,7 @@ It is not a penetration test, not a red-team engagement, and not a guarantee. Pa
 
 | Document | Topic |
 |----------|--------|
+| [docs/CODEMAP.md](docs/CODEMAP.md) | File-by-file map. Start here if you did not write this code. Every source file has a matching header. |
 | [Official site](https://www.operationlockedin.com/rampart) | Product home and download |
 | [docs/how-to-use.md](docs/how-to-use.md) | Permission boxes, states, How to fix this |
 | [docs/what-is-checked.md](docs/what-is-checked.md) | Every check and how it was gathered |

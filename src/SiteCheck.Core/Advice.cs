@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/Advice.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Decide which findings get a NextStep. Incomplete HTTPS does not invent header chores. Wording follows advertised stack (Next.js, WordPress, Vercel, Cloudflare).
+// Called by: Checker after all probes. Then FixGuides.Ensure fills lines.
+// Calls: Models.NextStep, EdgeProfile, StackHint.
+// Invariants: A card with no applicable work must not grow a fake how-to. Environment-specific copy only.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Next steps only for what this run actually observed.
 /// Wording follows the advertised stack (Next.js, WordPress, Vercel, Cloudflare)
 /// so a fix is written for that environment, not a generic lab.

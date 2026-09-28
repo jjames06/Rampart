@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/EdgeSurface.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Classify Cloudflare (NS vs proxied/CF-Ray) vs Vercel vs origin vs other CDN. FixGuides uses this so how-to names the right dashboard.
+// Called by: Checker from headers + NS.
+// Calls: Models.EdgeProfile.
+// Invariants: Do not query Cloudflare Radar (CC BY-NC vs GPLv3). Classification is from what this hostname already sent.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Classifies the public edge from nameservers, response headers, and homepage HTML.
 /// Does not log in to Cloudflare, Vercel, or any other dashboard.
 /// </summary>

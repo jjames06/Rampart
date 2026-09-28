@@ -1,6 +1,20 @@
+// CODEMAP FILE: src/SiteCheck.Maui/MainPage.xaml.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: MAUI shell. Same Core as WPF. Share sheet instead of Win32 SaveFileDialog.
+// Called by: User on iPhone/Android once stores accept the build.
+// Calls: Checker, FindingGuide, ReportText.
+// Invariants: Do not upload reports to Operation Locked In. LICENSE.MOBILE for store binaries.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using SiteCheck.Core;
 
 namespace SiteCheck.Maui;
+
+/// <summary>
+/// MAUI shell for iPhone/Android. Same Core as WPF. Store binaries use LICENSE.MOBILE.
+/// Reports leave the device only through the OS share sheet. See docs/CODEMAP.md.
+/// </summary>
 
 public partial class MainPage : ContentPage
 {
