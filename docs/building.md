@@ -2,7 +2,13 @@
 
 You need the .NET 8 SDK (64-bit) and 64-bit Windows.
 
-From the repository root:
+Rebuild the local CVE catalogue (needs network once per release):
+
+```
+node tools\build-advisories.mjs
+```
+
+Then from the repository root:
 
 ```
 dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release

@@ -20,10 +20,6 @@ public static class Fingerprint
         @"/wp-content/plugins/([a-z0-9_-]+)/",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-    private static readonly Regex Jquery = new(
-        @"jquery(?:[.-]|/)+([0-9]+\.[0-9]+(?:\.[0-9]+)?)",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
     public static IReadOnlyList<StackHint> FromPublicSurface(
         IReadOnlyDictionary<string, string> headers,
         string? html)
@@ -45,11 +41,7 @@ public static class Fingerprint
         {
             foreach (Match m in Generator.Matches(html)) AddGenerator(hints, m.Groups[1].Value);
             foreach (Match m in GeneratorAlt.Matches(html)) AddGenerator(hints, m.Groups[1].Value);
-            var jq = Jquery.Match(html);
-            if (jq.Success)
-            {
-                hints.Add(new StackHint("jQuery", jq.Groups[1].Value, "A script URL on the homepage named this jQuery version."));
-            }
+            hints.AddRange(AdvisoryDb.DetectFromHtml(html));
         }
 
         return hints

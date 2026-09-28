@@ -17,7 +17,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-site-check/1.2";
+    public const string UserAgent = "operation-locked-in-site-check/1.3";
 
     private static readonly string[] HeaderNames =
     {
@@ -26,7 +26,9 @@ public static class Checker
         "X-Content-Type-Options",
         "X-Frame-Options",
         "Referrer-Policy",
-        "Permissions-Policy"
+        "Permissions-Policy",
+        "Cross-Origin-Opener-Policy",
+        "Cross-Origin-Resource-Policy"
     };
 
     public static async Task<CheckReport> RunAsync(
@@ -494,6 +496,8 @@ public static class Checker
                 "X-Frame-Options" => "Clickjacking control. CSP frame-ancestors can cover this too.",
                 "Referrer-Policy" => "Limits what other sites see in the Referer header.",
                 "Permissions-Policy" => "Turns off camera, microphone, and similar features.",
+                "Cross-Origin-Opener-Policy" => "Isolates the browsing context from cross-origin popups.",
+                "Cross-Origin-Resource-Policy" => "Limits which other origins can load this response as a resource.",
                 _ => name
             };
             var state = status is null
@@ -597,7 +601,7 @@ public static class Checker
                 stack.Count == 0
                     ? "The homepage and headers did not advertise a product version this catalogue knows."
                     : "Advertised versions did not match the small sourced catalogue in this program.",
-                "Compared advertised versions from headers and homepage HTML with a local catalogue (Next.js ImageResponse RCE range, PHP end of life, jQuery 1.x/2.x). No plugin files were downloaded. NVD was not scraped live.",
+                $"Compared advertised versions from headers and homepage HTML with a local catalogue of {AdvisoryDb.ProductCount} products and {AdvisoryDb.AdvisoryCount} advisories (built {AdvisoryDb.Built}). JavaScript matches use Retire.js ranges on homepage URLs. Next.js matches use GitHub Advisory ranges. PHP end of life is included. Plugin files were not downloaded. NVD was not queried live.",
                 "A clean result is not clearance. The catalogue is short on purpose so we do not invent matches.");
             yield break;
         }

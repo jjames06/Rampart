@@ -94,6 +94,14 @@ public static class Advice
             "Send Permissions-Policy disabling camera, microphone, geolocation, and payment unless a page truly needs them.");
 
         Missing(
+            "Cross-Origin-Opener-Policy",
+            "Send Cross-Origin-Opener-Policy: same-origin unless a page must be opened as a cross-origin popup.");
+
+        Missing(
+            "Cross-Origin-Resource-Policy",
+            "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
+
+        Missing(
             "SPF",
             $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.",
             null,
@@ -157,12 +165,20 @@ public static class Advice
                 "Server disclosure"));
         }
 
-        foreach (var (entry, hint) in CveCatalog.Match(stack))
+        var cveHits = CveCatalog.Match(stack);
+        foreach (var (entry, hint) in cveHits.Take(12))
         {
             steps.Add(new NextStep(
                 $"Review {entry.Id} for {entry.Product} {hint.Version}",
                 $"{entry.Summary} Evidence: {hint.Evidence} Read {entry.SourceUrl} and upgrade before you treat this as closed.",
                 entry.Id));
+        }
+        if (cveHits.Count > 12)
+        {
+            steps.Add(new NextStep(
+                $"Review the remaining {cveHits.Count - 12} catalogue matches",
+                "The findings list has every match from this run. Upgrade the advertised library or framework, then run Site Check again. The catalogue is local; this program did not query NVD live.",
+                "Known CVEs (advertised versions)"));
         }
 
         var wp = stack.FirstOrDefault(s => s.Product.Equals("WordPress", StringComparison.OrdinalIgnoreCase));

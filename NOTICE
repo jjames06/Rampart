@@ -12,3 +12,13 @@ This product includes DnsClient.NET
 Copyright (c) MichaCo and contributors
 Licensed under the Apache License, Version 2.0
 https://github.com/MichaCo/DnsClient.NET
+
+This product includes advisory data derived from Retire.js jsrepository.json
+Copyright RetireJS contributors
+Licensed under the Apache License, Version 2.0
+https://github.com/RetireJS/retire.js
+
+This product includes advisory ranges from the GitHub Advisory Database
+for the npm package next, used under Creative Commons Attribution 4.0
+https://github.com/advisories
+https://creativecommons.org/licenses/by/4.0/

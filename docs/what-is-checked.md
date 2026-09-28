@@ -42,13 +42,9 @@ Product names and versions are taken only from:
 
 Plugin files, `readme.html`, and `wp-admin` are not fetched.
 
-CVE matching uses a small sourced catalogue in `CveCatalog.cs`. Current entries:
+CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
 
-- Next.js 16.2.0 through 16.3.5, GHSA-vcvr-r3jv-pc5j (15.x is not in that RCE range)
-- PHP 5.x and 7.x, end of life, php.net supported versions
-- jQuery 1.x and 2.x, long public XSS history, jquery.com
-
-A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance. New entries should cite a GHSA, CVE, or vendor bulletin and a version range that can be tested.
+A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance.
 
 ## Next steps
 

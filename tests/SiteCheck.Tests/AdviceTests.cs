@@ -118,11 +118,11 @@ public class FingerprintTests
 public class CveCatalogTests
 {
     [Fact]
-    public void Matches_next_16_3_5_and_not_15_5_26()
+    public void Matches_next_16_3_5_image_response_and_not_15_5_26()
     {
         var bad = new[] { new StackHint("Next.js", "16.3.5", "header") };
         var good = new[] { new StackHint("Next.js", "15.5.26", "header") };
-        Assert.NotEmpty(CveCatalog.Match(bad));
-        Assert.Empty(CveCatalog.Match(good));
+        Assert.Contains(CveCatalog.Match(bad), h => h.Entry.Id == "GHSA-vcvr-r3jv-pc5j");
+        Assert.DoesNotContain(CveCatalog.Match(good), h => h.Entry.Id == "GHSA-vcvr-r3jv-pc5j");
     }
 }

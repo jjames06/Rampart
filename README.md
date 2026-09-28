@@ -1,12 +1,12 @@
 # Site Check
 
-Site Check is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which of a short list of security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a small sourced CVE catalogue. After the run, it lists **only the next steps that apply to that hostname**.
+Site Check is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
 ## Licence
 
-GNU General Public License version 3, or any later version. The full legal text is in [`LICENSE`](LICENSE). Copyright and DnsClient attribution are in [`NOTICE`](NOTICE). DnsClient itself remains Apache License 2.0; see [`THIRD-PARTY.md`](THIRD-PARTY.md). Why GPLv3 was chosen: [`docs/licence.md`](docs/licence.md).
+GNU General Public License version 3, or any later version. The full legal text is in [`LICENSE`](LICENSE). Copyright and third-party attribution are in [`NOTICE`](NOTICE). DnsClient and Retire.js data remain Apache License 2.0; GitHub Advisory ranges for Next.js are CC BY 4.0. See [`THIRD-PARTY.md`](THIRD-PARTY.md). Why GPLv3 was chosen: [`docs/licence.md`](docs/licence.md).
 
 GPLv3 matches Bastion: this is free software you can run, study, and share under the same copyleft. It is not a paid SKU.
 
@@ -45,4 +45,4 @@ It will not crawl every URL, follow redirects, open administrative paths, downlo
 
 ## Version
 
-This tree is Site Check 1.2.0. The User-Agent is `operation-locked-in-site-check/1.2`.
+This tree is Site Check 1.3.0. The User-Agent is `operation-locked-in-site-check/1.3`. Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

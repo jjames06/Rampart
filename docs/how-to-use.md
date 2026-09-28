@@ -87,4 +87,4 @@ It will not crawl every URL. It will not follow redirects. It will not open `wp-
 
 ## Keeping the CVE catalogue current
 
-The catalogue is a short, sourced list in `src/SiteCheck.Core/CveCatalog.cs`. When a new CVE is relevant to a product this program already fingerprints, add a version range, a source URL, and a unit test, then ship a new private release. See [cve-catalogue.md](cve-catalogue.md). This work is ongoing. Do not claim the catalogue is complete.
+The catalogue is the file `data/advisories.json`, rebuilt at release time from Retire.js (JavaScript libraries) and the GitHub Advisory Database (Next.js). When you need newer ranges, run `node tools\build-advisories.mjs`, run the tests, and ship a new private release. See [cve-catalogue.md](cve-catalogue.md). Matching is local. The program does not query NVD or Cloudflare when you click Check this hostname. Do not claim the catalogue is every CVE on the internet. It is every advisory in that file for versions the homepage and headers actually advertised.

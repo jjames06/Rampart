@@ -29,4 +29,4 @@ Open a private GitHub issue on `jjames06/oli-site-check` or email Info@operation
 
 ## Keeping the CVE catalogue current
 
-See `docs/cve-catalogue.md`. Add only sourced version ranges for products this program already fingerprints. Ship a new private release after tests pass. This is ongoing work. New CVEs will be added as they apply; absence of a match is not clearance.
+See `docs/cve-catalogue.md`. Rebuild `data/advisories.json` with `node tools\build-advisories.mjs`, run tests, and ship a new private release. Matching stays local. This program does not call Cloudflare Radar, NVD, or GitHub at run time.
