@@ -96,12 +96,13 @@ public static class FixGuides
                 ? new[]
                 {
                     L("CAA is a DNS record. It does not go in next.config.ts and it is not a Vercel header."),
-                    L("Open Cloudflare, then DNS, then Records, then Add record. Choose type CAA.", "https://dash.cloudflare.com/"),
-                    L("Add an issue record so Let's Encrypt can still issue (Vercel certificates).", "0 issue \"letsencrypt.org\""),
-                    L("Add an issue record so Google Trust can still issue (Cloudflare Universal SSL).", "0 issue \"pki.goog\""),
-                    L("Add the same two names as issuewild so wildcard certificates are covered.", "0 issuewild \"letsencrypt.org\""),
-                    L("Add the Google Trust wildcard.", "0 issuewild \"pki.goog\""),
-                    L("Save each record. Wait a minute, then run Rampart again on " + hostname + ".")
+                    L("Open Cloudflare, then DNS, then Records, then Add record. Type is CAA. Name is @. Flags is 0. TTL is Auto.", "https://dash.cloudflare.com/"),
+                    L("The Tag dropdown says Only allow specific hostnames for ordinary certificates (issue), and Only allow wildcards for wildcard certificates (issuewild)."),
+                    L("Record 1: Tag Only allow specific hostnames. CA domain name:", "letsencrypt.org"),
+                    L("Record 2: Tag Only allow specific hostnames. CA domain name:", "pki.goog"),
+                    L("Record 3: Tag Only allow wildcards. CA domain name:", "letsencrypt.org"),
+                    L("Record 4: Tag Only allow wildcards. CA domain name:", "pki.goog"),
+                    L("Save after each record. Wait a minute, then run Rampart again on " + hostname + ".")
                 }
                 : new[]
                 {
@@ -114,10 +115,11 @@ public static class FixGuides
                 ? new[]
                 {
                     L("DNSSEC is enabled at the DNS host and at the registrar. It does not go in next.config.ts."),
-                    L("Open Cloudflare, then DNS, then Settings, then DNSSEC, then enable it.", "https://dash.cloudflare.com/"),
-                    L("Copy the DS record Cloudflare shows (key tag, algorithm, digest type, and digest)."),
-                    L("Paste that DS record at the registrar that holds " + apex + ". That is the account that sold you the domain, not Vercel."),
-                    L("Wait for the parent zone to publish DS, then run Rampart again. Rampart checks for DS and DNSKEY; it does not walk the chain to the root.")
+                    L("In Cloudflare: DNS, then Settings, then DNSSEC, then Enable DNSSEC. Copy Key Tag, Algorithm, Digest Type, and Digest.", "https://dash.cloudflare.com/"),
+                    L("This domain is registered at GoDaddy and uses Cloudflare nameservers. In GoDaddy do not use the one-click DNSSEC toggle. That toggle is for GoDaddy nameservers."),
+                    L("In GoDaddy: Domain Portfolio, then " + apex + ", then DNS, then DS Records, then Add.", "https://dcc.godaddy.com/"),
+                    L("Paste Cloudflare Key Tag into Key Tag, Algorithm 13 (ECDSA Curve P-256 with SHA-256 if that is how the menu is labelled), Digest Type 2, and the full Digest hex string. Save."),
+                    L("Wait until Cloudflare DNSSEC shows Active, then run Rampart again. Rampart checks for DS and DNSKEY; it does not walk the chain to the root.")
                 }
                 : new[]
                 {

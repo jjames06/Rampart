@@ -55,7 +55,7 @@ public class EdgeSurfaceTests
         };
         var edge = new EdgeProfile(EdgeKind.CloudflareProxied, "Cloudflare", true, true, true);
         var filled = FixGuides.WithLines(steps, "www.example.com", edge, true, false, true, true);
-        Assert.Contains(filled[0].Lines!, l => l.Copy == "0 issue \"letsencrypt.org\"");
-        Assert.Contains(filled[0].Lines!, l => l.Copy == "0 issue \"pki.goog\"");
+        Assert.Contains(filled[0].Lines!, l => l.Copy == "letsencrypt.org");
+        Assert.Contains(filled[0].Lines!, l => l.Copy == "pki.goog");
     }
 }
