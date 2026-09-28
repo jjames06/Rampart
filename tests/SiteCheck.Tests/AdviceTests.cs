@@ -79,6 +79,31 @@ public class AdviceTests
     }
 
     [Fact]
+    public void Dns_gaps_are_not_described_as_vercel_headers()
+    {
+        var findings = new[]
+        {
+            F("CAA", FindingState.NotFound),
+            F("DNSSEC", FindingState.NotFound),
+        };
+        var stack = new[] { new StackHint("Vercel", null, "header"), new StackHint("Cloudflare", null, "header") };
+        var steps = Advice.Build("example.com", findings, stack, Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.DoesNotContain(steps, s => s.Body.Contains("usually a header in next.config", StringComparison.Ordinal));
+        Assert.Contains(steps, s => s.Related == "CAA" && s.Environment == "DNS host");
+        Assert.Contains(steps, s => s.Related == "DNSSEC" && s.Environment == "DNS host");
+    }
+
+    [Fact]
+    public void Csp_attention_is_tighten_not_add()
+    {
+        var findings = new[] { F("Content-Security-Policy", FindingState.Attention) };
+        var stack = new[] { new StackHint("Next.js", "15.5.26", "header") };
+        var steps = Advice.Build("example.com", findings, stack, Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.Contains(steps, s => s.Title.StartsWith("Tighten", StringComparison.Ordinal));
+        Assert.DoesNotContain(steps, s => s.Title.StartsWith("Fix Content-Security-Policy", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Hsts_attention_still_gets_a_fix_step()
     {
         var findings = new[] { F("Strict-Transport-Security", FindingState.Attention) };

@@ -38,9 +38,11 @@ public class HeaderFactsTests
     }
 
     [Fact]
-    public void Csp_unsafe_inline_is_detected()
+    public void Csp_unsafe_inline_is_script_src_only()
     {
-        Assert.True(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'; script-src 'unsafe-inline'"));
+        Assert.True(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'; script-src 'self' 'unsafe-inline'"));
+        Assert.False(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'; style-src 'unsafe-inline'; script-src 'self'"));
+        Assert.False(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'; script-src-attr 'unsafe-inline'"));
         Assert.False(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'"));
     }
 

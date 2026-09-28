@@ -73,7 +73,25 @@ public static class HeaderFacts
     }
 
     public static bool CspAllowsUnsafeInline(string value) =>
-        value.Contains("unsafe-inline", StringComparison.OrdinalIgnoreCase);
+        CspDirectiveContains(value, "script-src", "unsafe-inline");
+
+    /// <summary>
+    /// True when a named directive (exact name, so script-src does not match script-src-attr)
+    /// includes the token.
+    /// </summary>
+    public static bool CspDirectiveContains(string csp, string directive, string token)
+    {
+        foreach (var raw in csp.Split(';'))
+        {
+            var p = raw.Trim();
+            if (p.Length == 0) continue;
+            var space = p.IndexOf(' ');
+            var name = space < 0 ? p : p[..space];
+            if (!name.Equals(directive, StringComparison.OrdinalIgnoreCase)) continue;
+            return p.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+        return false;
+    }
 
     public static bool DmarcIsMonitorOnly(string record)
     {

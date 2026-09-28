@@ -7,8 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.7.0</Version>
-    <InformationalVersion>1.7.0</InformationalVersion>
+    <Version>1.7.1</Version>
+    <InformationalVersion>1.7.1</InformationalVersion>
     <Authors>Jesse Mosier-Bowers</Authors>
     <Company>Operation Locked In</Company>
     <Product>Barbican</Product>

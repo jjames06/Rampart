@@ -18,7 +18,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-barbican/1.7";
+    public const string UserAgent = "operation-locked-in-barbican/1.7.1";
 
     private static readonly string[] HeaderNames =
     {
@@ -658,7 +658,7 @@ public static class Checker
                 : hstsDisabled
                     ? $"{name} is present with max-age at or below zero, which tells browsers to forget HTTPS. {hint}"
                     : cspUnsafe
-                        ? $"{name} is present and includes unsafe-inline. {hint}"
+                        ? $"{name} is present. script-src includes unsafe-inline. {hint}"
                         : present
                             ? $"{name} is present. {hint}"
                             : $"{name} was not present on HEAD / or GET /. {hint}";
@@ -730,6 +730,19 @@ public static class Checker
         var bits = new List<string>();
         if (!string.IsNullOrEmpty(server)) bits.Add("Server=" + server);
         if (!string.IsNullOrEmpty(powered)) bits.Add("X-Powered-By=" + powered);
+        var cloudflareOnly =
+            string.IsNullOrEmpty(powered)
+            && server != null
+            && server.Equals("cloudflare", StringComparison.OrdinalIgnoreCase);
+        if (cloudflareOnly)
+        {
+            return new Finding(
+                "Server disclosure",
+                FindingState.Present,
+                "Server is cloudflare. That is expected when Cloudflare is the public edge. It is not a version string.",
+                "Read Server and X-Powered-By on HTTPS HEAD / and GET /.",
+                "Hiding Server on Cloudflare is a Transform Rule at the edge. next.config.ts cannot remove it.");
+        }
         return new Finding(
             "Server disclosure",
             FindingState.Attention,

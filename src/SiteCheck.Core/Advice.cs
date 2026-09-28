@@ -24,22 +24,36 @@ public static class Advice
         var cloudflare = stack.Any(s => s.Product.Equals("Cloudflare", StringComparison.OrdinalIgnoreCase));
         var vercel = stack.Any(s => s.Product.Equals("Vercel", StringComparison.OrdinalIgnoreCase));
 
-        void Missing(string title, string generic, string? nextJs = null, string? wp = null)
+        string HeaderEnv() =>
+            next ? "Next.js" : wordpress ? "WordPress" : vercel ? "Vercel" : cloudflare ? "Cloudflare" : "This hostname";
+
+        void MissingHeader(string title, string generic, string? nextJs = null, string? wp = null)
         {
             var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
             if (f is null || f.State == FindingState.Present) return;
-            // Incomplete header reads mean HTTPS did not finish. Do not invent a header fix list on top of that.
             if (f.State == FindingState.Incomplete && title != "HTTPS") return;
+            if (f.State == FindingState.Attention && title != "Strict-Transport-Security") return;
             var body = generic;
             if (next && nextJs != null) body = nextJs;
             else if (wordpress && wp != null) body = wp;
             else if (vercel) body += " On Vercel this is usually a header in next.config.ts or the project Security Headers settings.";
             else if (cloudflare) body += " In Cloudflare: Rules, then Transform or HTTP Header Modification, or the SSL/TLS overview for HTTPS redirects.";
-            var environment = next ? "Next.js" : wordpress ? "WordPress" : vercel ? "Vercel" : cloudflare ? "Cloudflare" : "This hostname";
-            steps.Add(new NextStep($"Fix {title}", body, title, environment));
+            steps.Add(new NextStep($"Fix {title}", body, title, HeaderEnv()));
         }
 
-        Missing(
+        void MissingDns(string title, string generic, string? cloudflareDns = null)
+        {
+            var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+            if (f is null || f.State == FindingState.Present) return;
+            if (f.State == FindingState.Incomplete) return;
+            var body = generic;
+            if (cloudflare && cloudflareDns != null) body = cloudflareDns;
+            else if (cloudflare)
+                body += " Add this at the DNS host (Cloudflare DNS if the orange cloud is on). It is not an HTTP header and it does not go in next.config.ts.";
+            steps.Add(new NextStep($"Fix {title}", body, title, "DNS host"));
+        }
+
+        MissingHeader(
             "HTTPS",
             "The hostname did not complete HTTPS on the first public address. Confirm DNS points at the intended host, port 443 is open, and the certificate is installed. This program does not change firewall rules for you.");
 
@@ -69,75 +83,96 @@ public static class Advice
             }
         }
 
-        Missing(
+        MissingHeader(
             "Strict-Transport-Security",
             "Add Strict-Transport-Security on HTTPS responses, for example max-age=63072000; includeSubDomains; preload, only after HTTPS works for every name you use.",
             "In next.config.ts headers(), set Strict-Transport-Security to max-age=63072000; includeSubDomains; preload after HTTPS is correct for every hostname.",
             "In WordPress, set HSTS at the host or CDN, not in a random plugin unless you already trust that plugin. Confirm HTTPS works on wp-admin first.");
 
-        Missing(
-            "Content-Security-Policy",
-            "Add a Content-Security-Policy that allowlists your own scripts and disallows unexpected frames. Start in Report-Only if you need to watch console errors.",
-            "Keep using the shared CSP builder. Do not add 'unsafe-eval' in production. Avoid new third-party script hosts unless you re-review the policy.",
-            "A security plugin can emit CSP, but a wrong policy will break the admin. Test on a copy of the site first.");
+        var csp = findings.FirstOrDefault(x => x.Title == "Content-Security-Policy");
+        if (csp is { State: FindingState.Attention })
+        {
+            steps.Add(new NextStep(
+                "Tighten Content-Security-Policy",
+                next
+                    ? "CSP is already present. script-src includes unsafe-inline, which Next.js App Router still needs unless middleware issues a per-request nonce. Do not remove unsafe-inline until a nonce is wired. Keep unsafe-eval off in production. style-src unsafe-inline is separate and is still common."
+                    : "CSP is already present. script-src includes unsafe-inline. Move inline scripts to files, or issue a nonce, before you drop that token. style-src unsafe-inline is a separate question.",
+                "Content-Security-Policy",
+                next ? "Next.js" : HeaderEnv()));
+        }
+        else
+        {
+            MissingHeader(
+                "Content-Security-Policy",
+                "Add a Content-Security-Policy that allowlists your own scripts and disallows unexpected frames. Start in Report-Only if you need to watch console errors.",
+                "Keep using the shared CSP builder. Do not add 'unsafe-eval' in production. Avoid new third-party script hosts unless you re-review the policy.",
+                "A security plugin can emit CSP, but a wrong policy will break the admin. Test on a copy of the site first.");
+        }
 
-        Missing(
+        MissingHeader(
             "X-Content-Type-Options",
             "Send X-Content-Type-Options: nosniff on all responses.");
 
-        Missing(
+        MissingHeader(
             "X-Frame-Options",
             "Send X-Frame-Options: DENY or a CSP frame-ancestors 'none' unless you intentionally embed this site.");
 
-        Missing(
+        MissingHeader(
             "Referrer-Policy",
             "Send Referrer-Policy: strict-origin-when-cross-origin or stricter.");
 
-        Missing(
+        MissingHeader(
             "Permissions-Policy",
             "Send Permissions-Policy disabling camera, microphone, geolocation, and payment unless a page truly needs them.");
 
-        Missing(
+        MissingHeader(
             "Cross-Origin-Opener-Policy",
             "Send Cross-Origin-Opener-Policy: same-origin unless a page must be opened as a cross-origin popup.");
 
-        Missing(
+        MissingHeader(
             "Cross-Origin-Resource-Policy",
             "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
 
-        Missing(
+        MissingHeader(
             "Mixed content",
             "Serve every script, stylesheet, and image over HTTPS. Replace http:// URLs in the homepage with https:// or relative paths.",
             "In Next.js, keep next/image and public assets on HTTPS. Search the repo for http:// in layout and MDX.",
             "In WordPress, run a search-replace of the site URL to https and clear the cache.");
 
-        Missing(
+        MissingHeader(
             "Subresource Integrity",
             "Add integrity (and crossorigin) on third-party script tags, or host the script yourself. Same-origin bundles can skip this.",
             "Prefer bundling third-party code through next.config instead of a public CDN script tag.",
             "In WordPress, dequeue unused CDN scripts and host needed libraries from the theme with integrity hashes.");
 
-        Missing(
+        MissingDns(
             "DNSSEC",
-            "If your registrar and DNS host support DNSSEC, enable it on the apex and publish DS at the parent. Confirm with the DNS host's own checker after it propagates.");
+            "If your registrar and DNS host support DNSSEC, enable it on the apex and publish DS at the parent. Confirm with the DNS host's own checker after it propagates. This is not an HTTP header and it does not go in next.config.ts.",
+            "In Cloudflare: DNS, then Settings, then enable DNSSEC. Copy the DS record Cloudflare shows and add it at the registrar (the place that holds the domain, not Vercel). next.config.ts cannot enable DNSSEC.");
 
-        Missing(
+        MissingHeader(
             "security.txt",
-            "Publish a security.txt file at https://your-host/.well-known/security.txt with a Contact: mailto line so researchers can reach you. See RFC 9116.");
+            "Publish a security.txt file at https://your-host/.well-known/security.txt with a Contact: mailto line so researchers can reach you. See RFC 9116.",
+            "Add public/.well-known/security.txt in the Next.js app with a Contact: mailto line, then deploy.",
+            "A static file at /.well-known/security.txt is enough. A plugin is not required.");
 
-        Missing(
+        MissingDns(
             "CAA",
-            "At the DNS host, add a CAA record that lists only the certificate authorities you use, for example issue \"letsencrypt.org\".");
+            "At the DNS host, add CAA records that list only the certificate authorities you use, for example issue \"letsencrypt.org\". This is a DNS record, not an HTTP header.",
+            "In Cloudflare: DNS, then Records, then add CAA. For this stack (Vercel origin, Cloudflare edge) allow Let's Encrypt and Google Trust so both can issue: issue \"letsencrypt.org\" and issue \"pki.goog\", plus the same names with issuewild. Do not put CAA in next.config.ts.");
 
-        Missing(
+        MissingDns(
             "DKIM",
             "If this hostname sends mail, publish DKIM at the selector your mail provider specifies. This program only asked default, google, and selector1.");
 
-        Missing(
+        var spfBody =
+            $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.";
+        if (wordpress)
+            spfBody += " If WordPress sends mail through the host or a provider, that provider must appear in the SPF record.";
+        MissingDns(
             "SPF",
-            $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.",
-            null,
-            "If WordPress sends mail through the host or a provider such as a transactional API, that provider must appear in the SPF record. Do not copy someone else's SPF.");
+            spfBody,
+            "In Cloudflare: DNS, then Records, then TXT on the mail name (often @). List only the services that send mail for you. This is not an HTTP header.");
 
         var dmarc = findings.FirstOrDefault(x => x.Title == "DMARC");
         if (dmarc is { State: FindingState.NotFound })
@@ -145,14 +180,16 @@ public static class Advice
             steps.Add(new NextStep(
                 "Publish DMARC after SPF is in place",
                 "Add a TXT record on _dmarc. followed by the apex, for example v=DMARC1; p=none; rua=mailto:your-mailbox, then move to quarantine once reports look right. Do not start with p=reject until you have read a week of reports.",
-                "DMARC"));
+                "DMARC",
+                "DNS host"));
         }
         else if (dmarc is { State: FindingState.Attention })
         {
             steps.Add(new NextStep(
                 "Move DMARC off monitor-only when reports look right",
                 "This hostname publishes DMARC with p=none. After a week of rua reports with no unexpected sources, raise the policy to quarantine, then reject. Do not jump to p=reject on the first day.",
-                "DMARC"));
+                "DMARC",
+                "DNS host"));
         }
 
         if (http80Status is >= 200 and < 300 && string.IsNullOrEmpty(http80Location))
