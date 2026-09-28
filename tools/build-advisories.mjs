@@ -11,7 +11,9 @@
 /**
  * Builds data/advisories.json from:
  * - Retire.js jsrepository.json (Apache-2.0) for JavaScript libraries
- * - GitHub Advisory API for npm package "next"
+ * - GitHub Advisory API for npm packages this checker can actually see on a
+ *   public homepage or in Server / X-Powered-By / generator (next, react, vue,
+ *   jquery, bootstrap, lodash, axios, svelte, angular, and peers)
  *
  * Run from the repository root: node tools/build-advisories.mjs
  * The resulting file is shipped inside SiteCheck.exe. Runtime checks do not
@@ -34,6 +36,18 @@ const GHSA_NPM = [
   ["nuxt", "Nuxt"],
   ["jquery", "jQuery"],
   ["bootstrap", "Bootstrap"],
+  ["lodash", "Lodash"],
+  ["axios", "axios"],
+  ["svelte", "svelte"],
+  ["handlebars", "Handlebars"],
+  ["ember-source", "Ember.js"],
+  ["@angular/core", "@angular/core"],
+  ["moment", "moment.js"],
+  ["marked", "marked"],
+  ["dompurify", "DOMPurify"],
+  ["tinymce", "tinyMCE"],
+  ["underscore", "underscore.js"],
+  ["three", "threejs"],
 ];
 
 function displayName(key, rec) {
@@ -103,10 +117,12 @@ function extractors(rec) {
 }
 
 async function fetchJson(url, headers = {}) {
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   const res = await fetch(url, {
     headers: {
       "User-Agent": "operation-locked-in-site-check-advisory-build",
-      Accept: "application/json",
+      Accept: "application/vnd.github+json",
+      ...(token ? { Authorization: "Bearer " + token } : {}),
       ...headers,
     },
   });
@@ -347,7 +363,7 @@ const file = {
   built: new Date().toISOString().slice(0, 10),
   sources: [
     "https://github.com/RetireJS/retire.js (Apache-2.0 jsrepository.json)",
-    "https://github.com/advisories (GitHub Advisory Database: npm next, react, vue, nuxt, jquery, bootstrap; WordPress core when the generator names a version)",
+    "https://github.com/advisories (GitHub Advisory Database: npm packages this checker can fingerprint on a public homepage, plus WordPress core when the generator names a version)",
   ],
   products: mergeProducts([...jsProducts, ...ghsaProducts, ...extras]),
 };
