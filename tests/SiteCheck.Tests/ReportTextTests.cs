@@ -47,6 +47,6 @@ public class ReportTextTests
         var json = ReportJson.Format(report);
         Assert.Contains("\"hostname\": \"example.com\"", json, StringComparison.Ordinal);
         Assert.Contains("\"present\": 1", json, StringComparison.Ordinal);
-        Assert.Contains("operation-locked-in-rampart/1.10.0", json, StringComparison.Ordinal);
+        Assert.Contains("operation-locked-in-rampart/1.9.0", json, StringComparison.Ordinal);
     }
 }

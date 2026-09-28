@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.10.0</Version>
+    <Version>1.9.0</Version>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <Product>Rampart</Product>
     <Authors>Jesse Mosier-Bowers</Authors>

@@ -19,7 +19,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-rampart/1.10.0";
+    public const string UserAgent = "operation-locked-in-rampart/1.9.0";
 
     private static readonly string[] HeaderNames =
     {

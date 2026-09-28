@@ -49,4 +49,4 @@ It will not crawl every URL, follow redirects, post credentials, download plugin
 
 ## Version
 
-This tree is Rampart 1.10.0. The User-Agent is `operation-locked-in-rampart/1.10.0`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Rampart 1.9.0. The User-Agent is `operation-locked-in-rampart/1.9.0`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
