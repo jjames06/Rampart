@@ -442,6 +442,14 @@ public static class Advice
             "Cloudflare HTML cache",
             "Bypass Cloudflare cache for HTML document routes. Cache fingerprinted static files only, then purge after a deploy.");
 
+        MissingHeader(
+            "Private files",
+            "A path such as /.env or /.git/HEAD answered 200 with a short body. Remove that file from the public root and rotate any secret in it.");
+
+        MissingHeader(
+            "WWW and apex",
+            "Publish HTTPS on both www and the apex, or redirect one name to the other over HTTPS. Do not leave an http:// Location on the sibling.");
+
         return FixGuides.Ensure(findings, steps, hostname, edge, next, wordpress, vercel, cloudflare);
     }
 }

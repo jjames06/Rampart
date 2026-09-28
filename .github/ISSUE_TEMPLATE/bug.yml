@@ -1,0 +1,40 @@
+name: Bug in Rampart
+description: Something the program did on a hostname you may test.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for a defect in Rampart itself. Do not attach exploit proof-of-concept traffic. Name a hostname class (for example a Next.js site on Vercel), not a target you do not operate.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you typed, which scope you chose, and what the window showed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Rampart version
+      placeholder: "1.9.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - Linux (testing zip)
+        - macOS (testing zip)
+        - iPhone / Android (source)
+    validations:
+      required: true

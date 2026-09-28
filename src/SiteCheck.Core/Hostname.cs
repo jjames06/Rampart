@@ -23,6 +23,7 @@ public static class Hostname
     public static string? Parse(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw) || raw.Length > 253) return null;
+        if (raw.Any(c => char.IsControl(c))) return null;
         var s = raw.Trim().ToLowerInvariant();
         if (s.StartsWith("http://", StringComparison.Ordinal) || s.StartsWith("https://", StringComparison.Ordinal))
         {
@@ -32,7 +33,7 @@ public static class Hostname
         if (slash >= 0) s = s[..slash];
         var at = s.LastIndexOf('@');
         if (at >= 0) s = s[(at + 1)..];
-        if (s.Contains(':')) return null;
+        if (s.Contains(':') || s.Contains('\\') || s.Contains(' ') || s.Contains('?') || s.Contains('#')) return null;
         s = s.TrimEnd('.');
         if (!s.Contains('.')) return null;
         if (s.Any(c => c > 127))

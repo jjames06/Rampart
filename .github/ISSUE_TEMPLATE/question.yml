@@ -1,0 +1,14 @@
+name: Question
+description: How Rampart works, lawful use, or a finding you do not understand.
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: Check only hostnames you operate or for which you have written permission.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true

@@ -8,7 +8,7 @@
         <VerticalStackLayout Padding="20" Spacing="12">
             <Label Text="OPERATION LOCKED IN" TextColor="#5EEAD4" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
             <Label Text="Rampart" FontSize="32" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
-            <Label Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. Each finding includes how it was gathered, what it does not mean, and, when work is needed, How to fix this with copyable lines. Reports stay on this phone. No exploit traffic."
+            <Label Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. Each finding includes how it was gathered, what it does not mean, and, when work is needed, How to fix this with copyable lines. The check covers HTTPS, headers, sign-in paths, private-file paths, and the www and apex pair. Reports stay on this phone. No exploit traffic."
                    TextColor="#C5D0DE" LineBreakMode="WordWrap"/>
 
             <Label Text="Hostname" FontAttributes="Bold"/>

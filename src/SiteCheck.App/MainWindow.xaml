@@ -48,7 +48,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="{StaticResource NavyBrush}">
             <StackPanel Margin="24,20,24,28" HorizontalAlignment="Stretch">
                 <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="16" LineHeight="26"
-                           Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail records. Findings that need work include a How to fix this panel with full sentences and copyable lines for this hostname only. Operation Locked In does not authorize use against a hostname without that permission."/>
+                           Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths including sign-in, admin, and private-file paths, checks the www and apex pair, and asks DNS for mail records. Findings that need work include a How to fix this panel with full sentences and copyable lines for this hostname only. Operation Locked In does not authorize use against a hostname without that permission."/>
 
                 <Border Background="{StaticResource CardBrush}" CornerRadius="18" Padding="28" Margin="0,28,0,0" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                     <StackPanel>
@@ -58,7 +58,7 @@
                                    Text="Type a public hostname. You may paste a full https address; only the hostname is kept. Example: www.example.com"/>
                         <TextBlock Text="Scope" FontWeight="SemiBold" FontSize="13" Margin="0,18,0,10"/>
                         <RadioButton x:Name="StandardScope" GroupName="Scope" IsChecked="True" Checked="Scope_Changed">
-                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge (Cloudflare and similar), SPF, DMARC, MX, nameservers, and the local CVE catalogue.</TextBlock>
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge, mail records, sign-in and admin paths, private-file paths, the www and apex pair, and the local CVE catalogue.</TextBlock>
                         </RadioButton>
                         <RadioButton x:Name="AssessmentScope" GroupName="Scope" Checked="Scope_Changed">
                             <TextBlock TextWrapping="Wrap" LineHeight="22">Authorized public-surface assessment. Adds RFC public files, the MTA-STS policy host, extra DNS (CAA, DKIM, DNSSEC, MTA-STS, BIMI, TLS-RPT), and Cloudflare dashboard settings visible on the homepage. Still read-only. Still no exploit traffic.</TextBlock>

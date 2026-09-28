@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Email Operation Locked In
+    url: mailto:Info@operationlockedin.com
+    about: Private reports and quote requests. Do not send exploit traffic.
+  - name: Lawful use
+    url: https://github.com/jjames06/oli-site-check/blob/main/docs/lawful-use.md
+    about: Check only hostnames you operate or have written permission to test.

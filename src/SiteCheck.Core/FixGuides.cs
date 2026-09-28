@@ -608,6 +608,23 @@ public static class FixGuides
                 L("Upgrade the named product, or stop publishing the version in HTML generators and headers."),
                 L("This program does not send exploit traffic.")
             },
+            "Private files" => new[]
+            {
+                L("When to do this: a path such as /.env or /.git/HEAD answered 200 with a short non-HTML body."),
+                L("When not to: those paths 404 or 403, or they return a normal HTML 404 page."),
+                L("Remove the file from the public document root. Rotate any secret that was in it."),
+                L("On Vercel and Next.js, do not put .env in public/. Keep secrets in the host environment.", "https://vercel.com/dashboard"),
+                L("Confirm /.env in a private window.", "https://" + hostname + "/.env"),
+                L("Confirm /.git/HEAD the same way.", "https://" + hostname + "/.git/HEAD")
+            },
+            "WWW and apex" => new[]
+            {
+                L("When to do this: the sibling www or apex name redirected to http://, or HTTPS on that name failed while you use both names."),
+                L("When not to: you only publish one name, or the sibling already redirects to https://" + hostname + "/."),
+                L("In DNS, publish the sibling only if you intend people to type it."),
+                L("On Vercel, attach both names and let the platform issue certificates.", "https://vercel.com/dashboard"),
+                L("In Cloudflare, orange-cloud both names and set HTTPS to Full (strict).", "https://dash.cloudflare.com/")
+            },
             "Homepage" => new[]
             {
                 L("When to do this: GET / did not complete, so the homepage type was not recorded."),

@@ -66,6 +66,14 @@ Product names and versions are taken only from:
 
 Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded. If `/wp-admin/` and `/admin` do not answer 2xx or 3xx, that finding is **Present**: those common dashboards are not published. An open dashboard HTML response is **Needs attention**.
 
+**Private files.** GET `/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, and `/server-status`. A 200 with a short non-HTML body is **Needs attention**. An HTML 404 page that still returns 200 is treated as not leaked.
+
+**WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**.
+
+**HSTS includeSubDomains.** When Strict-Transport-Security is present without `includeSubDomains`, the card is **Needs attention**. Child names will not inherit the policy.
+
+**Certificate key size.** An RSA leaf shorter than 2048 bits is **Needs attention**.
+
 CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
 
 A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance.

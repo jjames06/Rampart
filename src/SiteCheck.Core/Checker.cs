@@ -128,11 +128,14 @@ public static class Checker
         findings.Add(HtmlSurface.Tabnabbing(page.Body));
         findings.Add(HtmlSurface.InsecureForms(page.Body));
         findings.Add(HtmlSurface.HttpCanonical(page.Body));
-        progress?.Report("Reading common public sign-in and admin paths.");
+        progress?.Report("Reading common public sign-in, admin, and private-file paths.");
         var loginHits = await ProbeLoginPathsAsync(hostname, ip, cancellationToken);
         findings.Add(LoginSurface.Summary(loginHits));
         findings.Add(LoginSurface.AdminSummary(loginHits));
         findings.AddRange(LoginSurface.Issues(loginHits));
+        var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
+        findings.Add(ExposedSurface.Summary(exposedHits));
+        findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, DKIM, MTA-STS, BIMI, TLS-RPT, DNSSEC).");
@@ -590,12 +593,12 @@ public static class Checker
     private static async Task<IReadOnlyList<LoginHit>> ProbeLoginPathsAsync(
         string hostname, IPAddress ip, CancellationToken ct)
     {
+        using var handler = PinnedHandler(hostname, ip, 443);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
         var tasks = LoginSurface.Paths.Select(async path =>
         {
             try
             {
-                using var handler = PinnedHandler(hostname, ip, 443);
-                using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
                 using var request = new HttpRequestMessage(HttpMethod.Get, $"https://{hostname}{path}");
                 request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
                 request.Headers.Host = hostname;
@@ -615,6 +618,63 @@ public static class Checker
             }
         });
         return await Task.WhenAll(tasks);
+    }
+
+    private static async Task<IReadOnlyList<FileHit>> ProbeExposedPathsAsync(
+        string hostname, IPAddress ip, CancellationToken ct)
+    {
+        using var handler = PinnedHandler(hostname, ip, 443);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+        var tasks = ExposedSurface.Paths.Select(async path =>
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"https://{hostname}{path}");
+                request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+                request.Headers.Host = hostname;
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+                var body = await ReadCappedBodyAsync(response, 8 * 1024, ct);
+                return new FileHit(path, (int)response.StatusCode, body);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                return new FileHit(path, null, null);
+            }
+        });
+        return await Task.WhenAll(tasks);
+    }
+
+    private static async Task<Finding> ProbeHostPairAsync(string hostname, CancellationToken ct)
+    {
+        var sibling = HostPair.Sibling(hostname);
+        if (sibling is null) return HostPair.Summary(hostname, null, null, null, false);
+        var ips = await ResolvePublicAsync(sibling, ct);
+        if (ips.Count == 0) return HostPair.Summary(hostname, sibling, null, null, false);
+        var ip = ips.OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1).First();
+        try
+        {
+            using var handler = PinnedHandler(sibling, ip, 443);
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+            using var request = new HttpRequestMessage(HttpMethod.Head, $"https://{sibling}/");
+            request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+            request.Headers.Host = sibling;
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            var (headers, _) = ReadHeaders(response);
+            headers.TryGetValue("location", out var loc);
+            return HostPair.Summary(hostname, sibling, (int)response.StatusCode, loc, true);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return HostPair.Summary(hostname, sibling, null, null, true);
+        }
     }
 
     private static async Task<SpfResult> LookupCaaAsync(string hostname, CancellationToken ct)
@@ -772,7 +832,13 @@ public static class Checker
 
         var days = (int)Math.Floor((cert.NotAfter.Value - DateTimeOffset.UtcNow).TotalDays);
         var covers = Hostname.CertificateCoversHost(hostname, cert.Names);
-        var present = days >= 0 && covers;
+        var weakKey = string.Equals(cert.KeyAlgorithm, "RSA", StringComparison.OrdinalIgnoreCase)
+            && cert.KeySize is int rsaBits && rsaBits < 2048;
+        var state = days < 0 || !covers
+            ? FindingState.NotFound
+            : weakKey
+                ? FindingState.Attention
+                : FindingState.Present;
         var obs = new StringBuilder();
         obs.Append(days >= 0 ? $"{days} day{(days == 1 ? "" : "s")} remaining (UTC {cert.NotAfter.Value:yyyy-MM-dd})." : $"Expired {Math.Abs(days)} day{(Math.Abs(days) == 1 ? "" : "s")} ago.");
         if (!string.IsNullOrWhiteSpace(cert.Issuer)) obs.Append($" Issuer: {cert.Issuer}.");
@@ -782,11 +848,12 @@ public static class Checker
             if (cert.KeySize is int bits) obs.Append($" {bits} bits");
             obs.Append('.');
         }
+        if (weakKey) obs.Append(" The RSA leaf key is shorter than 2048 bits.");
         obs.Append(covers ? " The certificate names this hostname." : " The certificate does not clearly name this hostname.");
         obs.Append(cert.Trusted ? " Windows trusted the certification path." : " Windows did not fully trust the certification path.");
         return new Finding(
             "Certificate",
-            present ? FindingState.Present : FindingState.NotFound,
+            state,
             obs.ToString(),
             "Read NotAfter and subject alternative names from the leaf certificate presented in the TLS handshake. Trust used the Windows certificate store. Days remaining are whole UTC days.",
             "A named, unexpired certificate does not prove every subdomain or mail server is covered, and it does not prove the operator of the site is who they claim.");
@@ -809,6 +876,11 @@ public static class Checker
                 && present
                 && !hstsDisabled
                 && HeaderFacts.HstsMaxAgeIsShort(headers[name]);
+            var hstsNoSub = name == "Strict-Transport-Security"
+                && present
+                && !hstsDisabled
+                && !hstsShort
+                && !HeaderFacts.HstsHasIncludeSubDomains(headers[name]);
             var cspUnsafe = name == "Content-Security-Policy"
                 && present
                 && HeaderFacts.CspAllowsUnsafeInline(headers[name]);
@@ -827,7 +899,7 @@ public static class Checker
             };
             var state = status is null
                 ? FindingState.Incomplete
-                : hstsDisabled || hstsShort || cspUnsafe
+                : hstsDisabled || hstsShort || hstsNoSub || cspUnsafe
                     ? FindingState.Attention
                     : present
                         ? FindingState.Present
@@ -838,11 +910,13 @@ public static class Checker
                     ? $"{name} is present with max-age at or below zero, which tells browsers to forget HTTPS. {hint}"
                     : hstsShort
                         ? $"{name} is present with max-age {HeaderFacts.HstsMaxAge(headers[name])} seconds, which is shorter than 180 days. {hint}"
-                        : cspUnsafe
-                            ? $"{name} is present. script-src includes unsafe-inline. {hint}"
-                            : present
-                                ? $"{name} is present. {hint}"
-                                : $"{name} was not present on HEAD / or GET /. {hint}";
+                        : hstsNoSub
+                            ? $"{name} is present without includeSubDomains. Child names will not inherit this policy. {hint}"
+                            : cspUnsafe
+                                ? $"{name} is present. script-src includes unsafe-inline. {hint}"
+                                : present
+                                    ? $"{name} is present. {hint}"
+                                    : $"{name} was not present on HEAD / or GET /. {hint}";
             yield return new Finding(
                 name,
                 state,

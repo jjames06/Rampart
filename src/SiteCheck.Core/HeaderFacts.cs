@@ -138,6 +138,9 @@ public static class HeaderFacts
     }
 
     /// <summary>True when max-age is present and shorter than 180 days.</summary>
+    public static bool HstsHasIncludeSubDomains(string value) =>
+        value.IndexOf("includesubdomains", StringComparison.OrdinalIgnoreCase) >= 0;
+
     public static bool HstsMaxAgeIsShort(string value)
     {
         var age = HstsMaxAge(value);

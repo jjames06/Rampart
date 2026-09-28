@@ -29,7 +29,7 @@
     <ScrollViewer>
       <StackPanel Margin="24,20">
         <TextBlock TextWrapping="Wrap" Foreground="#C5D0DE" FontSize="15" LineHeight="24"
-                   Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths (including common sign-in and admin URLs), and asks DNS for mail records. Findings that need work include a How to fix this panel with copyable lines. Operation Locked In does not authorize use against a hostname without that permission."/>
+                   Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths (including common sign-in, admin, and private-file paths), checks the www and apex pair, and asks DNS for mail records. Findings that need work include a How to fix this panel with copyable lines. Operation Locked In does not authorize use against a hostname without that permission."/>
 
         <Border Background="#162033" CornerRadius="18" Padding="24" Margin="0,22,0,0" BorderBrush="#243247" BorderThickness="1">
           <StackPanel Spacing="8">
@@ -38,7 +38,7 @@
             <TextBlock Foreground="#C5D0DE" FontSize="13" TextWrapping="Wrap"
                        Text="Type a public hostname. You may paste a full https address; only the hostname is kept."/>
             <TextBlock Text="Scope" FontWeight="SemiBold" Margin="0,8,0,0"/>
-            <RadioButton Name="StandardScope" GroupName="Scope" IsChecked="True" Content="Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge, mail DNS, local CVE catalogue, and common sign-in paths."/>
+            <RadioButton Name="StandardScope" GroupName="Scope" IsChecked="True" Content="Standard public-surface check. HTTPS, certificate, TLS, headers, cookies, homepage markup, public edge, mail DNS, sign-in and admin paths, private-file paths, www and apex, and the local CVE catalogue."/>
             <RadioButton Name="AssessmentScope" GroupName="Scope" Content="Authorized public-surface assessment. Adds RFC public files, the MTA-STS policy host, extra DNS, and Cloudflare homepage extras. Still read-only."/>
             <CheckBox Name="PermissionBox" Content="I operate this hostname, or I have written permission from the person who operates it, to run this program against it."/>
             <CheckBox Name="LawBox" Content="I will not use this program against any hostname I do not operate and for which I do not have written permission. Operation Locked In does not authorize that use. Unauthorized use can be an offence in Canada under Criminal Code section 342.1. This screen is not legal advice."/>

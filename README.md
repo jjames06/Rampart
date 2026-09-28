@@ -1,10 +1,42 @@
 # Rampart
 
-A rampart is the defensive wall of a fortress. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
+**Read-only public-surface assessment of a hostname you operate**
 
-Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage and common public sign-in paths present, and whether advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
+Version **1.9.0**
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](#run-a-release-build)
+
+<p align="center">
+  <a href="https://www.operationlockedin.com/rampart"><strong>Official site</strong></a> ·
+  <a href="https://www.operationlockedin.com/rampart/download"><strong>Download</strong></a> ·
+  <a href="docs/how-to-use.md"><strong>How to use</strong></a> ·
+  <a href="docs/wiki/Home.md"><strong>Handbook</strong></a> ·
+  <a href="https://github.com/jjames06/oli-site-check/releases/latest"><strong>Latest release</strong></a> ·
+  <a href="https://github.com/jjames06/oli-site-check/issues"><strong>Issues</strong></a> ·
+  <a href="SECURITY.md"><strong>Security</strong></a>
+</p>
+
+Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
+
+The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
+
+It reports what that hostname presents on HTTPS: certificate and TLS, security headers, cookies, homepage markup, public edge (Cloudflare and similar), mail records, common public sign-in and admin paths, paths that should not publish private files, the www and apex pair, and advertised versions against a **local** CVE catalogue. After the run it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
+
+**Further reading in this repo**
+
+| Document | Topic |
+|----------|--------|
+| [Official site](https://www.operationlockedin.com/rampart) | Product home and download |
+| [docs/how-to-use.md](docs/how-to-use.md) | Permission boxes, states, How to fix this |
+| [docs/what-is-checked.md](docs/what-is-checked.md) | Every check and how it was gathered |
+| [docs/lawful-use.md](docs/lawful-use.md) | Written permission, Criminal Code s. 342.1 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Core plus Windows, Linux/macOS, and phone shells |
+| [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md) | SmartScreen, wiki, testing zips, stores |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Issues and pull requests |
+| [SECURITY.md](SECURITY.md) | What the program may contact, how to report a defect |
 
 ## Licence
 
@@ -45,7 +77,7 @@ dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --se
 
 ## What this program will not do
 
-It will not crawl every URL, follow redirects, post credentials, download plugin zip files, guess passwords, or send exploit traffic. It GETs a short allowlist of common public sign-in and admin URLs. It will not contact private or home-network addresses. A quiet report is not clearance.
+It will not crawl every URL, follow redirects, post credentials, download plugin zip files, guess passwords, or send exploit traffic. It GETs a short allowlist of common public sign-in, admin, and private-file paths. It will not contact private or home-network addresses. A quiet report is not clearance.
 
 ## Version
 
