@@ -36,6 +36,27 @@ public static class DnsTxt
         }
     }
 
+    public static async Task<IReadOnlyList<string>> QueryDsAsync(string name, CancellationToken cancellationToken)
+    {
+        if (!Hostname.IsSafeDnsName(name)) return Array.Empty<string>();
+        try
+        {
+            var result = await Client.QueryAsync(name, QueryType.DS, cancellationToken: cancellationToken);
+            return result.Answers
+                .Select(a => a.ToString())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToArray();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return Array.Empty<string>();
+        }
+    }
+
     public static async Task<IReadOnlyList<string>> QueryCaaAsync(string name, CancellationToken cancellationToken)
     {
         if (!Hostname.IsSafeDnsName(name)) return Array.Empty<string>();

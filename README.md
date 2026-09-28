@@ -46,4 +46,4 @@ It will not crawl every URL, follow redirects, open administrative paths, downlo
 
 ## Version
 
-This tree is Site Check 1.4.0. The User-Agent is `operation-locked-in-site-check/1.4`. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Site Check 1.5.0. The User-Agent is `operation-locked-in-site-check/1.5`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

@@ -84,7 +84,7 @@ public partial class MainWindow : Window
         {
             var report = await Checker.RunAsync(HostBox.Text, progress, ct, SelectedScope());
             _report = report;
-            FindingsList.ItemsSource = report.Findings.Select(ToView).ToList();
+            FindingsList.ItemsSource = ToViews(report.Findings);
             if (report.NextSteps.Count > 0)
             {
                 NextList.ItemsSource = report.NextSteps;
@@ -285,6 +285,20 @@ public partial class MainWindow : Window
             """;
     }
 
+    private static List<FindingView> ToViews(IReadOnlyList<Finding> findings)
+    {
+        var list = new List<FindingView>();
+        FindingState? last = null;
+        foreach (var f in findings.OrderBy(x => ReportText.Rank(x.State)))
+        {
+            var view = ToView(f);
+            view.Section = last == f.State ? "" : ReportText.SectionName(f.State);
+            last = f.State;
+            list.Add(view);
+        }
+        return list;
+    }
+
     private static FindingView ToView(Finding f)
     {
         var teal = (Brush)Application.Current.Resources["TealBrush"];
@@ -313,6 +327,7 @@ public partial class MainWindow : Window
 
 public sealed class FindingView
 {
+    public string Section { get; set; } = "";
     public string Title { get; set; } = "";
     public string State { get; set; } = "";
     public Brush StateBrush { get; set; } = Brushes.White;

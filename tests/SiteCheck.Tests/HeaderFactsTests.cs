@@ -9,7 +9,7 @@ public class HeaderFactsTests
     {
         var finding = HeaderFacts.CookieFinding(new[]
         {
-            "session=abc; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly; Secure; Path=/"
+            "session=abc; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly; Secure; SameSite=Lax; Path=/"
         });
         Assert.Equal(FindingState.Present, finding.State);
     }

@@ -25,11 +25,21 @@ public static class HeaderFacts
         var weak = list.Where(CookieMissingRequiredFlags).ToArray();
         if (weak.Length == 0)
         {
+            var noSite = list.Where(c => c.IndexOf("SameSite", StringComparison.OrdinalIgnoreCase) < 0).ToArray();
+            if (noSite.Length > 0)
+            {
+                return new Finding(
+                    "Cookie flags",
+                    FindingState.Attention,
+                    "HttpOnly and Secure were present. SameSite was missing on at least one Set-Cookie header.",
+                    "Read each Set-Cookie value on HTTPS HEAD / and GET / as a separate cookie.",
+                    "Browsers may default SameSite. Set SameSite=Lax or Strict on session cookies and confirm in developer tools.");
+            }
             return new Finding(
                 "Cookie flags",
                 FindingState.Present,
                 list.Length == 1
-                    ? "The Set-Cookie header on this response included HttpOnly and Secure."
+                    ? "The Set-Cookie header on this response included HttpOnly, Secure, and SameSite."
                     : $"All {list.Length} Set-Cookie headers on this response included HttpOnly and Secure.",
                 "Read each Set-Cookie value on HTTPS HEAD / and GET / as a separate cookie. Flags are searched as whole-header substrings.",
                 "This does not prove every cookie on the site is safe. Treat it as a hint and confirm in the browser developer tools.");

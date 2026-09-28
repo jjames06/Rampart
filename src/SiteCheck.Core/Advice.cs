@@ -2,6 +2,9 @@ namespace SiteCheck.Core;
 
 /// <summary>
 /// Next steps only for what this run actually observed.
+/// Wording follows the advertised stack (Next.js, WordPress, Vercel, Cloudflare)
+/// so a fix is written for that environment, not a generic lab.
+/// Incomplete header reads do not invent header chores when HTTPS never finished.
 /// </summary>
 public static class Advice
 {
@@ -30,9 +33,10 @@ public static class Advice
             var body = generic;
             if (next && nextJs != null) body = nextJs;
             else if (wordpress && wp != null) body = wp;
-            else if (vercel) body += " On Vercel this is usually a header in next.config or the project Security Headers settings.";
+            else if (vercel) body += " On Vercel this is usually a header in next.config.ts or the project Security Headers settings.";
             else if (cloudflare) body += " In Cloudflare: Rules, then Transform or HTTP Header Modification, or the SSL/TLS overview for HTTPS redirects.";
-            steps.Add(new NextStep($"Fix {title}", body, title));
+            var environment = next ? "Next.js" : wordpress ? "WordPress" : vercel ? "Vercel" : cloudflare ? "Cloudflare" : "This hostname";
+            steps.Add(new NextStep($"Fix {title}", body, title, environment));
         }
 
         Missing(
@@ -100,6 +104,22 @@ public static class Advice
         Missing(
             "Cross-Origin-Resource-Policy",
             "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
+
+        Missing(
+            "Mixed content",
+            "Serve every script, stylesheet, and image over HTTPS. Replace http:// URLs in the homepage with https:// or relative paths.",
+            "In Next.js, keep next/image and public assets on HTTPS. Search the repo for http:// in layout and MDX.",
+            "In WordPress, run a search-replace of the site URL to https and clear the cache.");
+
+        Missing(
+            "Subresource Integrity",
+            "Add integrity (and crossorigin) on third-party script tags, or host the script yourself. Same-origin bundles can skip this.",
+            "Prefer bundling third-party code through next.config instead of a public CDN script tag.",
+            "In WordPress, dequeue unused CDN scripts and host needed libraries from the theme with integrity hashes.");
+
+        Missing(
+            "DNSSEC",
+            "If your registrar and DNS host support DNSSEC, enable it on the apex and publish DS at the parent. Confirm with the DNS host's own checker after it propagates.");
 
         Missing(
             "security.txt",
@@ -183,7 +203,8 @@ public static class Advice
             steps.Add(new NextStep(
                 $"Review {entry.Id} for {entry.Product} {hint.Version}",
                 $"{entry.Summary} Evidence: {hint.Evidence} Read {entry.SourceUrl} and upgrade before you treat this as closed.",
-                entry.Id));
+                entry.Id,
+                entry.Product));
         }
         if (cveHits.Count > 12)
         {
@@ -199,6 +220,7 @@ public static class Advice
             steps.Add(new NextStep(
                 "Confirm WordPress and plugins are current",
                 $"The homepage advertised WordPress {wp.Version}. Compare that number with wordpress.org/download. Update WordPress, themes, and plugins from the dashboard. Remove the generator meta so the version is not public. This program did not log in to wp-admin and did not download plugin files.",
+                "WordPress",
                 "WordPress"));
         }
         if (pluginSlugs.Count > 0)

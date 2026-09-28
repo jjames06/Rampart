@@ -108,7 +108,8 @@
                                     <DockPanel Margin="0,0,0,18" LastChildFill="True">
                                         <Border DockPanel.Dock="Left" Width="8" Height="8" CornerRadius="4" Background="{StaticResource TealBrush}" Margin="0,8,14,0" VerticalAlignment="Top"/>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" FontFamily="Georgia"/>
+                                            <TextBlock Text="{Binding Environment}" Foreground="{StaticResource TealSoftBrush}" FontSize="11" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" FontFamily="Georgia" Margin="0,4,0,0"/>
                                             <TextBlock Text="{Binding Body}" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" LineHeight="22"/>
                                         </StackPanel>
                                     </DockPanel>
@@ -121,6 +122,19 @@
                 <ItemsControl x:Name="FindingsList" Margin="0,22,0,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
+                            <StackPanel>
+                            <TextBlock Text="{Binding Section}" FontFamily="Georgia" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Section}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <Border Background="{StaticResource CardBrush}" CornerRadius="18" Margin="0,0,0,12" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
                                 <DockPanel>
                                     <Border Width="5" Background="{Binding AccentBrush}" CornerRadius="18,0,0,18"/>
@@ -137,6 +151,7 @@
                                     </StackPanel>
                                 </DockPanel>
                             </Border>
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

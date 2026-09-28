@@ -42,13 +42,20 @@ public static class ReportText
             sb.AppendLine("What to do next (only items that apply to this run)");
             foreach (var step in report.NextSteps)
             {
-                sb.AppendLine($"  {step.Title}");
+                sb.AppendLine($"  {step.Title}  [{step.Environment}]");
                 sb.AppendLine("  " + step.Body);
                 sb.AppendLine();
             }
         }
-        foreach (var f in report.Findings)
+        FindingState? last = null;
+        foreach (var f in report.Findings.OrderBy(x => Rank(x.State)))
         {
+            if (last != f.State)
+            {
+                sb.AppendLine();
+                sb.AppendLine(SectionName(f.State));
+                last = f.State;
+            }
             sb.AppendLine($"{f.Title}  ({StateLabel(f.State)})");
             sb.AppendLine(f.Observation);
             sb.AppendLine("How this was gathered: " + f.Method);
@@ -62,6 +69,22 @@ public static class ReportText
         }
         return sb.ToString();
     }
+
+    public static int Rank(FindingState state) => state switch
+    {
+        FindingState.Attention => 0,
+        FindingState.NotFound => 1,
+        FindingState.Incomplete => 2,
+        _ => 3
+    };
+
+    public static string SectionName(FindingState state) => state switch
+    {
+        FindingState.Attention => "Needs attention",
+        FindingState.NotFound => "Not found on this run",
+        FindingState.Incomplete => "Could not complete",
+        _ => "Present"
+    };
 
     public static string StateLabel(FindingState state) => state switch
     {

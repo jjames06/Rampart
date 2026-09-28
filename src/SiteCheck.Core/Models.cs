@@ -18,10 +18,15 @@ public sealed record Finding(
     string Method,
     string Caveat);
 
+/// <summary>
+/// A fix that applies to this run. Environment names the stack the wording was written for
+/// (Next.js, WordPress, Cloudflare, Vercel, or this hostname).
+/// </summary>
 public sealed record NextStep(
     string Title,
     string Body,
-    string Related);
+    string Related,
+    string Environment = "This hostname");
 
 public sealed record StackHint(
     string Product,

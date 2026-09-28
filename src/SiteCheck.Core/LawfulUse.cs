@@ -36,7 +36,8 @@ public static class LawfulUse
             "HTTPS HEAD / and GET / (body capped) with redirects disabled",
             "HTTP HEAD / on port 80 to the same public address",
             "DNS TXT for SPF and DMARC on parsed names only",
-            "Compare advertised product versions with the local advisory catalogue"
+            "Compare advertised product versions with the local advisory catalogue",
+            "Read the homepage HTML for mixed http:// resources and for integrity attributes on https:// scripts"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {

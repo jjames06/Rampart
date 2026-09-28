@@ -11,13 +11,14 @@ namespace SiteCheck.Core;
 /// <summary>
 /// Read-only checks against a public hostname the operator confirmed they may test.
 /// Never follows redirects. Never contacts blocked addresses. Never sends a request body.
+/// Never sends exploit traffic. Extra RFC public files run only in Authorized assessment.
 /// </summary>
 public static class Checker
 {
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-site-check/1.4";
+    public const string UserAgent = "operation-locked-in-site-check/1.5";
 
     private static readonly string[] HeaderNames =
     {
@@ -99,6 +100,8 @@ public static class Checker
         findings.Add(SpfFinding(spf));
         findings.Add(DmarcFinding(dmarc));
         findings.AddRange(CveFindings(stack));
+        findings.Add(HtmlSurface.MixedContent(page.Body));
+        findings.Add(HtmlSurface.SubresourceIntegrity(page.Body));
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, common DKIM selectors).");
@@ -106,11 +109,13 @@ public static class Checker
             var robotsTask = ReadPublicPathAsync(hostname, ip, "/robots.txt", 16 * 1024, cancellationToken);
             var caaTask = LookupCaaAsync(hostname, cancellationToken);
             var dkimTask = LookupDkimAsync(hostname, cancellationToken);
-            await Task.WhenAll(secTask, robotsTask, caaTask, dkimTask);
+            var dnssecTask = LookupDnssecAsync(hostname, cancellationToken);
+            await Task.WhenAll(secTask, robotsTask, caaTask, dkimTask, dnssecTask);
             findings.Add(PublicFileFinding("security.txt", await secTask, "RFC 9116 contact file at /.well-known/security.txt."));
             findings.Add(PublicFileFinding("robots.txt", await robotsTask, "Public robots.txt on the same address."));
             findings.Add(CaaFinding(await caaTask));
             findings.Add(DkimFinding(await dkimTask));
+            findings.Add(await dnssecTask);
         }
         if (plugins.Count > 0)
         {
@@ -514,6 +519,26 @@ public static class Checker
             ok ? $"{title} answered HTTP {result.Status} on this public address." : $"{title} was not a successful document (HTTP {result.Status}).",
             method,
             "This is a public RFC or convention file. Its absence is hygiene, not a breach.");
+    }
+
+    private static async Task<Finding> LookupDnssecAsync(string hostname, CancellationToken ct)
+    {
+        var ds = await DnsTxt.QueryDsAsync(Hostname.Apex(hostname), ct);
+        if (ds.Count == 0)
+        {
+            return new Finding(
+                "DNSSEC",
+                FindingState.NotFound,
+                "No DS record was found on the apex. The parent zone may not have a Delegation Signer for this name.",
+                "Asked the system resolver for DS on the apex name.",
+                "A missing DS record is common. It does not mean DNS is forged. Enabling DNSSEC is a registrar and DNS-host task.");
+        }
+        return new Finding(
+            "DNSSEC",
+            FindingState.Present,
+            "A DS record is published on the apex (" + ds.Count + " answer(s)).",
+            "Asked the system resolver for DS on the apex name.",
+            "Presence of DS is not a full chain validation. This program does not walk the DNSSEC chain to the root.");
     }
 
     private static Finding CaaFinding(SpfResult caa)
