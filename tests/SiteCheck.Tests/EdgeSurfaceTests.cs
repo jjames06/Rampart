@@ -91,4 +91,12 @@ public class EdgeSurfaceTests
         var step = new NextStep("Fix HSTS", "body", "Strict-Transport-Security", Lines: new[] { new FixLine("Set the header.") });
         Assert.False(FindingGuide.ShowsHowTo(f, step));
     }
+
+    [Fact]
+    public void Present_admin_does_not_show_how_to()
+    {
+        var f = new Finding("Admin pages", FindingState.Present, "obs", "method", "caveat");
+        var step = new NextStep("Address Admin pages", "body", "Admin pages", Lines: new[] { new FixLine("x") });
+        Assert.False(FindingGuide.ShowsHowTo(f, step));
+    }
 }

@@ -20,10 +20,18 @@ public class LoginSurfaceTests
             cookies ?? Array.Empty<string>());
 
     [Fact]
-    public void Summary_is_not_found_when_every_path_misses()
+    public void Summary_is_present_when_brochure_has_no_login()
     {
         var hits = LoginSurface.Paths.Select(p => Hit(p, 404)).ToArray();
         var f = LoginSurface.Summary(hits);
+        Assert.Equal(FindingState.Present, f.State);
+    }
+
+    [Fact]
+    public void Summary_is_not_found_when_wordpress_has_no_login()
+    {
+        var hits = LoginSurface.Paths.Select(p => Hit(p, 404)).ToArray();
+        var f = LoginSurface.Summary(hits, wordpressAdvertised: true);
         Assert.Equal(FindingState.NotFound, f.State);
     }
 

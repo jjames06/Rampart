@@ -123,19 +123,41 @@ public static class Checker
         findings.Add(EdgeSurface.PublicEdgeFinding(edge));
         findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
         findings.AddRange(CveFindings(stack));
-        findings.Add(HtmlSurface.MixedContent(page.Body));
-        findings.Add(HtmlSurface.SubresourceIntegrity(page.Body));
-        findings.Add(HtmlSurface.Tabnabbing(page.Body));
-        findings.Add(HtmlSurface.InsecureForms(page.Body));
-        findings.Add(HtmlSurface.HttpCanonical(page.Body));
+        findings.Add(SafeFinding("Mixed content", () => HtmlSurface.MixedContent(page.Body)));
+        findings.Add(SafeFinding("Subresource Integrity", () => HtmlSurface.SubresourceIntegrity(page.Body)));
+        findings.Add(SafeFinding("Tabnabbing", () => HtmlSurface.Tabnabbing(page.Body)));
+        findings.Add(SafeFinding("Form action", () => HtmlSurface.InsecureForms(page.Body)));
+        findings.Add(SafeFinding("Canonical URL", () => HtmlSurface.HttpCanonical(page.Body)));
         progress?.Report("Reading common public sign-in, admin, and private-file paths.");
         var loginHits = await ProbeLoginPathsAsync(hostname, ip, cancellationToken);
-        findings.Add(LoginSurface.Summary(loginHits));
-        findings.Add(LoginSurface.AdminSummary(loginHits));
-        findings.AddRange(LoginSurface.Issues(loginHits));
+        findings.Add(SafeFinding("Sign-in pages", () => LoginSurface.Summary(loginHits, stack.Any(s => s.Product.Equals("WordPress", StringComparison.OrdinalIgnoreCase)))));
+        findings.Add(SafeFinding("Admin pages", () => LoginSurface.AdminSummary(loginHits)));
+        try
+        {
+            findings.AddRange(LoginSurface.Issues(loginHits));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Sign-in pages"));
+        }
         var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
-        findings.Add(ExposedSurface.Summary(exposedHits));
-        findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
+        findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(exposedHits)));
+        try
+        {
+            findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("WWW and apex"));
+        }
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, DKIM, MTA-STS, BIMI, TLS-RPT, DNSSEC).");
@@ -175,16 +197,24 @@ public static class Checker
             ? (int?)null
             : (int)Math.Floor((cert.NotAfter.Value - DateTimeOffset.UtcNow).TotalDays);
 
-        var next = Advice.Build(
-            hostname,
-            findings,
-            stack,
-            plugins,
-            certDays,
-            cert.TlsProtocol,
-            http80.Status,
-            http80.Location,
-            edge);
+        IReadOnlyList<NextStep> next;
+        try
+        {
+            next = Advice.Build(
+                hostname,
+                findings,
+                stack,
+                plugins,
+                certDays,
+                cert.TlsProtocol,
+                http80.Status,
+                http80.Location,
+                edge);
+        }
+        catch (Exception)
+        {
+            next = Array.Empty<NextStep>();
+        }
 
         var limits = new List<string>
         {
@@ -899,7 +929,7 @@ public static class Checker
             };
             var state = status is null
                 ? FindingState.Incomplete
-                : hstsDisabled || hstsShort || hstsNoSub || cspUnsafe
+                : hstsDisabled || hstsShort || cspUnsafe
                     ? FindingState.Attention
                     : present
                         ? FindingState.Present
@@ -911,7 +941,7 @@ public static class Checker
                     : hstsShort
                         ? $"{name} is present with max-age {HeaderFacts.HstsMaxAge(headers[name])} seconds, which is shorter than 180 days. {hint}"
                         : hstsNoSub
-                            ? $"{name} is present without includeSubDomains. Child names will not inherit this policy. {hint}"
+                            ? $"{name} is present without includeSubDomains. Child names will not inherit this policy. That is recorded; it is not a defect by itself. {hint}"
                             : cspUnsafe
                                 ? $"{name} is present. script-src includes unsafe-inline. {hint}"
                                 : present
@@ -923,6 +953,30 @@ public static class Checker
                 observation,
                 "Read response headers from HTTPS HEAD / and GET /. Names are compared without regard to case. Redirects are not followed. Compressed bodies are decompressed before HTML is read.",
                 "A missing header is a fact about this response, not proof of a breach. Extra headers on other paths are not shown.");
+        }
+    }
+
+    private static Finding IncompleteFinding(string title) =>
+        new(
+            title,
+            FindingState.Incomplete,
+            "This check did not finish.",
+            "The rest of the report still applies.",
+            "A failed parser is not a finding about the hostname.");
+
+    private static Finding SafeFinding(string title, Func<Finding> make)
+    {
+        try
+        {
+            return make();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return IncompleteFinding(title);
         }
     }
 

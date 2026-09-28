@@ -29,7 +29,7 @@ public static class LoginSurface
 
     public static readonly string[] Paths = AccountPaths.Concat(AdminPaths).ToArray();
 
-    public static Finding Summary(IReadOnlyList<LoginHit> hits)
+    public static Finding Summary(IReadOnlyList<LoginHit> hits, bool wordpressAdvertised = false)
     {
         var live = hits
             .Where(h => AccountPaths.Contains(h.Path) && h.Alive)
@@ -38,10 +38,20 @@ public static class LoginSurface
             .ToArray();
         if (live.Length == 0)
         {
+            if (wordpressAdvertised)
+            {
+                return new Finding(
+                    "Sign-in pages",
+                    FindingState.NotFound,
+                    "This hostname advertised WordPress, but none of the common public sign-in paths answered 2xx or 3xx.",
+                    "GET each allowlisted account path on the same public address, redirects disabled, body capped at 64 KB.",
+                    "A renamed wp-login.php is not found this way.");
+            }
+
             return new Finding(
                 "Sign-in pages",
-                FindingState.NotFound,
-                "None of the common public sign-in paths answered 2xx or 3xx: " + string.Join(", ", AccountPaths) + ".",
+                FindingState.Present,
+                "None of the common public sign-in paths answered 2xx or 3xx. That is expected on a hostname with no public accounts.",
                 "GET each allowlisted account path on the same public address, redirects disabled, body capped at 64 KB.",
                 "A custom login URL is not found this way. That is not proof the site has no accounts.");
         }

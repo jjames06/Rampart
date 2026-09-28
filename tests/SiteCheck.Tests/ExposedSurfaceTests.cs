@@ -46,6 +46,13 @@ public class ExposedSurfaceTests
     }
 
     [Fact]
+    public void Sibling_404_is_present()
+    {
+        var f = HostPair.Summary("www.example.com", "example.com", 404, null, true);
+        Assert.Equal(FindingState.Present, f.State);
+    }
+
+    [Fact]
     public void Hsts_includeSubDomains_helper()
     {
         Assert.True(HeaderFacts.HstsHasIncludeSubDomains("max-age=63072000; includeSubDomains"));

@@ -68,9 +68,9 @@ Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a 
 
 **Private files.** GET `/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, and `/server-status`. A 200 with a short non-HTML body is **Needs attention**. An HTML 404 page that still returns 200 is treated as not leaked.
 
-**WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**.
+**WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**. A 404 on the sibling means that name is not published and is **Present**.
 
-**HSTS includeSubDomains.** When Strict-Transport-Security is present without `includeSubDomains`, the card is **Needs attention**. Child names will not inherit the policy.
+**HSTS includeSubDomains.** When Strict-Transport-Security is present without `includeSubDomains`, the observation records that child names will not inherit the policy. That alone is not **Needs attention**.
 
 **Certificate key size.** An RSA leaf shorter than 2048 bits is **Needs attention**.
 

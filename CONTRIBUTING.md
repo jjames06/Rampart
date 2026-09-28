@@ -15,7 +15,7 @@ Private security reports: see [SECURITY.md](SECURITY.md).
 
 - Keep checks as GET or HEAD on an allowlist, sockets pinned to a public address, redirects off, bodies capped.
 - Add or update tests in `tests/SiteCheck.Tests`.
-- How-to-fix copy lives in `SiteCheck.Core` (`FixGuides`, `FindingGuide`). Do not add that wording in only one UI.
+- How-to-fix copy lives in `SiteCheck.Core` (`FixGuides`, `FindingGuide`). Do not add that wording in only one UI. Do not name another product's paths (for example `/account/sign-in`) unless this hostname advertised that product.
 - Windows, Linux/macOS (Avalonia), and MAUI all consume Core. Card behaviour belongs in Core first.
 - Do not bump the public version in a documentation-only change. The public pin is 1.9.0 until a deliberate release.
 

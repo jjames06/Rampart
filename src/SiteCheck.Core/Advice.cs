@@ -135,17 +135,22 @@ public static class Advice
             "Referrer-Policy",
             "Send Referrer-Policy: strict-origin-when-cross-origin or stricter.");
 
-        MissingHeader(
+        void AttentionOnly(string title, string body)
+        {
+            var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+            if (f is null || f.State != FindingState.Attention) return;
+            steps.Add(new NextStep($"Fix {title}", body, title, HeaderEnv()));
+        }
+
+        AttentionOnly(
             "Permissions-Policy",
-            "Send Permissions-Policy disabling camera, microphone, geolocation, and payment unless a page truly needs them.");
-
-        MissingHeader(
+            "This header is present in a form that needs a change. Brochure sites may omit it. Only change it if this run marked it Needs attention.");
+        AttentionOnly(
             "Cross-Origin-Opener-Policy",
-            "Send Cross-Origin-Opener-Policy: same-origin unless a page must be opened as a cross-origin popup.");
-
-        MissingHeader(
+            "This header is present in a form that needs a change. Many brochure sites omit COOP. Only change it if this run marked it Needs attention.");
+        AttentionOnly(
             "Cross-Origin-Resource-Policy",
-            "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
+            "This header is present in a form that needs a change. Many brochure sites omit CORP. Only change it if this run marked it Needs attention.");
 
         var coop = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Opener-Policy");
         var coep = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Embedder-Policy");
@@ -157,7 +162,7 @@ public static class Advice
                 "Cross-Origin-Embedder-Policy",
                 HeaderEnv(),
                 Optional: true,
-                WhenTo: "Do this when this origin uses SharedArrayBuffer, high-resolution timers, or other APIs that require a cross-origin isolated context. Operation Locked In brochure sites use credentialless so Vercel Insights and fonts keep loading.",
+                WhenTo: "Do this when this origin uses SharedArrayBuffer, high-resolution timers, or other APIs that require a cross-origin isolated context.",
                 WhenNot: "Skip require-corp on a marketing site with third-party scripts or embeds. Skip entirely if you do not need those APIs. Rampart cannot see whether your JavaScript uses SharedArrayBuffer."));
         }
 

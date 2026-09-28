@@ -11,9 +11,7 @@ public static class FindingGuide
         steps.FirstOrDefault(s => s.Related.Equals(finding.Title, StringComparison.OrdinalIgnoreCase));
 
     public static bool ShowsHowTo(Finding finding, NextStep? step) =>
-        step?.Lines is { Count: > 0 }
-        && (finding.State != FindingState.Present
-            || finding.Title.Equals("Admin pages", StringComparison.OrdinalIgnoreCase));
+        step?.Lines is { Count: > 0 } && finding.State != FindingState.Present;
 
     public static bool ShowsWhen(NextStep? step) =>
         step != null

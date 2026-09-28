@@ -48,7 +48,7 @@ public static class HostPair
         }
 
         var loc = string.IsNullOrWhiteSpace(location) ? "no Location header" : "Location " + location;
-        var state = status is >= 200 and < 400 ? FindingState.Present : FindingState.NotFound;
+        var state = FindingState.Present;
         if (status is >= 300 and < 400 && location != null && location.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             state = FindingState.Attention;
 
