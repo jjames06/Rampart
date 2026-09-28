@@ -42,12 +42,13 @@ public partial class MainWindow : Window
 
     private void UpdateRunEnabled()
     {
+        if (PermissionBox is null || LawBox is null || RunButton is null) return;
         var ok = PermissionBox.IsChecked == true && LawBox.IsChecked == true && _runCts is null;
         RunButton.IsEnabled = ok;
     }
 
     private CheckScope SelectedScope() =>
-        AssessmentScope.IsChecked == true ? CheckScope.AuthorizedAssessment : CheckScope.Standard;
+        AssessmentScope?.IsChecked == true ? CheckScope.AuthorizedAssessment : CheckScope.Standard;
 
     private async void Run_Click(object sender, RoutedEventArgs e)
     {
@@ -142,10 +143,10 @@ public partial class MainWindow : Window
     private void SetBusy(bool busy)
     {
         HostBox.IsEnabled = !busy;
-        PermissionBox.IsEnabled = !busy;
-        LawBox.IsEnabled = !busy;
-        StandardScope.IsEnabled = !busy;
-        AssessmentScope.IsEnabled = !busy;
+        if (PermissionBox != null) PermissionBox.IsEnabled = !busy;
+        if (LawBox != null) LawBox.IsEnabled = !busy;
+        if (StandardScope != null) StandardScope.IsEnabled = !busy;
+        if (AssessmentScope != null) AssessmentScope.IsEnabled = !busy;
         if (!busy) UpdateRunEnabled();
         else RunButton.IsEnabled = false;
         BusyBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;

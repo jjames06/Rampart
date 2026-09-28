@@ -12,10 +12,10 @@ if (Test-Path $out) { Remove-Item $out -Recurse -Force }
   -p:EnableCompressionInSingleFile=true -o $out
 if ($LASTEXITCODE -ne 0) { throw "Publish failed." }
 $app = Join-Path $out "SiteCheck.App.exe"
-$named = Join-Path $out "SiteCheck.exe"
+$named = Join-Path $out "Lockwatch.exe"
 if (Test-Path $app) {
   if (Test-Path $named) { Remove-Item $named -Force }
-  Rename-Item $app "SiteCheck.exe"
+  Rename-Item $app "Lockwatch.exe"
 }
 foreach ($name in @("LICENSE", "NOTICE", "THIRD-PARTY.md")) {
   Copy-Item (Join-Path $root $name) $out -Force

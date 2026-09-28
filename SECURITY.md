@@ -1,6 +1,6 @@
 # Security policy
 
-Site Check is a read-only checker for a hostname the operator confirms they may test.
+Lockwatch is a read-only checker for a hostname the operator confirms they may test.
 
 ## What the program is allowed to do
 

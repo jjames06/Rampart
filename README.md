@@ -1,6 +1,6 @@
-# Site Check
+# Lockwatch
 
-Site Check is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**.
+Lockwatch is a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. It reports what a **public hostname you operate** presents on HTTPS, what its certificate says, which security headers are present, whether SPF and DMARC exist, what the homepage advertises, and whether those advertised versions match a **local** CVE catalogue (Retire.js JavaScript ranges plus GitHub Advisory ranges for Next.js, rebuilt at each release). After the run, it lists **only the next steps that apply to that hostname**.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
@@ -29,7 +29,7 @@ Check only hostnames you operate or for which you have written permission. Unaut
 
 ## Run a release build
 
-The private GitHub release contains `SiteCheck.exe` together with `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. Double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
+The GitHub release contains `Lockwatch.exe` together with `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. Double-click the executable, tick the permission box, enter a hostname such as `www.example.com`, then choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
 
 To build from source on 64-bit Windows with the .NET 8 SDK:
 
@@ -46,4 +46,4 @@ It will not crawl every URL, follow redirects, open administrative paths, downlo
 
 ## Version
 
-This tree is Site Check 1.5.0. The User-Agent is `operation-locked-in-site-check/1.5`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Lockwatch 1.6.0. The User-Agent is `operation-locked-in-lockwatch/1.6`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

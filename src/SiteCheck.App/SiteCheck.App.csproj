@@ -7,13 +7,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.5.0</Version>
-    <InformationalVersion>1.5.0</InformationalVersion>
+    <Version>1.6.0</Version>
+    <InformationalVersion>1.6.0</InformationalVersion>
     <Authors>Jesse Mosier-Bowers</Authors>
     <Company>Operation Locked In</Company>
-    <Product>Site Check</Product>
-    <Description>Read-only HTTPS, certificate, header, and SPF check for a public hostname you operate.</Description>
-    <AssemblyTitle>Site Check</AssemblyTitle>
+    <Product>Lockwatch</Product>
+    <Description>Read-only public-surface assessment of a hostname you operate.</Description>
+    <AssemblyTitle>Lockwatch</AssemblyTitle>
     <Copyright>Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In</Copyright>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>Assets\sitecheck.ico</ApplicationIcon>

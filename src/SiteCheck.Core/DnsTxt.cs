@@ -64,9 +64,8 @@ public static class DnsTxt
         {
             var result = await Client.QueryAsync(name, QueryType.CAA, cancellationToken: cancellationToken);
             return result.Answers
-                .CaaRecords()
-                .Select(r => $"{r.Flags} {r.Tag} {r.Value}".Trim())
-                .Where(s => s.Length > 0)
+                .Select(a => a.ToString())
+                .Where(s => !string.IsNullOrWhiteSpace(s) && s.Contains("CAA", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

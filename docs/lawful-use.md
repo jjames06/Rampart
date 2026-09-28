@@ -1,4 +1,4 @@
-# Lawful use of Site Check
+# Lawful use of Lockwatch
 
 This page is product wording for Site Check, a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **It is not legal advice.** If you need advice about a specific engagement, speak to a lawyer licensed in the place where the system lives.
 

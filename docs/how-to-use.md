@@ -1,4 +1,4 @@
-# How to use Site Check
+# How to use Lockwatch
 
 This is the operator handbook for Site Check, a Windows program written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. Read this page before you run the executable against a hostname that is not a machine you already operate.
 
