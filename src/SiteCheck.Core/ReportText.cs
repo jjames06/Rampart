@@ -7,7 +7,7 @@ public static class ReportText
     public static string Format(CheckReport report)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Lockwatch  ·  Operation Locked In");
+        sb.AppendLine("Barbican  ·  Operation Locked In");
         sb.AppendLine($"Hostname: {report.Hostname}");
         sb.AppendLine($"Checked: {report.CheckedAt:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine("Public addresses used: " + string.Join(", ", report.PublicAddresses));

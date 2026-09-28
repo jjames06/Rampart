@@ -1,6 +1,6 @@
 # Security policy
 
-Lockwatch is a read-only checker for a hostname the operator confirms they may test.
+Barbican is a read-only checker for a hostname the operator confirms they may test.
 
 ## What the program is allowed to do
 

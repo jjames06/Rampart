@@ -1,18 +1,18 @@
-# Lawful use of Lockwatch
+# Lawful use of Barbican
 
-This page is product wording for Site Check, a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **It is not legal advice.** If you need advice about a specific engagement, speak to a lawyer licensed in the place where the system lives.
+This page is product wording for Barbican, a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **It is not legal advice.** If you need advice about a specific engagement, speak to a lawyer licensed in the place where the system lives.
 
-Site Check exists to help a person **protect a public website they operate**, or a public website for which they have **written permission**. Operation Locked In does not authorize, condone, or accept any other use.
+Barbican exists to help a person **protect a public website they operate**, or a public website for which they have **written permission**. Operation Locked In does not authorize, condone, or accept any other use.
 
 ## What this program is
 
-Site Check is a **read-only public-surface assessment**. After you attest permission, it resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail and certificate-authority records. It then lists only the next steps that apply to what that run found.
+Barbican is a **read-only public-surface assessment**. After you attest permission, it resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail and certificate-authority records. It then lists only the next steps that apply to what that run found.
 
 The **Authorized public-surface assessment** option adds RFC public files (`/.well-known/security.txt`, `/robots.txt`) and extra DNS (CAA, a few common DKIM selectors). Those files are published for the public to read. The program still does not crawl, follow redirects, or send a request body.
 
 ## What this program is not
 
-A professional red-team engagement includes attempting to exploit, to see whether a control actually fails. Site Check does **not** do that work. Shipping exploit payloads would be dishonest for a defender's hygiene tool, and it would move the program toward a device designed primarily for unauthorized use, which Canadian criminal law treats separately (Criminal Code section 342.2).
+A professional red-team engagement includes attempting to exploit, to see whether a control actually fails. Barbican does **not** do that work. Shipping exploit payloads would be dishonest for a defender's hygiene tool, and it would move the program toward a device designed primarily for unauthorized use, which Canadian criminal law treats separately (Criminal Code section 342.2).
 
 This program does not:
 
@@ -28,7 +28,7 @@ A quiet report is not a certificate that the site is safe. Paid website work fro
 
 ## Authorization you must have
 
-You may run Site Check only if **one** of these is true:
+You may run Barbican only if **one** of these is true:
 
 1. You operate the hostname (you are the registrant, the hosting customer, or the person who controls DNS and HTTPS for that name).
 2. You have **written permission** from that operator, with a scope that covers this kind of read-only check.
@@ -43,7 +43,7 @@ The official text is [Criminal Code section 342.1](https://laws-lois.justice.gc.
 
 Canadian commentary used in professional cybercrime surveys states that **unsolicited penetration testing** (exploiting a system without the owner's permission to find weaknesses) may be an offence under section 342.1.
 
-Section 342.2 concerns making or distributing a device that is designed or adapted **primarily** to commit an offence under 342.1 or mischief in relation to data, knowing it is intended for that use. Site Check is designed as a defender's authorized assessment tool. That design choice is deliberate.
+Section 342.2 concerns making or distributing a device that is designed or adapted **primarily** to commit an offence under 342.1 or mischief in relation to data, knowing it is intended for that use. Barbican is designed as a defender's authorized assessment tool. That design choice is deliberate.
 
 This summary is not a complete statement of the law and is not legal advice.
 
@@ -53,9 +53,9 @@ Other countries have unauthorized-access offences (for example, the United State
 
 ## How professional tools word the same duty
 
-PortSwigger's Burp Suite Community licence requires the licensee **to obtain all necessary authorisations from system owners prior to using the Software**. Site Check uses the same idea in its own words: written permission from the operator, or you are the operator.
+PortSwigger's Burp Suite Community licence requires the licensee **to obtain all necessary authorisations from system owners prior to using the Software**. Barbican uses the same idea in its own words: written permission from the operator, or you are the operator.
 
-Cloudflare's published scan policy for customers testing their own zones likewise limits scans to identifying the presence of weaknesses **without attempting to actively exploit**. Site Check follows that line even though it is not a Cloudflare product.
+Cloudflare's published scan policy for customers testing their own zones likewise limits scans to identifying the presence of weaknesses **without attempting to actively exploit**. Barbican follows that line even though it is not a Cloudflare product.
 
 ## How the program records permission
 
@@ -68,4 +68,4 @@ The saved report repeats those attestations, the time in UTC, the scope name, th
 
 ## If you are hiring Operation Locked In
 
-Please call or email. I will confirm what the work will cost before I begin. An authorized assessment with Site Check can sit inside a quoted website or IT job. It does not replace a scoped penetration test. If you need intrusive testing, that is a separate written engagement with a defined scope, and it is not this executable.
+Please call or email. I will confirm what the work will cost before I begin. An authorized assessment with Barbican can sit inside a quoted website or IT job. It does not replace a scoped penetration test. If you need intrusive testing, that is a separate written engagement with a defined scope, and it is not this executable.

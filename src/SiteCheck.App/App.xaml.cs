@@ -24,9 +24,9 @@ public partial class App : Application
     private static void ShowError(Exception ex)
     {
         MessageBox.Show(
-            "Lockwatch stopped the last action. Nothing was sent off this computer except the check you started, if one had begun.\n\n" +
+            "Barbican stopped the last action. Nothing was sent off this computer except the check you started, if one had begun.\n\n" +
             ex.GetType().Name + ": " + ex.Message + "\n\nYou can try again. If it keeps happening, email Info@operationlockedin.com with this text.",
-            "Lockwatch",
+            "Barbican",
             MessageBoxButton.OK,
             MessageBoxImage.None);
     }

@@ -1,12 +1,14 @@
-# How to use Lockwatch
+# How to use Barbican
 
-This is the operator handbook for Site Check, a Windows program written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. Read this page before you run the executable against a hostname that is not a machine you already operate.
+A barbican is the outer gatehouse of a fortress. Bastion hardens a Windows PC you administer. Barbican inspects a public hostname you operate.
 
-Site Check is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
+This is the operator handbook for Barbican, a Windows program written by Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. Read this page before you run the executable against a hostname that is not a machine you already operate.
+
+Barbican is a **read-only** look at a **public hostname you operate**, or for which you have **written permission**. It is not a red-team engagement. It is not a penetration test. It is not a crawl of every URL on the site. It is not a substitute for a written quote for paid website work. A quiet report is not a certificate that the site is safe.
 
 ## What you need
 
-You need a 64-bit computer running Windows 10 or Windows 11. You need the file `SiteCheck.exe` from the private GitHub release, or a copy you built yourself with `tools\publish.ps1`. You need the public hostname of the site, for example `www.example.com`.
+You need a 64-bit computer running Windows 10 or Windows 11. You need the file `Barbican.exe` from the GitHub release, or a copy you built yourself with `tools\publish.ps1`. You need the public hostname of the site, for example `www.example.com`.
 
 You do not need an Operation Locked In account. You do not need a browser plugin. You do not need a cloud login. You do not need administrative rights. The program runs as a standard user (`asInvoker`). It will not ask Windows for elevation.
 
@@ -18,9 +20,9 @@ Do not type a hostname you do not control. Do not use this program as a scanner 
 
 ## Start the program
 
-1. Double-click `SiteCheck.exe` on your Desktop, or in the `dist` folder if you built from source.
+1. Double-click `Barbican.exe` on your Desktop, or in the `dist` folder if you built from source.
 2. Windows SmartScreen may warn that the file is not Authenticode-signed. If you built it yourself, or downloaded it from the Operation Locked In private repository `jjames06/oli-site-check`, choose **More info**, then **Run anyway**.
-3. A navy window titled **Site Check · Operation Locked In** should open, with the teal hairline under the title, matching the colours used on https://www.operationlockedin.com.
+3. A navy window titled **Barbican · Operation Locked In** should open, with the teal hairline under the title, matching the colours used on https://www.operationlockedin.com.
 
 If nothing opens, confirm you are on 64-bit Windows and that antivirus did not quarantine the file. Rebuild with `tools\publish.ps1` if you have the source. Email Info@operationlockedin.com if a rebuilt copy still will not start, and include the Windows version, not a screenshot of unrelated software.
 
@@ -62,7 +64,7 @@ The left-hand colour on each card follows the state: teal for Present, amber for
 
 ## Copy or save a report
 
-**Copy report** places a plain-text report on the clipboard. **Save report** writes a `.txt` file where you choose. Site Check does not upload that file. It does not create an account. It does not phone home to Operation Locked In.
+**Copy report** places a plain-text report on the clipboard. **Save report** writes a `.txt` file where you choose. Barbican does not upload that file. It does not create an account. It does not phone home to Operation Locked In.
 
 The saved file is ordinary text. It is not encrypted by this program, because you chose the location and you may need to open it in Notepad, email it to yourself, or attach it to a job note. If the report names plugin versions you have not yet updated, keep it on a disk you already protect (BitLocker on the system drive, or an encrypted working folder you already use). Do not post the report on a public ticket or a public git issue.
 
@@ -70,17 +72,17 @@ The report is not a certificate of security. It is a dated observation of one ho
 
 ## After a kit website goes live
 
-If Operation Locked In built the brochure site, run Site Check on the live hostname after DNS points at the host. Use the next steps together with the fourteen-day aftercare window in the Website Kit Operator Guide. Site Check does not replace the local security review that happens before DNS is pointed. It is the first public-surface read after the name is live.
+If Operation Locked In built the brochure site, run Barbican on the live hostname after DNS points at the host. Use the next steps together with the fourteen-day aftercare window in the Website Kit Operator Guide. Barbican does not replace the local security review that happens before DNS is pointed. It is the first public-surface read after the name is live.
 
 ## When to email Jesse
 
 Email Info@operationlockedin.com if a next step names the wrong stack (for example it talks about WordPress on a Next.js site), if a certificate day count looks wrong, or if the program reports a catalogue match you believe is a false positive. Include the hostname you typed and a saved report. Do not attach passwords, cookies, or access tokens.
 
-You can also choose **Info@operationlockedin.com** in the window footer. That opens your own mail program. Mail still leaves from your computer, not from Site Check.
+You can also choose **Info@operationlockedin.com** in the window footer. That opens your own mail program. Mail still leaves from your computer, not from Barbican.
 
 ## Licence and warranty
 
-The footer of the window states the copyright and that there is no warranty. **Licence and warranty** shows the GNU General Public License version 3, which is also the file `LICENSE` in the repository. Site Check is free software. It is not a paid SKU. Paid website work still begins after a written quote.
+The footer of the window states the copyright and that there is no warranty. **Licence and warranty** shows the GNU General Public License version 3, which is also the file `LICENSE` in the repository. Barbican is free software. It is not a paid SKU. Paid website work still begins after a written quote.
 
 ## What the program will never do
 

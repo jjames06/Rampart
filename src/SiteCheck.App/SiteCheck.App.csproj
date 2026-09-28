@@ -7,13 +7,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.6.0</Version>
-    <InformationalVersion>1.6.0</InformationalVersion>
+    <Version>1.7.0</Version>
+    <InformationalVersion>1.7.0</InformationalVersion>
     <Authors>Jesse Mosier-Bowers</Authors>
     <Company>Operation Locked In</Company>
-    <Product>Lockwatch</Product>
+    <Product>Barbican</Product>
     <Description>Read-only public-surface assessment of a hostname you operate.</Description>
-    <AssemblyTitle>Lockwatch</AssemblyTitle>
+    <AssemblyTitle>Barbican</AssemblyTitle>
     <Copyright>Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In</Copyright>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>Assets\sitecheck.ico</ApplicationIcon>

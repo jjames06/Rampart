@@ -18,7 +18,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-lockwatch/1.6";
+    public const string UserAgent = "operation-locked-in-barbican/1.7";
 
     private static readonly string[] HeaderNames =
     {
