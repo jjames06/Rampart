@@ -1,6 +1,6 @@
 # Privacy
 
-Rampart runs on your Windows computer. It does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service.
+Rampart runs on the device in front of you (Windows, macOS, Linux, iOS, or Android). It does not create an account. It does not phone home to Operation Locked In, GitHub, or an analytics service.
 
 ## What leaves this computer
 
@@ -9,7 +9,7 @@ During a check, and only after you tick the permission box, the program sends:
 - DNS queries through the **system resolver** for the hostname you typed, for the parent name when you typed `www`, and for `_dmarc.` plus the apex.
 - TLS and HTTP requests to the **public addresses** of that hostname, on port 443 and a single HEAD on port 80.
 
-The User-Agent is `operation-locked-in-site-check/1.4`. On an authorized assessment, the program also requests `/.well-known/security.txt` and `/robots.txt` on the same public address, plus CAA and a few DKIM selector names. No other application hostnames are contacted. DnsClient does not send TXT queries to a third-party DNS API; it uses the resolver Windows already uses. CVE matching uses a catalogue baked into the executable. Advertised versions are not sent to NVD, GitHub, Retire.js, or Cloudflare.
+The User-Agent is `operation-locked-in-rampart/1.9.0`. On an authorized assessment, the program also requests RFC public files and extra DNS. Common public sign-in paths are requested with GET only. No passwords are sent. No other application hostnames are contacted. DnsClient does not send TXT queries to a third-party DNS API; it uses the resolver Windows already uses. CVE matching uses a catalogue baked into the executable. Advertised versions are not sent to NVD, GitHub, Retire.js, or Cloudflare.
 
 The program does not send the report to Operation Locked In.
 

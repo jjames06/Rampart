@@ -180,6 +180,14 @@ public static class Advice
             "In WordPress, theme and plugin markup that opens a new tab needs rel=\"noopener noreferrer\".");
 
         MissingHeader(
+            "Sign-in form",
+            "A public sign-in page posted a form to http://. Change that action to https:// or a relative path so passwords stay on TLS.");
+
+        MissingHeader(
+            "Sign-in redirect",
+            "A public sign-in path redirected to http://. Change Location to https:// on the same hostname.");
+
+        MissingHeader(
             "Form action",
             "Change every form action that starts with http:// to https:// or a relative path so the submission stays on TLS.",
             "Search the App Router and any client forms for action=\"http://\".",

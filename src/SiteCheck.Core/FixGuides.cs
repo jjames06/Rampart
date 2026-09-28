@@ -334,6 +334,18 @@ public static class FixGuides
                 L("Cloudflare: DNS, Records, Add record. Type TXT. Name default._bimi. Proxy DNS only. Content:", "v=BIMI1; l=https://" + hostname + "/brand/bimi.svg"),
                 L("Do not orange-cloud this TXT. A VMC (a=https://...) is optional and usually several hundred dollars per year.")
             },
+            "Sign-in form" => new[]
+            {
+                L("When to do this: a public login page posts to http://. That sends passwords without TLS."),
+                L("Search the sign-in template for action=\"http://\" and change it to https:// or a relative path."),
+                L("In Next.js, check app/account/sign-in and any <form action=. In WordPress, set the site URL to https and re-save permalinks.")
+            },
+            "Sign-in redirect" => new[]
+            {
+                L("When to do this: GET on a login path returned Location: http://..."),
+                L("Change that redirect to https:// on the same hostname. In Next.js that is often next.config.ts redirects()."),
+                L("In Cloudflare, SSL/TLS, Edge Certificates, Always Use HTTPS should already catch http:// hops.")
+            },
             "change-password" => new[]
             {
                 L("When to do this: people can sign in on this hostname. Password managers use /.well-known/change-password to jump to the change-password screen."),

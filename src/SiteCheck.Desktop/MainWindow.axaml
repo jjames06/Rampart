@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SiteCheck.Desktop.MainWindow"
+        Title="Rampart  ·  Operation Locked In"
+        Width="1100" Height="760"
+        MinWidth="800" MinHeight="560"
+        Background="#070B14">
+  <DockPanel Margin="24">
+    <StackPanel DockPanel.Dock="Top" Spacing="8">
+      <TextBlock Text="OPERATION LOCKED IN" Foreground="#5EEAD4" FontSize="12" LetterSpacing="2"/>
+      <TextBlock Text="Rampart" FontSize="32" FontWeight="Bold" Foreground="White"/>
+      <TextBlock TextWrapping="Wrap" Foreground="#94A3B8"
+                 Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. No exploit traffic. GPLv3 on desktop. Reports stay on this computer."/>
+      <TextBox Name="HostBox" Watermark="www.example.com"/>
+      <CheckBox Name="PermissionBox" Foreground="#E2E8F0" Content="I operate this hostname, or I have written permission."/>
+      <CheckBox Name="LawBox" Foreground="#E2E8F0" Content="I will not use this program against a hostname without that permission."/>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Name="RunButton" Content="Check this hostname" Click="Run_Click"/>
+        <Button Content="Save report" Click="Save_Click"/>
+      </StackPanel>
+      <TextBlock Name="StatusText" Foreground="#5EEAD4" TextWrapping="Wrap"/>
+    </StackPanel>
+    <ScrollViewer>
+      <TextBox Name="ReportBox" IsReadOnly="True" AcceptsReturn="True"
+               FontFamily="Consolas,Menlo,monospace" Foreground="#E2E8F0"
+               Background="#0C1220" TextWrapping="Wrap"/>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

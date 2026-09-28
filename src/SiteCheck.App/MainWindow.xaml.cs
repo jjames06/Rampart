@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -16,7 +17,7 @@ public partial class MainWindow : Window
     private CheckReport? _report;
     private CancellationTokenSource? _runCts;
 
-    private WrapPanel? _findingsWrap;
+    private UniformGrid? _findingsGrid;
 
     public MainWindow()
     {
@@ -24,9 +25,9 @@ public partial class MainWindow : Window
         HostBox.Focus();
     }
 
-    private void FindingsWrap_Loaded(object sender, RoutedEventArgs e)
+    private void FindingsGrid_Loaded(object sender, RoutedEventArgs e)
     {
-        _findingsWrap = sender as WrapPanel;
+        _findingsGrid = sender as UniformGrid;
         LayoutFindings();
     }
 
@@ -34,9 +35,10 @@ public partial class MainWindow : Window
 
     private void LayoutFindings()
     {
-        if (_findingsWrap is null) return;
-        var inner = Math.Max(440, ActualWidth - 72);
-        _findingsWrap.ItemWidth = inner >= 1180 ? Math.Floor((inner - 16) / 2) : inner;
+        if (_findingsGrid is null) return;
+        var w = ActualWidth;
+        _findingsGrid.Columns = w >= 1800 ? 3 : w >= 1100 ? 2 : 1;
+        _findingsGrid.Rows = 0;
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

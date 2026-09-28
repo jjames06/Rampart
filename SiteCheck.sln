@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{05F691B9-A47
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SiteCheck.App", "src\SiteCheck.App\SiteCheck.App.csproj", "{5D447873-4411-454D-B1E7-15D8C751272C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SiteCheck.Core", "src\SiteCheck.Core\SiteCheck.Core.csproj", "{65B68E08-6F8D-4B2E-886A-4E572386E54F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SiteCheck.Desktop", "src\SiteCheck.Desktop\SiteCheck.Desktop.csproj", "{F6A062E1-876D-48F8-9102-C03FADB51928}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,18 @@ Global
 		{5D447873-4411-454D-B1E7-15D8C751272C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D447873-4411-454D-B1E7-15D8C751272C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D447873-4411-454D-B1E7-15D8C751272C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65B68E08-6F8D-4B2E-886A-4E572386E54F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65B68E08-6F8D-4B2E-886A-4E572386E54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65B68E08-6F8D-4B2E-886A-4E572386E54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65B68E08-6F8D-4B2E-886A-4E572386E54F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6A062E1-876D-48F8-9102-C03FADB51928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6A062E1-876D-48F8-9102-C03FADB51928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6A062E1-876D-48F8-9102-C03FADB51928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6A062E1-876D-48F8-9102-C03FADB51928}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D447873-4411-454D-B1E7-15D8C751272C} = {05F691B9-A475-491D-B2C6-46434CA3FB58}
+		{65B68E08-6F8D-4B2E-886A-4E572386E54F} = {05F691B9-A475-491D-B2C6-46434CA3FB58}
+		{F6A062E1-876D-48F8-9102-C03FADB51928} = {05F691B9-A475-491D-B2C6-46434CA3FB58}
 	EndGlobalSection
 EndGlobal

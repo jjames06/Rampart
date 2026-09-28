@@ -128,6 +128,10 @@ public static class Checker
         findings.Add(HtmlSurface.Tabnabbing(page.Body));
         findings.Add(HtmlSurface.InsecureForms(page.Body));
         findings.Add(HtmlSurface.HttpCanonical(page.Body));
+        progress?.Report("Reading common public sign-in paths.");
+        var loginHits = await ProbeLoginPathsAsync(hostname, ip, cancellationToken);
+        findings.Add(LoginSurface.Summary(loginHits));
+        findings.AddRange(LoginSurface.FormAndRedirectIssues(loginHits));
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, DKIM, MTA-STS, BIMI, TLS-RPT, DNSSEC).");
@@ -580,6 +584,36 @@ public static class Checker
         {
             return new HttpResult(null, new Dictionary<string, string>(), path + " did not complete.");
         }
+    }
+
+    private static async Task<IReadOnlyList<(string Path, int? Status, string? Location, string? Body)>> ProbeLoginPathsAsync(
+        string hostname, IPAddress ip, CancellationToken ct)
+    {
+        var tasks = LoginSurface.Paths.Select(async path =>
+        {
+            try
+            {
+                using var handler = PinnedHandler(hostname, ip, 443);
+                using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"https://{hostname}{path}");
+                request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+                request.Headers.Host = hostname;
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+                var (headers, _) = ReadHeaders(response);
+                headers.TryGetValue("location", out var loc);
+                var body = await ReadCappedBodyAsync(response, 64 * 1024, ct);
+                return (path, (int?)response.StatusCode, loc, body);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                return (path, (int?)null, (string?)null, (string?)null);
+            }
+        });
+        return await Task.WhenAll(tasks);
     }
 
     private static async Task<SpfResult> LookupCaaAsync(string hostname, CancellationToken ct)

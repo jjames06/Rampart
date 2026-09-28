@@ -2,6 +2,18 @@
 
 Rampart is licensed under the **GNU General Public License version 3** (GPLv3), or, at your option, any later version published by the Free Software Foundation. The complete legal text is the file `LICENSE` at the root of this repository. A short copyright and attribution notice is in `NOTICE`. Third-party terms for DnsClient are in `THIRD-PARTY.md`.
 
+## Desktop (Windows, macOS, Linux): GNU GPLv3
+
+Desktop Rampart stays **GPLv3**, the same copyleft as Bastion. Anyone who redistributes a modified desktop build must keep the source free under GPLv3.
+
+## App Store and Google Play: Apache License 2.0 (additional grant)
+
+Apple’s App Store terms add restrictions that **GPLv3 does not allow**. Google Play is less strict, but a single mobile licence that both stores accept is simpler.
+
+Jesse Mosier-Bowers, as copyright holder, **additionally licenses** the Rampart mobile applications (iOS and Android store binaries) under the **Apache License 2.0**. The same source remains available under GPLv3. You may use either grant. Apache-2.0 includes an express patent licence and does not forbid the extra terms those stores require.
+
+DnsClient stays Apache-2.0 in every build.
+
 ## Why GPLv3
 
 Jesse Mosier-Bowers already publishes Bastion under GPLv3. Rampart is the same kind of work: a free Windows program for a home or small office, not a paid product SKU. GPLv3 keeps the source available, requires the same freedom when someone redistributes a modified copy, and matches the warranty disclaimer already used on Bastion.

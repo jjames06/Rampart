@@ -45,7 +45,7 @@
         </Border>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource NavyBrush}">
-            <StackPanel Margin="36,24,36,32" MaxWidth="1320" HorizontalAlignment="Stretch">
+            <StackPanel Margin="24,20,24,28" HorizontalAlignment="Stretch">
                 <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="16" LineHeight="26"
                            Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail records. Findings that need work include a How to fix this panel with full sentences and copyable lines for this hostname only. Operation Locked In does not authorize use against a hostname without that permission."/>
 
@@ -129,10 +129,10 @@
                     </StackPanel>
                 </Border>
 
-                <ItemsControl x:Name="FindingsList" Margin="0,22,0,0">
+                <ItemsControl x:Name="FindingsList" Margin="0,22,0,0" HorizontalContentAlignment="Stretch">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Loaded="FindingsWrap_Loaded"/>
+                            <UniformGrid Loaded="FindingsGrid_Loaded"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -150,7 +150,7 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="18" Margin="0,0,12,14" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="{StaticResource CardBrush}" CornerRadius="18" Margin="8" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                 <DockPanel>
                                     <Border Width="5" Background="{Binding AccentBrush}" CornerRadius="18,0,0,18"/>
                                     <StackPanel Margin="18,16,18,16">

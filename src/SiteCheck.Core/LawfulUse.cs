@@ -40,7 +40,8 @@ public static class LawfulUse
             "Compare advertised product versions with the local advisory catalogue",
             "Read the homepage HTML for mixed http:// resources, form actions, canonical URLs, target=_blank links, and integrity attributes on https:// scripts",
             "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size",
-            "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)"
+            "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)",
+            "GET common public sign-in paths on the same address (no passwords, no extra ports, redirects off)"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {
