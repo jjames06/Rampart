@@ -60,14 +60,30 @@ public static class Hostname
     }
 
     /// <summary>
-    /// True for names we will send to DNS: a parsed hostname, or _dmarc. plus a parsed apex.
+    /// True for names we will send to DNS: a parsed hostname, _dmarc. plus a parsed apex,
+    /// or selector._domainkey. plus a parsed apex.
     /// </summary>
     public static bool IsSafeDnsName(string name)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length > 253) return false;
         if (name.StartsWith("_dmarc.", StringComparison.OrdinalIgnoreCase))
             return Parse(name[7..]) != null;
+        const string marker = "._domainkey.";
+        var idx = name.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx > 0)
+        {
+            var selector = name[..idx];
+            var apex = name[(idx + marker.Length)..];
+            return Label.IsMatch(selector) && Parse(apex) != null;
+        }
         return Parse(name) != null;
+    }
+
+    public static string Apex(string hostname)
+    {
+        if (hostname.StartsWith("www.", StringComparison.Ordinal) && hostname.Split('.').Length > 2)
+            return hostname[4..];
+        return hostname;
     }
 
     public static IReadOnlyList<string> SpfLookupNames(string hostname)

@@ -21,7 +21,7 @@ Site Check is a read-only checker for a hostname the operator confirms they may 
 
 Sockets are pinned to the resolved public address so a later DNS change cannot send the HTTP client onto a private network. TXT names cannot be used to inject resolver arguments; DnsClient is given a parsed name, not a shell string.
 
-Unauthorized use of a computer system can be an offence in Canada (Criminal Code section 342.1) and under similar laws elsewhere.
+Unauthorized use of a computer system can be an offence in Canada (Criminal Code section 342.1) and under similar laws elsewhere. See `docs/lawful-use.md`. Operation Locked In does not authorize use without the operator's permission. This program does not send exploit traffic.
 
 ## Reporting a problem in this program
 

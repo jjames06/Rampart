@@ -21,5 +21,6 @@ foreach ($name in @("LICENSE", "NOTICE", "THIRD-PARTY.md")) {
   Copy-Item (Join-Path $root $name) $out -Force
 }
 Copy-Item (Join-Path $root "docs\how-to-use.md") (Join-Path $out "how-to-use.md") -Force
+Copy-Item (Join-Path $root "docs\lawful-use.md") (Join-Path $out "lawful-use.md") -Force
 Copy-Item (Join-Path $root "licenses\APACHE-2.0.txt") $out -Force
 Get-ChildItem $out -Filter *.exe | ForEach-Object { "Built $($_.FullName) ($([math]::Round($_.Length/1MB,1)) MB)" }

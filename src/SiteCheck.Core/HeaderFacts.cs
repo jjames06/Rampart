@@ -62,6 +62,9 @@ public static class HeaderFacts
         return false;
     }
 
+    public static bool CspAllowsUnsafeInline(string value) =>
+        value.Contains("unsafe-inline", StringComparison.OrdinalIgnoreCase);
+
     public static bool DmarcIsMonitorOnly(string record)
     {
         foreach (var part in record.Split(';'))

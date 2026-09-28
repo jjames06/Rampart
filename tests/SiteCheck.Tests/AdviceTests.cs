@@ -54,6 +54,14 @@ public class AdviceTests
     }
 
     [Fact]
+    public void Security_txt_missing_gets_a_step()
+    {
+        var findings = new[] { F("security.txt", FindingState.NotFound) };
+        var steps = Advice.Build("example.com", findings, Array.Empty<StackHint>(), Array.Empty<string>(), 200, "Tls12", null, null);
+        Assert.Contains(steps, s => s.Related == "security.txt");
+    }
+
+    [Fact]
     public void Incomplete_headers_do_not_spawn_header_fixes()
     {
         var findings = new[]

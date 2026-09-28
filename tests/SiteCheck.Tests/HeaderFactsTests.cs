@@ -38,6 +38,13 @@ public class HeaderFactsTests
     }
 
     [Fact]
+    public void Csp_unsafe_inline_is_detected()
+    {
+        Assert.True(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'; script-src 'unsafe-inline'"));
+        Assert.False(HeaderFacts.CspAllowsUnsafeInline("default-src 'self'"));
+    }
+
+    [Fact]
     public void Dmarc_p_none_is_monitor_only()
     {
         Assert.True(HeaderFacts.DmarcIsMonitorOnly("v=DMARC1; p=none; rua=mailto:a@example.com"));

@@ -11,6 +11,22 @@ public static class ReportText
         sb.AppendLine($"Hostname: {report.Hostname}");
         sb.AppendLine($"Checked: {report.CheckedAt:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine("Public addresses used: " + string.Join(", ", report.PublicAddresses));
+        sb.AppendLine("Scope: " + report.Authorization.ScopeName);
+        sb.AppendLine("Authorization recorded: " + report.Authorization.AcceptedAtUtc.ToString("yyyy-MM-dd HH:mm") + " UTC");
+        sb.AppendLine();
+        sb.AppendLine("Authorization");
+        foreach (var line in report.Authorization.Attestations)
+            sb.AppendLine("  " + line);
+        sb.AppendLine();
+        sb.AppendLine("Methods used");
+        foreach (var line in report.Authorization.MethodsUsed)
+            sb.AppendLine("  · " + line);
+        sb.AppendLine();
+        sb.AppendLine("Methods this program will not use");
+        foreach (var line in report.Authorization.MethodsRefused)
+            sb.AppendLine("  · " + line);
+        sb.AppendLine();
+        sb.AppendLine("Operation Locked In does not authorize, condone, or accept use of this program against a hostname without the operator's permission. This report is not legal advice and is not a certificate of security.");
         sb.AppendLine();
         if (report.Stack.Count > 0)
         {

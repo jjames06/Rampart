@@ -35,7 +35,8 @@ public sealed record CheckReport(
     IReadOnlyList<Finding> Findings,
     IReadOnlyList<NextStep> NextSteps,
     IReadOnlyList<StackHint> Stack,
-    IReadOnlyList<string> Limits);
+    IReadOnlyList<string> Limits,
+    AuthorizationRecord Authorization);
 
 public sealed class CheckException : Exception
 {

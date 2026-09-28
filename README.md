@@ -18,6 +18,7 @@ Check only hostnames you operate or for which you have written permission. Unaut
 
 ## Start here
 
+- Lawful use: [docs/lawful-use.md](docs/lawful-use.md)
 - Tutorial: [docs/how-to-use.md](docs/how-to-use.md)
 - What is checked, and how: [docs/what-is-checked.md](docs/what-is-checked.md)
 - Privacy: [docs/privacy.md](docs/privacy.md)
@@ -45,4 +46,4 @@ It will not crawl every URL, follow redirects, open administrative paths, downlo
 
 ## Version
 
-This tree is Site Check 1.3.0. The User-Agent is `operation-locked-in-site-check/1.3`. Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Site Check 1.4.0. The User-Agent is `operation-locked-in-site-check/1.4`. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

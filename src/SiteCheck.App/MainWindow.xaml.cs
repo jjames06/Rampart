@@ -36,11 +36,24 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Consent_Changed(object sender, RoutedEventArgs e) => UpdateRunEnabled();
+
+    private void Scope_Changed(object sender, RoutedEventArgs e) => UpdateRunEnabled();
+
+    private void UpdateRunEnabled()
+    {
+        var ok = PermissionBox.IsChecked == true && LawBox.IsChecked == true && _runCts is null;
+        RunButton.IsEnabled = ok;
+    }
+
+    private CheckScope SelectedScope() =>
+        AssessmentScope.IsChecked == true ? CheckScope.AuthorizedAssessment : CheckScope.Standard;
+
     private async void Run_Click(object sender, RoutedEventArgs e)
     {
-        if (PermissionBox.IsChecked != true)
+        if (PermissionBox.IsChecked != true || LawBox.IsChecked != true)
         {
-            StatusText.Text = "Tick the permission box only if you operate this hostname or have written permission.";
+            StatusText.Text = "Tick both permission boxes. Operation Locked In does not authorize use against a hostname without the operator's permission.";
             return;
         }
 
@@ -69,7 +82,7 @@ public partial class MainWindow : Window
         var progress = new Progress<string>(msg => StatusText.Text = msg);
         try
         {
-            var report = await Checker.RunAsync(HostBox.Text, progress, ct);
+            var report = await Checker.RunAsync(HostBox.Text, progress, ct, SelectedScope());
             _report = report;
             FindingsList.ItemsSource = report.Findings.Select(ToView).ToList();
             if (report.NextSteps.Count > 0)
@@ -80,6 +93,7 @@ public partial class MainWindow : Window
             LimitsList.ItemsSource = report.Limits;
             LimitsBox.Visibility = Visibility.Visible;
             SummaryTitle.Text = report.Hostname;
+            SummaryScope.Text = report.Authorization.ScopeName;
             var extra = report.NextSteps.Count == 0
                 ? "No further steps were generated for this run."
                 : $"{report.NextSteps.Count} next step{(report.NextSteps.Count == 1 ? "" : "s")} apply to this run.";
@@ -127,9 +141,13 @@ public partial class MainWindow : Window
 
     private void SetBusy(bool busy)
     {
-        RunButton.IsEnabled = !busy;
         HostBox.IsEnabled = !busy;
         PermissionBox.IsEnabled = !busy;
+        LawBox.IsEnabled = !busy;
+        StandardScope.IsEnabled = !busy;
+        AssessmentScope.IsEnabled = !busy;
+        if (!busy) UpdateRunEnabled();
+        else RunButton.IsEnabled = false;
         BusyBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         CancelButton.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         if (busy)
@@ -174,12 +192,22 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Lawful_Click(object sender, RoutedEventArgs e)
+    {
+        ShowTextWindow("Lawful use  ·  Site Check", LoadEmbedded("LAWFUL-USE.md") ?? LoadEmbedded("lawful-use.md") ?? "See docs/lawful-use.md in the repository.");
+    }
+
     private void Licence_Click(object sender, RoutedEventArgs e)
     {
         var text = LoadLicenceText();
+        ShowTextWindow("Licence and warranty  ·  Site Check", text);
+    }
+
+    private void ShowTextWindow(string title, string text)
+    {
         var window = new Window
         {
-            Title = "Licence and warranty  ·  Site Check",
+            Title = title,
             Owner = this,
             Width = 760,
             Height = 640,
@@ -222,20 +250,22 @@ public partial class MainWindow : Window
         }
     }
 
-    private static string LoadLicenceText()
+    private static string? LoadEmbedded(string suffix)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var name = assembly.GetManifestResourceNames()
-            .FirstOrDefault(n => n.EndsWith("LICENSE", StringComparison.OrdinalIgnoreCase));
-        if (name != null)
-        {
-            using var stream = assembly.GetManifestResourceStream(name);
-            if (stream != null)
-            {
-                using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
-            }
-        }
+            .FirstOrDefault(n => n.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        if (name is null) return null;
+        using var stream = assembly.GetManifestResourceStream(name);
+        if (stream is null) return null;
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    private static string LoadLicenceText()
+    {
+        var text = LoadEmbedded("LICENSE");
+        if (text != null) return text;
         return """
             Site Check
             Copyright (C) 2026 Jesse Mosier-Bowers, operating as Operation Locked In

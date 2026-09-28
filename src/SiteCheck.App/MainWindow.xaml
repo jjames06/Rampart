@@ -25,6 +25,8 @@
                 <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="12" LineHeight="20"
                            Text="Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In, Courtice, Ontario. Site Check is free software under the GNU General Public License version 3. There is no warranty, to the extent permitted by law."/>
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Style="{StaticResource LinkButton}" Content="Lawful use" Click="Lawful_Click"/>
+                    <TextBlock Text="  ·  " Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource LinkButton}" Content="Licence and warranty" Click="Licence_Click"/>
                     <TextBlock Text="  ·  " Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource LinkButton}" Content="Info@operationlockedin.com" Click="Email_Click"/>
@@ -35,7 +37,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource NavyBrush}">
             <StackPanel Margin="48,28,48,36" MaxWidth="880" HorizontalAlignment="Center">
                 <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="16" LineHeight="26"
-                           Text="A read-only look at a public hostname you operate. After you confirm permission, the program resolves public Internet addresses, reads the TLS certificate, requests the homepage over HTTPS, and asks DNS for SPF and DMARC. It then lists only the next steps that apply to what this run found. It does not crawl the site, follow redirects, or contact private networks."/>
+                           Text="A read-only public-surface assessment of a hostname you operate, or for which you have written permission. After both permission boxes are ticked, the program resolves public Internet addresses, reads TLS, requests a small set of public HTTPS paths, and asks DNS for mail records. It lists only the next steps that apply to this run. Operation Locked In does not authorize use against a hostname without that permission."/>
 
                 <Border Background="{StaticResource CardBrush}" CornerRadius="18" Padding="28" Margin="0,28,0,0" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
                     <StackPanel>
@@ -43,13 +45,25 @@
                         <TextBox x:Name="HostBox" Style="{StaticResource HostBox}"/>
                         <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="0,8,0,0"
                                    Text="Type a public hostname. You may paste a full https address; only the hostname is kept. Example: www.example.com"/>
-                        <CheckBox x:Name="PermissionBox" Margin="0,18,0,0">
+                        <TextBlock Text="Scope" FontWeight="SemiBold" FontSize="13" Margin="0,18,0,10"/>
+                        <RadioButton x:Name="StandardScope" GroupName="Scope" IsChecked="True" Checked="Scope_Changed">
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Standard public-surface check. HTTPS, certificate, headers, cookies, SPF, DMARC, and the local CVE catalogue.</TextBlock>
+                        </RadioButton>
+                        <RadioButton x:Name="AssessmentScope" GroupName="Scope" Checked="Scope_Changed">
+                            <TextBlock TextWrapping="Wrap" LineHeight="22">Authorized public-surface assessment. Adds RFC public files (security.txt, robots.txt) and extra DNS (CAA, common DKIM selectors). Still read-only. Still no exploit traffic.</TextBlock>
+                        </RadioButton>
+                        <CheckBox x:Name="PermissionBox" Margin="0,8,0,0" Checked="Consent_Changed" Unchecked="Consent_Changed">
                             <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextBrush}" LineHeight="22" FontSize="14">
-                                I operate this hostname, or I have written permission to check it. I understand that using a computer system without authorization can be a criminal offence in Canada (Criminal Code section 342.1) and under similar laws elsewhere.
+                                I operate this hostname, or I have written permission from the person who operates it, to run this program against it.
+                            </TextBlock>
+                        </CheckBox>
+                        <CheckBox x:Name="LawBox" Margin="0,12,0,0" Checked="Consent_Changed" Unchecked="Consent_Changed">
+                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextBrush}" LineHeight="22" FontSize="14">
+                                I will not use this program against any hostname I do not operate and for which I do not have written permission. Operation Locked In does not authorize, condone, or accept that use. I understand that using a computer system fraudulently and without colour of right can be a criminal offence in Canada under Criminal Code section 342.1, and that similar laws apply in other countries. This screen is not legal advice.
                             </TextBlock>
                         </CheckBox>
                         <WrapPanel Margin="0,20,0,0">
-                            <Button x:Name="RunButton" Style="{StaticResource PrimaryButton}" Content="Check this hostname" Click="Run_Click"/>
+                            <Button x:Name="RunButton" Style="{StaticResource PrimaryButton}" Content="Check this hostname" Click="Run_Click" IsEnabled="False"/>
                             <Button x:Name="CancelButton" Style="{StaticResource GhostButton}" Content="Stop this check" Margin="12,0,0,0" Click="Cancel_Click" Visibility="Collapsed"/>
                             <Button x:Name="CopyButton" Style="{StaticResource GhostButton}" Content="Copy report" Margin="12,0,0,0" Click="Copy_Click" IsEnabled="False"/>
                             <Button x:Name="SaveButton" Style="{StaticResource GhostButton}" Content="Save report" Margin="12,0,0,0" Click="Save_Click" IsEnabled="False"/>
@@ -57,7 +71,7 @@
                         <ProgressBar x:Name="BusyBar" Height="3" Margin="0,18,0,0" IsIndeterminate="True" Visibility="Collapsed"
                                      Foreground="{StaticResource TealBrush}" Background="#070B14" BorderThickness="0"/>
                         <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,0" LineHeight="22" FontSize="14"
-                                   Text="No check has been run yet. Enter a public hostname, tick the permission box, then choose Check this hostname or press Enter."/>
+                                   Text="No check has been run yet. Enter a public hostname, tick both permission boxes, then choose Check this hostname or press Enter."/>
                     </StackPanel>
                 </Border>
 
@@ -65,6 +79,7 @@
                     <StackPanel>
                         <TextBlock Style="{StaticResource Kicker}" Text="THIS RUN"/>
                         <TextBlock x:Name="SummaryTitle" FontFamily="Georgia" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                        <TextBlock x:Name="SummaryScope" Foreground="{StaticResource TealSoftBrush}" FontSize="13" Margin="0,6,0,0"/>
                         <TextBlock x:Name="SummaryBody" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0" LineHeight="22"/>
                         <ItemsControl x:Name="StackList" Margin="0,14,0,0">
                             <ItemsControl.ItemsPanel>

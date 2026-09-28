@@ -102,6 +102,18 @@ public static class Advice
             "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
 
         Missing(
+            "security.txt",
+            "Publish a security.txt file at https://your-host/.well-known/security.txt with a Contact: mailto line so researchers can reach you. See RFC 9116.");
+
+        Missing(
+            "CAA",
+            "At the DNS host, add a CAA record that lists only the certificate authorities you use, for example issue \"letsencrypt.org\".");
+
+        Missing(
+            "DKIM",
+            "If this hostname sends mail, publish DKIM at the selector your mail provider specifies. This program only asked default, google, and selector1.");
+
+        Missing(
             "SPF",
             $"At the DNS host for {hostname}, add a TXT record on the mail name (often the apex) starting with v=spf1 that lists only the services that send mail for you, and end with -all or ~all. Confirm the exact name with your mail provider.",
             null,

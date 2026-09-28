@@ -17,7 +17,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-site-check/1.3";
+    public const string UserAgent = "operation-locked-in-site-check/1.4";
 
     private static readonly string[] HeaderNames =
     {
@@ -34,7 +34,8 @@ public static class Checker
     public static async Task<CheckReport> RunAsync(
         string rawHost,
         IProgress<string>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        CheckScope scope = CheckScope.Standard)
     {
         var hostname = Hostname.Parse(rawHost)
             ?? throw new CheckException("Use a public hostname such as example.com. Do not enter an IP address, localhost, or a home network name.");
@@ -98,6 +99,19 @@ public static class Checker
         findings.Add(SpfFinding(spf));
         findings.Add(DmarcFinding(dmarc));
         findings.AddRange(CveFindings(stack));
+        if (scope == CheckScope.AuthorizedAssessment)
+        {
+            progress?.Report("Reading RFC public files and extra DNS (CAA, common DKIM selectors).");
+            var secTask = ReadPublicPathAsync(hostname, ip, "/.well-known/security.txt", 16 * 1024, cancellationToken);
+            var robotsTask = ReadPublicPathAsync(hostname, ip, "/robots.txt", 16 * 1024, cancellationToken);
+            var caaTask = LookupCaaAsync(hostname, cancellationToken);
+            var dkimTask = LookupDkimAsync(hostname, cancellationToken);
+            await Task.WhenAll(secTask, robotsTask, caaTask, dkimTask);
+            findings.Add(PublicFileFinding("security.txt", await secTask, "RFC 9116 contact file at /.well-known/security.txt."));
+            findings.Add(PublicFileFinding("robots.txt", await robotsTask, "Public robots.txt on the same address."));
+            findings.Add(CaaFinding(await caaTask));
+            findings.Add(DkimFinding(await dkimTask));
+        }
         if (plugins.Count > 0)
         {
             findings.Add(new Finding(
@@ -122,6 +136,15 @@ public static class Checker
             http80.Status,
             http80.Location);
 
+        var limits = new List<string>
+        {
+            "This is a read-only public-surface check of a hostname you attested you may test. It is not a penetration test, not an exploit kit, and not a guarantee.",
+            "Industry red-team work includes attempting to exploit. This program does not send exploit traffic, guess passwords, or crawl.",
+            "It contacts only public addresses for the hostname you typed, and only after both permission boxes are ticked.",
+            "CVE matches use the local catalogue against versions this host advertised. Absence of a match is not clearance.",
+            "Unauthorized use of a computer system can be an offence in Canada (Criminal Code section 342.1). Operation Locked In does not authorize use without the operator's permission.",
+            "This program is not legal advice. Paid website work still begins after a written quote."
+        };
         return new CheckReport(
             hostname,
             DateTimeOffset.UtcNow,
@@ -129,15 +152,8 @@ public static class Checker
             findings,
             next,
             stack,
-            new[]
-            {
-                "This is a short read-only check of public HTTPS, DNS, and the homepage. It is not a red-team engagement, not a crawl, and not a guarantee.",
-                "It contacts only public addresses for the hostname you typed, and only after you confirm permission.",
-                "It does not follow redirects, guess logins, brute-force plugins, or send exploit traffic.",
-                "CVE matches use a small sourced catalogue against versions this host advertised. Absence of a match is not clearance.",
-                "Unauthorized access to a computer system is an offence in Canada (Criminal Code s. 342.1) and similar laws elsewhere.",
-                "Paid website work still begins after a written quote."
-            });
+            limits,
+            LawfulUse.Record(scope, DateTimeOffset.UtcNow));
     }
 
     private static async Task<IReadOnlyList<IPAddress>> ResolvePublicAsync(string hostname, CancellationToken ct)
@@ -436,6 +452,108 @@ public static class Checker
     private static Task<IReadOnlyList<string>> QueryTxtAsync(string name, CancellationToken ct) =>
         DnsTxt.QueryAsync(name, ct);
 
+    private static async Task<HttpResult> ReadPublicPathAsync(
+        string hostname, IPAddress ip, string path, int cap, CancellationToken ct)
+    {
+        if (path is not "/.well-known/security.txt" and not "/robots.txt")
+            return new HttpResult(null, new Dictionary<string, string>(), "That path is not in the allowlist.");
+        try
+        {
+            using var handler = PinnedHandler(hostname, ip, 443);
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"https://{hostname}{path}");
+            request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+            request.Headers.Host = hostname;
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            var (headers, _) = ReadHeaders(response);
+            var body = await ReadCappedBodyAsync(response, cap, ct);
+            return new HttpResult((int)response.StatusCode, headers, "Read " + path, body);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return new HttpResult(null, new Dictionary<string, string>(), path + " did not complete.");
+        }
+    }
+
+    private static async Task<SpfResult> LookupCaaAsync(string hostname, CancellationToken ct)
+    {
+        var recs = await DnsTxt.QueryCaaAsync(hostname, ct);
+        return new SpfResult(new[] { hostname }, recs.Count == 0 ? null : string.Join("; ", recs.Take(6)));
+    }
+
+    private static async Task<SpfResult> LookupDkimAsync(string hostname, CancellationToken ct)
+    {
+        var apex = Hostname.Apex(hostname);
+        var names = new[] { "default._domainkey." + apex, "google._domainkey." + apex, "selector1._domainkey." + apex };
+        var found = new List<string>();
+        foreach (var name in names)
+        {
+            ct.ThrowIfCancellationRequested();
+            var txt = await QueryTxtAsync(name, ct);
+            if (txt.Any(r => r.Contains("v=DKIM1", StringComparison.OrdinalIgnoreCase) || r.Contains("p=", StringComparison.OrdinalIgnoreCase)))
+                found.Add(name);
+        }
+        return new SpfResult(names, found.Count == 0 ? null : string.Join(", ", found));
+    }
+
+    private static Finding PublicFileFinding(string title, HttpResult result, string method)
+    {
+        var ok = result.Status is >= 200 and < 300 && !string.IsNullOrWhiteSpace(result.Body);
+        if (result.Status is null)
+        {
+            return new Finding(title, FindingState.Incomplete, result.Note, method,
+                "A timeout is not proof the file is missing.");
+        }
+        return new Finding(
+            title,
+            ok ? FindingState.Present : FindingState.NotFound,
+            ok ? $"{title} answered HTTP {result.Status} on this public address." : $"{title} was not a successful document (HTTP {result.Status}).",
+            method,
+            "This is a public RFC or convention file. Its absence is hygiene, not a breach.");
+    }
+
+    private static Finding CaaFinding(SpfResult caa)
+    {
+        if (caa.Record is null)
+        {
+            return new Finding(
+                "CAA",
+                FindingState.NotFound,
+                "No CAA record was found on " + string.Join(" or ", caa.Names) + ".",
+                "Asked the system resolver for CAA on the typed hostname.",
+                "Missing CAA does not mean a certificate was issued wrongly. It means this name does not restrict which CAs may issue.");
+        }
+        return new Finding(
+            "CAA",
+            FindingState.Present,
+            "CAA is published: " + caa.Record,
+            "Asked the system resolver for CAA on the typed hostname.",
+            "This program does not evaluate issuewild or iodef mailboxes.");
+    }
+
+    private static Finding DkimFinding(SpfResult dkim)
+    {
+        if (dkim.Record is null)
+        {
+            return new Finding(
+                "DKIM",
+                FindingState.NotFound,
+                "No DKIM TXT was found on the common selectors " + string.Join(", ", dkim.Names) + ".",
+                "Requested TXT on default, google, and selector1 under _domainkey plus the apex. Only parsed names are queried.",
+                "Many hosts use a different selector. Absence here is not proof DKIM is unpublished.");
+        }
+        return new Finding(
+            "DKIM",
+            FindingState.Present,
+            "A DKIM-like TXT record was found on: " + dkim.Record + ".",
+            "Requested TXT on default, google, and selector1 under _domainkey plus the apex. Only parsed names are queried.",
+            "This program does not validate signatures or rotate keys.");
+    }
+
     private static Finding HttpsFinding(HttpResult http)
     {
         var ok = http.Status is >= 100 and < 500;
@@ -488,6 +606,9 @@ public static class Checker
             var hstsDisabled = name == "Strict-Transport-Security"
                 && present
                 && HeaderFacts.HstsDisablesHttps(headers[name]);
+            var cspUnsafe = name == "Content-Security-Policy"
+                && present
+                && HeaderFacts.CspAllowsUnsafeInline(headers[name]);
             var hint = name switch
             {
                 "Strict-Transport-Security" => "Tells browsers to keep using HTTPS.",
@@ -502,7 +623,7 @@ public static class Checker
             };
             var state = status is null
                 ? FindingState.Incomplete
-                : hstsDisabled
+                : hstsDisabled || cspUnsafe
                     ? FindingState.Attention
                     : present
                         ? FindingState.Present
@@ -511,9 +632,11 @@ public static class Checker
                 ? "Headers were not read because HTTPS did not complete."
                 : hstsDisabled
                     ? $"{name} is present with max-age at or below zero, which tells browsers to forget HTTPS. {hint}"
-                    : present
-                        ? $"{name} is present. {hint}"
-                        : $"{name} was not present on HEAD / or GET /. {hint}";
+                    : cspUnsafe
+                        ? $"{name} is present and includes unsafe-inline. {hint}"
+                        : present
+                            ? $"{name} is present. {hint}"
+                            : $"{name} was not present on HEAD / or GET /. {hint}";
             yield return new Finding(
                 name,
                 state,

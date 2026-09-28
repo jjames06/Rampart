@@ -18,6 +18,8 @@ HTTP HEAD `/` is sent on that same address with no body and with redirects disab
 
 Port 80 receives a single HEAD `/` on the same public address, only to see whether HTTP redirects to HTTPS.
 
+An **Authorized public-surface assessment** also requests `/.well-known/security.txt` and `/robots.txt` (capped, no redirect), DNS CAA on the hostname, and TXT on common DKIM selectors (`default`, `google`, `selector1`) under `_domainkey` plus the apex. Those names must still pass `IsSafeDnsName`.
+
 ## Mail records
 
 TXT records are requested through the system DNS resolver (DnsClient) for the hostname and, when the name starts with `www`, for the parent. Only records that begin with `v=spf1` count as SPF. DMARC is requested on `_dmarc.` plus the apex. Only `v=DMARC1` counts. Include chains are not evaluated. A DMARC record with `p=none` is reported as **Needs attention** (monitor-only), not as a finished policy.

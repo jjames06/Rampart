@@ -30,8 +30,9 @@ If nothing opens, confirm you are on 64-bit Windows and that antivirus did not q
 2. Type the public hostname. You may paste a full `https://` address, including a path. The program keeps only the hostname. International names (for example a name with accents) are converted to ASCII (punycode) before anything is queried.
 3. Examples that work: `example.com`, `www.example.com`, `https://www.example.com/about`.
 4. Examples that are refused, on purpose: `127.0.0.1`, `localhost`, `router.local`, `192.168.0.1`, a home-network name ending in `.lan` or `.home`, a name with a port such as `example.com:443`, and a bare word with no dot. The program will not contact private, loopback, link-local, CGNAT, documentation, or multicast addresses. If a name has both a public address and a private address, only the public address is used.
-5. Tick the permission box only if the statement is true.
-6. Choose **Check this hostname**, or press Enter.
+5. Choose **Standard public-surface check**, or **Authorized public-surface assessment** if you also want RFC public files (`security.txt`, `robots.txt`) and extra DNS (CAA, common DKIM selectors). Both modes are read-only. Neither sends exploit traffic.
+6. Tick **both** permission boxes. The first box is that you operate the hostname or have written permission from the person who does. The second box is that you will not use the program against a hostname you are not authorized to check, and that Operation Locked In does not authorize that use. Canadian Criminal Code section 342.1 is named on that box. The boxes are not legal advice.
+7. Choose **Check this hostname**, or press Enter. The primary button stays off until both boxes are ticked.
 
 The status line describes the current step: resolving public addresses, opening TLS, then reading HTTPS, the homepage, mail records, and HTTP on port 80. A thin teal bar shows that work is in progress. You cannot start a second check until this one finishes. To stop a check that is taking too long, choose **Stop this check** or press Escape. Stopping cancels further requests; it cannot unsend the packets already on the wire.
 
