@@ -1,4 +1,4 @@
-# Building Barbican
+# Building Rampart
 
 You need the .NET 8 SDK (64-bit) and 64-bit Windows.
 
@@ -15,7 +15,7 @@ dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
 dotnet publish src\SiteCheck.App\SiteCheck.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:EnableCompressionInSingleFile=true -o dist
 ```
 
-`tools\publish.ps1` runs both commands, names the result `Barbican.exe`, and copies `LICENSE`, `NOTICE`, `THIRD-PARTY.md`, and `docs/how-to-use.md` into `dist` so an object-code copy is accompanied by the licence text GPLv3 requires.
+`tools\publish.ps1` runs both commands, names the result `Rampart.exe`, and copies `LICENSE`, `NOTICE`, `THIRD-PARTY.md`, and `docs/how-to-use.md` into `dist` so an object-code copy is accompanied by the licence text GPLv3 requires.
 
 The executable is self-contained. The person who runs it does not install the .NET runtime. The program requests no administrative elevation (`asInvoker`). Per-monitor DPI awareness is set in the application manifest.
 

@@ -7,7 +7,7 @@ public static class ReportText
     public static string Format(CheckReport report)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Barbican  ·  Operation Locked In");
+        sb.AppendLine("Rampart  ·  Operation Locked In");
         sb.AppendLine($"Hostname: {report.Hostname}");
         sb.AppendLine($"Checked: {report.CheckedAt:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine("Public addresses used: " + string.Join(", ", report.PublicAddresses));
@@ -66,6 +66,20 @@ public static class ReportText
             sb.AppendLine(f.Observation);
             sb.AppendLine("How this was gathered: " + f.Method);
             sb.AppendLine("What this does not mean: " + f.Caveat);
+            var guide = report.NextSteps.FirstOrDefault(s =>
+                s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase)
+                && s.Lines is { Count: > 0 }
+                && f.State != FindingState.Present);
+            if (guide != null)
+            {
+                sb.AppendLine("How to fix this");
+                foreach (var line in guide.Lines!)
+                {
+                    sb.AppendLine("  " + line.Text);
+                    if (!string.IsNullOrWhiteSpace(line.Copy))
+                        sb.AppendLine("  Copy: " + line.Copy);
+                }
+            }
             sb.AppendLine();
         }
         sb.AppendLine("Limits");

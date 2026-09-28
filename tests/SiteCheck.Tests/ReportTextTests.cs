@@ -20,7 +20,7 @@ public class ReportTextTests
             new[] { "This is a short read-only check." },
             LawfulUse.Record(CheckScope.Standard, new DateTimeOffset(2026, 9, 27, 12, 0, 0, TimeSpan.Zero)));
         var text = ReportText.Format(report);
-        Assert.Contains("Barbican", text, StringComparison.Ordinal);
+        Assert.Contains("Rampart", text, StringComparison.Ordinal);
         Assert.Contains("example.com", text, StringComparison.Ordinal);
         Assert.Contains("What to do next", text, StringComparison.Ordinal);
         Assert.Contains("Present", text, StringComparison.Ordinal);
@@ -47,6 +47,6 @@ public class ReportTextTests
         var json = ReportJson.Format(report);
         Assert.Contains("\"hostname\": \"example.com\"", json, StringComparison.Ordinal);
         Assert.Contains("\"present\": 1", json, StringComparison.Ordinal);
-        Assert.Contains("operation-locked-in-barbican/1.8.0", json, StringComparison.Ordinal);
+        Assert.Contains("operation-locked-in-rampart/1.9.0", json, StringComparison.Ordinal);
     }
 }

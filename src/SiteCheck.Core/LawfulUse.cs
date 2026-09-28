@@ -39,7 +39,8 @@ public static class LawfulUse
             "DNS MX and NS on the apex",
             "Compare advertised product versions with the local advisory catalogue",
             "Read the homepage HTML for mixed http:// resources, form actions, canonical URLs, target=_blank links, and integrity attributes on https:// scripts",
-            "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size"
+            "Record the negotiated TLS protocol, cipher suite, ALPN, and leaf public-key size",
+            "Classify the public edge from apex NS and CDN response headers (Cloudflare, Vercel, and similar)"
         };
         if (scope == CheckScope.AuthorizedAssessment)
         {

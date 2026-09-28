@@ -85,7 +85,7 @@ public partial class MainWindow : Window
         {
             var report = await Checker.RunAsync(HostBox.Text, progress, ct, SelectedScope());
             _report = report;
-            FindingsList.ItemsSource = ToViews(report.Findings);
+            FindingsList.ItemsSource = ToViews(report.Findings, report.NextSteps);
             if (report.NextSteps.Count > 0)
             {
                 NextList.ItemsSource = report.NextSteps;
@@ -192,8 +192,8 @@ public partial class MainWindow : Window
             var body = json ? ReportJson.Format(_report) : ReportText.Format(_report);
             File.WriteAllText(dialog.FileName, body, Encoding.UTF8);
             StatusText.Text = json
-                ? "JSON report saved on this computer. Barbican does not upload it. Keep it on a disk you already protect if it names versions you have not yet updated."
-                : "Report saved on this computer. Barbican does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
+                ? "JSON report saved on this computer. Rampart does not upload it. Keep it on a disk you already protect if it names versions you have not yet updated."
+                : "Report saved on this computer. Rampart does not upload it. The file is ordinary text; keep it on a disk you already protect if it names versions you have not yet updated.";
         }
         catch (Exception)
         {
@@ -203,13 +203,13 @@ public partial class MainWindow : Window
 
     private void Lawful_Click(object sender, RoutedEventArgs e)
     {
-        ShowTextWindow("Lawful use  ·  Site Check", LoadEmbedded("LAWFUL-USE.md") ?? LoadEmbedded("lawful-use.md") ?? "See docs/lawful-use.md in the repository.");
+        ShowTextWindow("Lawful use  ·  Rampart", LoadEmbedded("LAWFUL-USE.md") ?? LoadEmbedded("lawful-use.md") ?? "See docs/lawful-use.md in the repository.");
     }
 
     private void Licence_Click(object sender, RoutedEventArgs e)
     {
         var text = LoadLicenceText();
-        ShowTextWindow("Licence and warranty  ·  Site Check", text);
+        ShowTextWindow("Licence and warranty  ·  Rampart", text);
     }
 
     private void ShowTextWindow(string title, string text)
@@ -249,7 +249,7 @@ public partial class MainWindow : Window
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = "mailto:Info@operationlockedin.com?subject=Site%20Check",
+                FileName = "mailto:Info@operationlockedin.com?subject=Rampart",
                 UseShellExecute = true
             });
         }
@@ -276,7 +276,7 @@ public partial class MainWindow : Window
         var text = LoadEmbedded("LICENSE");
         if (text != null) return text;
         return """
-            Site Check
+            Rampart
             Copyright (C) 2026 Jesse Mosier-Bowers, operating as Operation Locked In
 
             This program is free software: you can redistribute it and/or modify
@@ -294,13 +294,30 @@ public partial class MainWindow : Window
             """;
     }
 
-    private static List<FindingView> ToViews(IReadOnlyList<Finding> findings)
+    private void CopyLine_Click(object sender, RoutedEventArgs e)
     {
+        if (sender is not System.Windows.Controls.Button button) return;
+        var text = button.Tag as string;
+        if (string.IsNullOrWhiteSpace(text)) return;
+        try
+        {
+            Clipboard.SetText(text);
+            StatusText.Text = "Copied a how-to line. Paste it where the steps say to use it.";
+        }
+        catch (Exception)
+        {
+            StatusText.Text = "The clipboard was busy. Select the teal line and copy it yourself, or copy the whole report.";
+        }
+    }
+
+    private static List<FindingView> ToViews(IReadOnlyList<Finding> findings, IReadOnlyList<NextStep> nextSteps)
+    {
+        var byRelated = nextSteps.ToLookup(s => s.Related, StringComparer.OrdinalIgnoreCase);
         var list = new List<FindingView>();
         FindingState? last = null;
         foreach (var f in findings.OrderBy(x => ReportText.Rank(x.State)))
         {
-            var view = ToView(f);
+            var view = ToView(f, byRelated[f.Title].FirstOrDefault());
             view.Section = last == f.State ? "" : ReportText.SectionName(f.State);
             last = f.State;
             list.Add(view);
@@ -308,7 +325,7 @@ public partial class MainWindow : Window
         return list;
     }
 
-    private static FindingView ToView(Finding f)
+    private static FindingView ToView(Finding f, NextStep? step)
     {
         var teal = (Brush)Application.Current.Resources["TealBrush"];
         var muted = (Brush)Application.Current.Resources["MutedBrush"];
@@ -321,6 +338,21 @@ public partial class MainWindow : Window
             FindingState.Attention => (amber, (Brush)Application.Current.Resources["RailAttention"]),
             _ => (muted, incomplete)
         };
+        var hasFix = step != null && f.State != FindingState.Present && f.State != FindingState.Incomplete;
+        var lines = new List<FixLineView>();
+        if (hasFix && step!.Lines != null)
+        {
+            foreach (var line in step.Lines)
+            {
+                var hasCopy = !string.IsNullOrWhiteSpace(line.Copy);
+                lines.Add(new FixLineView
+                {
+                    Text = line.Text,
+                    Copy = line.Copy ?? "",
+                    CopyVisibility = hasCopy ? Visibility.Visible : Visibility.Collapsed
+                });
+            }
+        }
         return new FindingView
         {
             Title = f.Title,
@@ -329,9 +361,21 @@ public partial class MainWindow : Window
             AccentBrush = rail,
             Observation = f.Observation,
             Method = f.Method,
-            Caveat = f.Caveat
+            Caveat = f.Caveat,
+            HasFix = hasFix,
+            FixVisibility = hasFix ? Visibility.Visible : Visibility.Collapsed,
+            FixTitle = step?.Title ?? "",
+            FixBody = step?.Body ?? "",
+            FixLines = lines
         };
     }
+}
+
+public sealed class FixLineView
+{
+    public string Text { get; set; } = "";
+    public string Copy { get; set; } = "";
+    public Visibility CopyVisibility { get; set; } = Visibility.Collapsed;
 }
 
 public sealed class FindingView
@@ -344,4 +388,9 @@ public sealed class FindingView
     public string Observation { get; set; } = "";
     public string Method { get; set; } = "";
     public string Caveat { get; set; } = "";
+    public bool HasFix { get; set; }
+    public Visibility FixVisibility { get; set; } = Visibility.Collapsed;
+    public string FixTitle { get; set; } = "";
+    public string FixBody { get; set; } = "";
+    public List<FixLineView> FixLines { get; set; } = new();
 }

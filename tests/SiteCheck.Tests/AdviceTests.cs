@@ -112,6 +112,22 @@ public class AdviceTests
     }
 
     [Fact]
+    public void Cloudflare_obfuscation_is_not_described_as_a_vercel_header()
+    {
+        var findings = new[] { F("Cloudflare email obfuscation", FindingState.Attention) };
+        var stack = new[]
+        {
+            new StackHint("Vercel", null, "header"),
+            new StackHint("Cloudflare", null, "header"),
+            new StackHint("Next.js", "15.5.26", "header"),
+        };
+        var steps = Advice.Build("www.example.com", findings, stack, Array.Empty<string>(), 200, "Tls12", null, null);
+        var step = Assert.Single(steps, s => s.Related == "Cloudflare email obfuscation");
+        Assert.DoesNotContain("usually a header in next.config", step.Body, StringComparison.Ordinal);
+        Assert.Contains(step.Lines!, l => l.Text.Contains("Email Address Obfuscation", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Mixed_content_attention_gets_a_fix_step()
     {
         var findings = new[] { F("Mixed content", FindingState.Attention) };

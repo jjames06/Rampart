@@ -1,6 +1,6 @@
 # What is checked, and how
 
-Every observation in Site Check is paired with a method and a caveat. If a method cannot run, the state is **Could not complete**, not **Not found**. Next steps are generated only from findings that are not **Present**, with one exception: incomplete header reads (because HTTPS never finished) do not invent a list of header fixes on top of the HTTPS failure.
+Every observation in Rampart is paired with a method and a caveat. If a method cannot run, the state is **Could not complete**, not **Not found**. Next steps are generated only from findings that are not **Present**, with one exception: incomplete header reads (because HTTPS never finished) do not invent a list of header fixes on top of the HTTPS failure. Findings that need work include a **How to fix this** panel with full sentences and copyable lines for this hostname only.
 
 ## Addresses
 
@@ -9,6 +9,18 @@ The hostname is parsed to a DNS name. IP literals, localhost, ports, and home-ne
 Windows then resolves A and AAAA records. Loopback, RFC 1918, link-local, CGNAT (100.64.0.0/10), documentation prefixes, multicast, IPv6 unique-local, the IPv6 discard prefix, local-use NAT64, and IPv4 that is only reachable by embedding it in well-known NAT64 or 6to4 are dropped. Remaining addresses are treated as public Internet addresses. IPv4 is tried before IPv6 for the TLS handshake. Up to three public addresses are tried if the first handshake does not complete.
 
 The program never connects to an address that failed that filter. HTTP and TLS are pinned to the chosen address so a later DNS change cannot redirect the socket onto a private network.
+
+## Public edge
+
+Apex NS records and HTTPS headers classify the public edge:
+
+- Cloudflare nameservers plus `cf-ray` or `cf-cache-status`: proxied (orange cloud).
+- Cloudflare nameservers without those headers: DNS only (grey cloud).
+- Vercel headers without Cloudflare: Vercel as the public edge.
+- Other CDN headers (CloudFront, Fastly, Akamai, and similar): already behind that edge.
+- None of the above: origin or host directly.
+
+When Cloudflare is proxied, the homepage HTML is also searched for `email-decode.min.js`, Cloudflare Web Analytics, and Rocket Loader, and `cf-cache-status: HIT` on HTML is flagged. Rampart does not log in to Cloudflare. It cannot see WAF rule contents, Bot Fight Mode, or SSL mode from the dashboard. Those stay operator steps in the how-to when the public surface implies them.
 
 ## HTTPS and the homepage
 

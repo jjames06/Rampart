@@ -11,7 +11,7 @@ public static class ReportJson
     {
         var dto = new Dictionary<string, object?>
         {
-            ["product"] = "Barbican",
+            ["product"] = "Rampart",
             ["userAgent"] = Checker.UserAgent,
             ["hostname"] = report.Hostname,
             ["checkedAtUtc"] = report.CheckedAt.ToString("o"),

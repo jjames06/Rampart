@@ -19,7 +19,7 @@ public static class Checker
     public const int TimeoutMs = 8000;
     public const int MaxTlsAttempts = 3;
     public const int MaxBodyBytes = 256 * 1024;
-    public const string UserAgent = "operation-locked-in-barbican/1.8.0";
+    public const string UserAgent = "operation-locked-in-rampart/1.9.0";
 
     private static readonly string[] HeaderNames =
     {
@@ -119,6 +119,9 @@ public static class Checker
         findings.Add(DmarcFinding(dmarc));
         findings.Add(MxFinding(mx));
         findings.Add(NsFinding(ns));
+        var edge = EdgeSurface.Classify(ns.Record, headers, stack);
+        findings.Add(EdgeSurface.PublicEdgeFinding(edge));
+        findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
         findings.AddRange(CveFindings(stack));
         findings.Add(HtmlSurface.MixedContent(page.Body));
         findings.Add(HtmlSurface.SubresourceIntegrity(page.Body));
@@ -172,7 +175,8 @@ public static class Checker
             certDays,
             cert.TlsProtocol,
             http80.Status,
-            http80.Location);
+            http80.Location,
+            edge);
 
         var limits = new List<string>
         {

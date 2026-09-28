@@ -231,5 +231,11 @@
             <Setter Property="Width" Value="10"/>
             <Setter Property="MinWidth" Value="10"/>
         </Style>
+
+        <Style TargetType="Expander">
+            <Setter Property="Foreground" Value="{StaticResource TealSoftBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
     </Application.Resources>
 </Application>

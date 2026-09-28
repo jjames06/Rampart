@@ -16,13 +16,17 @@ public static class Advice
         int? certificateDays,
         string? tlsProtocol,
         int? http80Status,
-        string? http80Location)
+        string? http80Location,
+        EdgeProfile? edge = null)
     {
         var steps = new List<NextStep>();
         var next = stack.Any(s => s.Product.Equals("Next.js", StringComparison.OrdinalIgnoreCase));
         var wordpress = stack.Any(s => s.Product.Equals("WordPress", StringComparison.OrdinalIgnoreCase));
         var cloudflare = stack.Any(s => s.Product.Equals("Cloudflare", StringComparison.OrdinalIgnoreCase));
         var vercel = stack.Any(s => s.Product.Equals("Vercel", StringComparison.OrdinalIgnoreCase));
+        edge ??= new EdgeProfile(EdgeKind.Origin, "Origin", false, false, vercel);
+        if (edge.Kind is EdgeKind.CloudflareProxied or EdgeKind.CloudflareDnsOnly)
+            cloudflare = true;
 
         string HeaderEnv() =>
             next ? "Next.js" : wordpress ? "WordPress" : vercel ? "Vercel" : cloudflare ? "Cloudflare" : "This hostname";
@@ -35,6 +39,10 @@ public static class Advice
             var body = generic;
             if (next && nextJs != null) body = nextJs;
             else if (wordpress && wp != null) body = wp;
+            else if (title.StartsWith("Cloudflare", StringComparison.OrdinalIgnoreCase))
+            {
+                // Cloudflare dashboard settings are not Vercel headers.
+            }
             else if (vercel) body += " On Vercel this is usually a header in next.config.ts or the project Security Headers settings.";
             else if (cloudflare) body += " In Cloudflare: Rules, then Transform or HTTP Header Modification, or the SSL/TLS overview for HTTPS redirects.";
             steps.Add(new NextStep($"Fix {title}", body, title, HeaderEnv()));
@@ -50,6 +58,13 @@ public static class Advice
             else if (cloudflare)
                 body += " Add this at the DNS host (Cloudflare DNS if the orange cloud is on). It is not an HTTP header and it does not go in next.config.ts.";
             steps.Add(new NextStep($"Fix {title}", body, title, "DNS host"));
+        }
+
+        var edgeStep = FixGuides.PublicEdgeStep(hostname, edge, vercel, next);
+        if (edgeStep != null
+            && findings.Any(f => f.Title == "Public edge" && f.State != FindingState.Present))
+        {
+            steps.Add(edgeStep);
         }
 
         MissingHeader(
@@ -342,7 +357,7 @@ public static class Advice
         {
             steps.Add(new NextStep(
                 $"Review the remaining {cveHits.Count - 12} catalogue matches",
-                "The findings list has every match from this run. Upgrade the advertised library or framework, then run Site Check again. The catalogue is local; this program did not query NVD live.",
+                "The findings list has every match from this run. Upgrade the advertised library or framework, then run Rampart again. The catalogue is local; this program did not query NVD live.",
                 "Known CVEs (advertised versions)"));
         }
 
@@ -364,6 +379,22 @@ public static class Advice
                 "Plugins"));
         }
 
-        return steps;
+        MissingHeader(
+            "Cloudflare email obfuscation",
+            "Turn Email Address Obfuscation off in Cloudflare Security Settings. The injected email-decode.min.js script fights a tight Content-Security-Policy.");
+
+        MissingHeader(
+            "Cloudflare Web Analytics",
+            "Disable Cloudflare Real User Measurements if this site already has first-party analytics. The beacon script is a third-party inject.");
+
+        MissingHeader(
+            "Cloudflare Rocket Loader",
+            "Turn Rocket Loader off in Cloudflare Speed settings. It rewrites scripts and can break Next.js App Router.");
+
+        MissingHeader(
+            "Cloudflare HTML cache",
+            "Bypass Cloudflare cache for HTML document routes. Cache fingerprinted static files only, then purge after a deploy.");
+
+        return FixGuides.WithLines(steps, hostname, edge, next, wordpress, vercel, cloudflare);
     }
 }
