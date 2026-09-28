@@ -177,6 +177,14 @@ public static class Fingerprint
                 ver.Success ? ver.Groups[1].Value : null,
                 "Homepage HTML named PeopleSoft."));
         }
+        foreach (var product in EnterpriseSurface.Products)
+        {
+            if (hints.Any(h => h.Product.Equals(product.Title, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            if (!product.HtmlNeedles.Any(n => html.Contains(n, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            hints.Add(new StackHint(product.Title, null, "Homepage HTML named " + product.Title + "."));
+        }
     }
 
     private static void AddGenerator(List<StackHint> hints, string content)

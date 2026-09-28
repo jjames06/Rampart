@@ -28,7 +28,11 @@ public static class PeopleSoftSurface
 
     public static Finding Summary(IReadOnlyList<FileHit> hits, string? homepageHtml, IReadOnlyList<string> cookies)
     {
-        var live = hits.Where(h => h.Status is >= 200 and < 400).Select(h => h.Path + " HTTP " + h.Status).Take(8).ToArray();
+        var live = hits
+            .Where(h => Paths.Contains(h.Path, StringComparer.Ordinal) && h.Status is >= 200 and < 400)
+            .Select(h => h.Path + " HTTP " + h.Status)
+            .Take(8)
+            .ToArray();
         var htmlHint = !string.IsNullOrEmpty(homepageHtml)
             && (homepageHtml.Contains("PeopleSoft", StringComparison.OrdinalIgnoreCase)
                 || homepageHtml.Contains("PSIGW", StringComparison.OrdinalIgnoreCase));

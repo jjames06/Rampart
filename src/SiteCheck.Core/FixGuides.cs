@@ -124,6 +124,7 @@ public static class FixGuides
         "Private files" or
         "Oracle PeopleSoft" or
         "WWW and apex" or
+        "Internet-facing enterprise portals" or
         "security.txt";
 
     private static bool OptionalUntilAdvised(string title) => title is
@@ -252,6 +253,9 @@ public static class FixGuides
         bool vercel,
         bool cloudflare)
     {
+        var enterpriseLines = EnterpriseSurface.FixLines(related);
+        if (enterpriseLines is { Count: > 0 }) return enterpriseLines;
+
         var apex = Hostname.Apex(hostname);
         var cf = cloudflare || edge.Kind is EdgeKind.CloudflareProxied or EdgeKind.CloudflareDnsOnly;
         var headerPlace = nextJs

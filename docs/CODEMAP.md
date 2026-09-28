@@ -31,7 +31,7 @@ All three shells call `Checker.RunAsync` then `FindingGuide` so a card cannot ex
 4. TLS handshake (`ReadCertificateAsync`) records the leaf even if Windows does not fully trust it.
 5. Parallel: HTTPS HEAD/GET `/`, homepage body (256 KB cap), SPF/DMARC/MX/NS/CAA, port 80 HEAD.
 6. `Fingerprint` + `AdvisoryDb` (embedded `data/advisories.json`, built by `tools/build-advisories.mjs`).
-7. Allowlisted GETs: sign-in, admin, private files, PeopleSoft portal paths, www/apex HEAD.
+7. Allowlisted GETs: sign-in, admin, private files, PeopleSoft portal paths, other CISA-KEV enterprise portal paths (SharePoint, NetScaler, FortiGate, and peers), www/apex HEAD.
 8. Authorized scope adds RFC files and extra DNS.
 9. `Advice.Build` + `FixGuides.Ensure` attach how-to **only** for work that applies to this stack.
 10. UI groups by `FindingState`. Save may DPAPI-protect on Windows (`ReportProtect`).
@@ -72,6 +72,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Core/LoginSurface.cs` | Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention. |
 | `src/SiteCheck.Core/Models.cs` | Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record. |
 | `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
+| `src/SiteCheck.Core/EnterpriseSurface.cs` | Table of other internet-facing enterprise portals. Attention cards only when advertised. CISA KEV CVE as patch prompt. |
 | `src/SiteCheck.Core/PrivateIp.cs` | Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges. |
 | `src/SiteCheck.Core/ReportJson.cs` | Machine-readable sibling of ReportText for operators who archive JSON. |
 | `src/SiteCheck.Core/ReportProtect.cs` | Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile. |
@@ -106,6 +107,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `tests/SiteCheck.Tests/HtmlSurfaceTests.cs` | Locks mixed-content / SRI / tabnabbing / form-action observations on capped HTML. |
 | `tests/SiteCheck.Tests/LoginSurfaceTests.cs` | Locks sign-in/admin allowlist and Present-when-absent for brochure sites. |
 | `tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs` | Locks PeopleSoft path list and CVE-2026-35273 prompt-only wording (not RCE proof). |
+| `tests/SiteCheck.Tests/EnterpriseSurfaceTests.cs` | Locks brochure silence, SharePoint/NetScaler/Magento prompts, and omitted exploit paths. |
 | `tests/SiteCheck.Tests/PrivateIpTests.cs` | Locks RFC1918/CGNAT/ULA/etc. classification. |
 | `tests/SiteCheck.Tests/ReportProtectTests.cs` | Locks DPAPI round-trip on Windows and no-op/skip elsewhere. |
 | `tests/SiteCheck.Tests/ReportTextTests.cs` | Locks plaintext report sections: hostname, findings, limits, authorization. |

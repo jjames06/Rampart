@@ -21,7 +21,7 @@ Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In 
 
 The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
 
-It reports what that hostname presents on HTTPS: certificate and TLS, security headers, cookies, homepage markup, public edge (Cloudflare and similar), mail records, common public sign-in and admin paths, paths that should not publish private files, the www and apex pair, and advertised versions against a **local** CVE catalogue. After the run it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
+It reports what that hostname presents on HTTPS: certificate and TLS, security headers, cookies, homepage markup, public edge (Cloudflare and similar), mail records, common public sign-in and admin paths, paths that should not publish private files, the www and apex pair, advertised versions against a **local** CVE catalogue, and internet-facing enterprise portals (SharePoint, NetScaler, FortiGate, PeopleSoft, and peers) when those products are advertised. After the run it lists **only the next steps that apply to that hostname**, with copyable how-to lines. If an enterprise portal is on the public internet it names the CISA Known Exploited CVE as a patch to confirm. It does not send exploit traffic.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 

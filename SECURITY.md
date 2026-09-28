@@ -11,6 +11,7 @@ Rampart is a read-only checker for a hostname the operator confirms they may tes
 - GET a short allowlist of common public account, sign-in, and admin URLs on that same address (body capped at 64 kilobytes, no passwords, redirects off)
 - GET a short allowlist of private-file paths (`/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, `/server-status`) with the body capped at 8 kilobytes
 - GET a short allowlist of public Oracle PeopleSoft portal paths (`/psp/`, `/psc/`, `/ps/`, `/PSIGW/`, `/PSEMHUB/`) with GET only and no exploit payload
+- GET a short allowlist of distinctive public enterprise-portal paths (SharePoint layouts, NetScaler logon, FortiGate `/remote/login`, BIG-IP TMUI, Ivanti `/dana-na/`, GlobalProtect, Confluence `/login.action`, MOVEit, ScreenConnect SetupWizard, Artifactory, GitLab `/users/sign_in`, WebLogic console, E-Business Suite `OA_HTML`, SAP Web GUI, SonicWall SMA, vSphere Client, Zimbra). GET only. No ToolPane, no `wls-wsat`, no exploit payload
 - HEAD `/` on the www or apex sibling when that name has a public address
 - Request TXT records for that hostname, its www parent, and `_dmarc.` plus the apex, only after `Hostname.IsSafeDnsName` accepts the name
 

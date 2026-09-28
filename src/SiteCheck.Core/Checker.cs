@@ -2,7 +2,7 @@
 // Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
 // Role: Orchestrator for one permissioned run. Parse host, resolve public A/AAAA, pin sockets, TLS leaf, parallel HEAD/GET and DNS, fingerprint, catalogue match, allowlisted extra GETs, then Advice + FixGuides.
 // Called by: SiteCheck.App.MainWindow, SiteCheck.Desktop.MainWindow, SiteCheck.Maui.MainPage. Never call from a background service without the two consent boxes.
-// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
+// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
 // Invariants: GET/HEAD only. Redirects off. Sockets pinned to a remaining public IP. Body cap 256 KiB. Timeout 8s. UA must stay operation-locked-in-rampart/1.9.0 until a numbered release. No exploit payloads, no POST, no private RFC1918/CGNAT.
 // Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
 // Map: docs/CODEMAP.md — read that file first for the run/load graph.
@@ -22,7 +22,7 @@ namespace SiteCheck.Core;
 /// Orchestrator for one Rampart run. See docs/CODEMAP.md.
 /// Entry: <see cref="RunAsync"/>. Callers: SiteCheck.App, Desktop, Maui.
 /// Downstream: Hostname, PrivateIp, Fingerprint, AdvisoryDb, LoginSurface,
-/// ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
+/// ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
 /// Invariants: redirects off, sockets pinned to a public IP, GET/HEAD only, bodies capped,
 /// no exploit payloads. User-Agent must stay operation-locked-in-rampart/1.9.0 until a numbered release.
 /// </summary>
@@ -158,10 +158,24 @@ public static class Checker
         }
         var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
         findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(exposedHits)));
-        var peopleSoftHits = await ProbeNamedPathsAsync(hostname, ip, PeopleSoftSurface.Paths, 8 * 1024, cancellationToken);
+        progress?.Report("Reading common public enterprise portal paths.");
+        var portalPaths = PeopleSoftSurface.Paths.Concat(EnterpriseSurface.AllPaths).Distinct(StringComparer.Ordinal).ToArray();
+        var portalHits = await ProbeNamedPathsAsync(hostname, ip, portalPaths, 8 * 1024, cancellationToken);
         findings.Add(SafeFinding(
             "Oracle PeopleSoft",
-            () => PeopleSoftSurface.Summary(peopleSoftHits, page.Body, cookies)));
+            () => PeopleSoftSurface.Summary(portalHits, page.Body, cookies)));
+        try
+        {
+            findings.AddRange(EnterpriseSurface.Findings(portalHits, page.Body, cookies, headers));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Internet-facing enterprise portals"));
+        }
         try
         {
             findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
