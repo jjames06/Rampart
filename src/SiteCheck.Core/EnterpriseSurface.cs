@@ -34,7 +34,7 @@ public static class EnterpriseSurface
         new(
             "Microsoft SharePoint",
             ["/_layouts/15/start.aspx", "/_layouts/16/start.aspx", "/_vti_bin/"],
-            ["_layouts/15", "_layouts/16", "MicrosoftSharePointTeamServices"],
+            ["_spPageContextInfo", "MicrosoftSharePointTeamServices"],
             ["FedAuth", "rtFa"],
             ["MicrosoftSharePointTeamServices", "SPRequestGuid", "X-SharePointHealthScore"],
             "CISA lists CVE-2025-53770 (ToolShell) and CVE-2026-65660 as known exploited against on-premises SharePoint Server.",
@@ -45,7 +45,7 @@ public static class EnterpriseSurface
         new(
             "Citrix NetScaler",
             ["/vpn/index.html", "/logon/LogonPoint/index.html"],
-            ["NetScaler", "Citrix Gateway", "Citrix ADC", "LogonPoint"],
+            ["LogonPoint", "NSC_AAAC"],
             ["NSC_"],
             [],
             "CISA lists CVE-2026-88771, CVE-2026-88772, and CVE-2026-19490 as known exploited against NetScaler ADC and Gateway.",
@@ -56,7 +56,7 @@ public static class EnterpriseSurface
         new(
             "Fortinet FortiGate",
             ["/remote/login"],
-            ["FortiGate", "Fortinet", "/remote/login", "fgt_lang"],
+            ["fgt_lang", "sslvpn"],
             [],
             [],
             "CISA lists CVE-2025-25249 as known exploited against FortiOS, FortiSwitchManager, and FortiSASE. Earlier SSL-VPN issues such as CVE-2024-21762 remain on the same catalogue.",
@@ -67,7 +67,7 @@ public static class EnterpriseSurface
         new(
             "F5 BIG-IP",
             ["/tmui/login.jsp", "/my.policy"],
-            ["BIG-IP", "F5 Networks", "TMOS", "Access Policy Manager"],
+            ["tmui", "F5_ST", "BIGIPAuthCookie"],
             ["BIGIPAuthCookie", "F5_ST", "MRHSession"],
             ["Server"],
             "CISA lists CVE-2026-94127 as known exploited against BIG-IP APM. Earlier management-interface issues such as CVE-2022-1388 remain on the same catalogue.",
@@ -78,7 +78,7 @@ public static class EnterpriseSurface
         new(
             "Ivanti Connect Secure",
             ["/dana-na/auth/url_default/welcome.cgi"],
-            ["Ivanti", "Pulse Connect Secure", "Connect Secure", "dana-na"],
+            ["DSID", "welcome.cgi", "dana-na/auth"],
             ["DSID", "DSFirstAccess"],
             [],
             "CISA lists CVE-2025-22457, CVE-2025-0282, CVE-2024-21887, and CVE-2024-21893 as known exploited against Ivanti Connect Secure and related gateways.",
@@ -89,7 +89,7 @@ public static class EnterpriseSurface
         new(
             "Palo Alto GlobalProtect",
             ["/global-protect/login.esp", "/global-protect/portal/portal.esp"],
-            ["GlobalProtect", "PAN-OS", "Palo Alto Networks"],
+            ["global-protect/login", "PAN_LOGIN"],
             [],
             [],
             "CISA lists CVE-2026-0257 and CVE-2024-3400 as known exploited against PAN-OS, including GlobalProtect portals.",
@@ -100,8 +100,8 @@ public static class EnterpriseSurface
         new(
             "Atlassian Confluence",
             ["/login.action", "/dologin.action"],
-            ["Atlassian Confluence", "ajs-version-number", "confluence-base-url"],
-            ["JSESSIONID"],
+            ["ajs-version-number", "confluence-base-url"],
+            ["seraph.confluence"],
             [],
             "CISA still lists CVE-2023-22527, CVE-2023-22518, and CVE-2023-22515 as known exploited against Confluence Data Center and Server.",
             "https://www.atlassian.com/trust/security/advisories",
@@ -111,7 +111,7 @@ public static class EnterpriseSurface
         new(
             "Progress MOVEit",
             ["/human.aspx", "/moveitisapi/moveitisapi.dll"],
-            ["MOVEit", "moveitisapi"],
+            ["moveitisapi", "MOVEit Transfer"],
             [],
             [],
             "CISA lists CVE-2023-34362 as known exploited against MOVEit Transfer. Confirm later Progress advisories are installed on this host.",
@@ -122,7 +122,7 @@ public static class EnterpriseSurface
         new(
             "ConnectWise ScreenConnect",
             ["/SetupWizard.aspx"],
-            ["ScreenConnect", "ConnectWise"],
+            ["ScreenConnect.Client", "SetupWizard.aspx"],
             [],
             [],
             "CISA lists CVE-2026-84869 and CVE-2024-1709 as known exploited against ScreenConnect.",
@@ -133,7 +133,7 @@ public static class EnterpriseSurface
         new(
             "JFrog Artifactory",
             ["/artifactory/webapp/", "/artifactory/ui/login"],
-            ["Artifactory", "JFrog"],
+            ["artifactory/webapp", "X-JFrog-Version"],
             [],
             ["X-JFrog-Version", "X-Artifactory-Id"],
             "CISA lists CVE-2026-42016 and CVE-2026-42018 as known exploited against JFrog Artifactory.",
@@ -166,7 +166,7 @@ public static class EnterpriseSurface
         new(
             "Oracle WebLogic",
             ["/console/login/LoginForm.jsp"],
-            ["WebLogic", "BEA WebLogic"],
+            ["LoginForm.jsp", "WebLogic Server"],
             [],
             [],
             "CISA lists CVE-2024-21182 and older WebLogic rows (including CVE-2017-10271) as known exploited. Oracle publishes fixes in the Critical Patch Update.",
@@ -177,7 +177,7 @@ public static class EnterpriseSurface
         new(
             "Oracle E-Business Suite",
             ["/OA_HTML/AppsLocalLogin.jsp", "/OA_HTML/AppsLogin"],
-            ["E-Business Suite", "Oracle Applications", "OA_HTML"],
+            ["AppsLocalLogin", "OA_HTML"],
             [],
             [],
             "CISA lists CVE-2025-61882, CVE-2025-61884, and CVE-2026-46817 as known exploited against Oracle E-Business Suite.",
@@ -188,7 +188,7 @@ public static class EnterpriseSurface
         new(
             "SAP NetWeaver",
             ["/sap/bc/gui/sap/its/webgui", "/irj/portal"],
-            ["SAP NetWeaver", "SAP ICF", "sap-system-login"],
+            ["sap-system-login", "sap-usercontext"],
             ["sap-usercontext", "SAP_SESSIONID"],
             [],
             "CISA lists CVE-2025-31324 and CVE-2025-42999 as known exploited against SAP NetWeaver.",
@@ -199,7 +199,7 @@ public static class EnterpriseSurface
         new(
             "SonicWall SMA",
             ["/cgi-bin/welcome"],
-            ["SonicWall", "SMA", "SonicWALL"],
+            ["SonicWALL", "sslvpnauth"],
             [],
             [],
             "CISA lists CVE-2026-83548 and CVE-2026-83549 as known exploited against SonicWall SMA1000 appliances.",
@@ -210,7 +210,7 @@ public static class EnterpriseSurface
         new(
             "VMware vCenter",
             ["/vsphere-client/"],
-            ["vSphere Client", "VMware vCenter", "vsphere-client"],
+            ["vsphere-client", "vSphere Client"],
             [],
             [],
             "CISA lists CVE-2026-59310 as known exploited against VMware vCenter.",
@@ -221,7 +221,7 @@ public static class EnterpriseSurface
         new(
             "Zimbra Collaboration",
             ["/zimbraAdmin/", "/js/zimbraMail/"],
-            ["Zimbra", "zimbraMail"],
+            ["zimbraMail", "ZM_AUTH_TOKEN"],
             ["ZM_AUTH_TOKEN"],
             [],
             "CISA lists CVE-2026-73570 and earlier Zimbra rows as known exploited against Zimbra Collaboration Suite.",
@@ -232,7 +232,7 @@ public static class EnterpriseSurface
         new(
             "Microsoft Exchange",
             ["/owa/", "/ecp/"],
-            ["Outlook Web App", "OutlookWebApp", "/owa/"],
+            ["Outlook Web App", "OutlookWebApp"],
             ["cadata", "X-BackEndCookie"],
             [],
             "CISA lists multiple Exchange Server rows as known exploited, including ProxyLogon-class and later Outlook Web App issues. On-premises OWA on the public internet is a patch-priority surface.",
@@ -265,7 +265,7 @@ public static class EnterpriseSurface
         new(
             "WSO2",
             ["/carbon/admin/login.jsp"],
-            ["WSO2"],
+            ["carbon/admin/login", "WSO2 Carbon"],
             [],
             [],
             "CISA lists CVE-2026-5430 and CVE-2022-29464 as known exploited against WSO2 products.",
@@ -276,7 +276,7 @@ public static class EnterpriseSurface
         new(
             "phpMyAdmin",
             ["/phpmyadmin/", "/phpMyAdmin/"],
-            ["pmahomme", "phpMyAdmin"],
+            ["pmahomme", "pma_username"],
             ["phpMyAdmin"],
             [],
             "A public phpMyAdmin login is a database-admin surface. Treat it as internet-facing management, not a brochure page.",
@@ -324,14 +324,14 @@ public static class EnterpriseSurface
         IReadOnlyDictionary<string, string>? headers)
     {
         var live = hits
-            .Where(h => product.Paths.Contains(h.Path, StringComparer.Ordinal) && h.Status is >= 200 and < 400)
+            .Where(h => product.Paths.Contains(h.Path, StringComparer.Ordinal) && AdvertisedMatch.PathLooksLike(h, product.HtmlNeedles))
             .Select(h => h.Path + " HTTP " + h.Status)
             .Take(8)
             .ToArray();
 
         var html = homepageHtml ?? "";
-        var htmlHint = product.HtmlNeedles.Any(n =>
-            html.Contains(n, StringComparison.OrdinalIgnoreCase));
+        var htmlHint = !AdvertisedMatch.IsGenericWebAppShell(html)
+            && AdvertisedMatch.ContainsAny(html, product.HtmlNeedles);
         var cookieHint = cookies.Any(c =>
             product.CookiePrefixes.Any(p => c.StartsWith(p, StringComparison.OrdinalIgnoreCase)));
         var headerHint = false;

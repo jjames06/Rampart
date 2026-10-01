@@ -649,7 +649,7 @@ public static class FixGuides
             "Oracle PeopleSoft" => new[]
             {
                 L("When to do this: this hostname advertised a public PeopleSoft portal or cookie. That is an internet-facing HR or campus system."),
-                L("When not to: those paths 404 and the homepage does not name PeopleSoft. Then this card should be Present."),
+                L("When not to: those paths do not return PeopleSoft portal chrome and there is no PSJSESSIONID cookie. A brochure that mentions PeopleSoft stays Present."),
                 L("Install Oracle's Critical Patch Update that covers CVE-2026-35273 for PeopleTools 8.61 and 8.62. A firewall or WAF rule that only blocks one request shape is not the patch."),
                 L("Oracle security alerts:", "https://www.oracle.com/security-alerts/"),
                 L("CISA Known Exploited Vulnerabilities catalogue:", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"),

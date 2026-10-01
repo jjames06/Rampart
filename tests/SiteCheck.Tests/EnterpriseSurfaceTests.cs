@@ -19,16 +19,25 @@ public class EnterpriseSurfaceTests
         var hits = EnterpriseSurface.AllPaths.Select(p => new FileHit(p, 404, "not found")).ToArray();
         var findings = EnterpriseSurface.Findings(
             hits,
-            "<html><body>North Shore IT. We can talk about SharePoint migrations.</body></html>",
+            "<html><body>North Shore IT. We can talk about SharePoint migrations, PeopleSoft, FortiGate, and /psp/.</body></html>",
             Array.Empty<string>(),
             new Dictionary<string, string>());
         Assert.Empty(findings);
     }
 
     [Fact]
+    public void Next_shell_on_probe_paths_is_not_a_portal()
+    {
+        const string shell = "<html>__NEXT_DATA__ PeopleSoft FortiGate SharePoint /psp/ /remote/login</html>";
+        var hits = EnterpriseSurface.AllPaths.Select(p => new FileHit(p, 200, shell)).ToArray();
+        var findings = EnterpriseSurface.Findings(hits, shell, Array.Empty<string>(), new Dictionary<string, string>());
+        Assert.Empty(findings);
+    }
+
+    [Fact]
     public void SharePoint_layout_path_is_attention_without_exploit_claim()
     {
-        var hits = new[] { new FileHit("/_layouts/15/start.aspx", 200, "<html>start</html>") };
+        var hits = new[] { new FileHit("/_layouts/15/start.aspx", 200, "<html><script>var _spPageContextInfo = {};</script></html>") };
         var findings = EnterpriseSurface.Findings(hits, "", Array.Empty<string>(), null);
         var f = Assert.Single(findings);
         Assert.Equal("Microsoft SharePoint", f.Title);
@@ -42,7 +51,7 @@ public class EnterpriseSurfaceTests
     [Fact]
     public void NetScaler_logon_is_attention()
     {
-        var hits = new[] { new FileHit("/vpn/index.html", 302, "") };
+        var hits = new[] { new FileHit("/vpn/index.html", 302, "", "/logon/LogonPoint/index.html") };
         var f = Assert.Single(EnterpriseSurface.Findings(hits, "", Array.Empty<string>(), null));
         Assert.Equal("Citrix NetScaler", f.Title);
         Assert.Contains("CVE-2026-88771", f.Observation);
@@ -81,7 +90,7 @@ public class EnterpriseSurfaceTests
     [Fact]
     public void PeopleSoft_hits_do_not_mark_sharepoint()
     {
-        var hits = new[] { new FileHit("/psp/", 302, "") };
+        var hits = new[] { new FileHit("/psp/", 302, "", "https://hr.example.edu/psp/ps/?cmd=login") };
         Assert.Empty(EnterpriseSurface.Findings(hits, "", Array.Empty<string>(), null));
     }
 }

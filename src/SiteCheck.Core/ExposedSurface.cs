@@ -72,4 +72,4 @@ public static class ExposedSurface
     }
 }
 
-public sealed record FileHit(string Path, int? Status, string? Body);
+public sealed record FileHit(string Path, int? Status, string? Body, string? Location = null);

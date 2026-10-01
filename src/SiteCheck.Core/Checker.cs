@@ -797,7 +797,8 @@ public static class Checker
                 request.Headers.Host = hostname;
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
                 var body = await ReadCappedBodyAsync(response, cap, ct);
-                return new FileHit(path, (int)response.StatusCode, body);
+                var location = response.Headers.Location?.ToString();
+                return new FileHit(path, (int)response.StatusCode, body, location);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
