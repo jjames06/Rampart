@@ -24,7 +24,7 @@ public class PeopleSoftSurfaceTests
     [Fact]
     public void Public_portal_is_attention_without_exploit_claim()
     {
-        var hits = new[] { new FileHit("/psp/", 302, "") };
+        var hits = new[] { new FileHit("/psp/", 302, "", "https://hr.example.edu/psp/ps/?cmd=login") };
         var f = PeopleSoftSurface.Summary(hits, "", Array.Empty<string>());
         Assert.Equal(FindingState.Attention, f.State);
         Assert.Contains("CVE-2026-35273", f.Observation);
@@ -32,10 +32,30 @@ public class PeopleSoftSurfaceTests
     }
 
     [Fact]
-    public void Homepage_name_is_attention()
+    public void Session_cookie_is_attention()
     {
         var hits = PeopleSoftSurface.Paths.Select(p => new FileHit(p, 404, "")).ToArray();
         var f = PeopleSoftSurface.Summary(hits, "<title>Oracle PeopleSoft</title>", new[] { "PSJSESSIONID=abc" });
         Assert.Equal(FindingState.Attention, f.State);
+    }
+
+    [Fact]
+    public void Brochure_copy_and_next_shell_are_present()
+    {
+        const string copy = """
+            <html><body>__NEXT_DATA__ Rampart GETs /psp/ and names PeopleSoft CVE-2026-35273
+            and FortiGate. PeopleTools 8.61 is in the docs.</body></html>
+            """;
+        var hits = PeopleSoftSurface.Paths.Select(p => new FileHit(p, 200, copy)).ToArray();
+        var f = PeopleSoftSurface.Summary(hits, copy, Array.Empty<string>());
+        Assert.Equal(FindingState.Present, f.State);
+    }
+
+    [Fact]
+    public void Empty_redirect_of_the_same_path_is_present()
+    {
+        var hits = new[] { new FileHit("/psp/", 308, "", "https://www.example.com/psp") };
+        var f = PeopleSoftSurface.Summary(hits, "<html>PeopleSoft</html>", Array.Empty<string>());
+        Assert.Equal(FindingState.Present, f.State);
     }
 }
