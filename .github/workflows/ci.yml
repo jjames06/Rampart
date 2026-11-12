@@ -1,9 +1,9 @@
 # CODEMAP FILE: .github/workflows/ci.yml
-# Product: Rampart — read-only public-surface hostname checker, public pin 1.9.0
+# Product: Rampart — read-only public-surface hostname checker, public pin 1.9.1
 # Role: CI. Runs SiteCheck.Tests on Windows. Builds SiteCheck.Desktop in Release on Windows and Linux.
 # Called by: GitHub Actions.
 # Calls: actions/checkout, actions/setup-dotnet, dotnet test, dotnet build.
-# Invariants: No live network against customer hosts. Do not bump 1.9.0 here. global.json selects the .NET 10.0 SDK so the Avalonia generators run. The Windows job also installs the .NET 8 SDK so the net8.0 tests have a runtime.
+# Invariants: No live network against customer hosts. Do not bump 1.9.1 here. global.json selects the .NET 10.0 SDK so the Avalonia generators run. The Windows job also installs the .NET 8 SDK so the net8.0 tests have a runtime.
 # Sisters: Bastion (bastion-hardening). Storefront bastion-web /rampart.
 # Map: docs/CODEMAP.md
 name: CI

@@ -1,0 +1,60 @@
+# CODEMAP FILE: .github/workflows/release-build.yml
+# Product: Rampart: read-only public-surface hostname checker, public pin 1.9.1
+# Role: Builds the release assets with tools/publish.ps1 on windows-latest, then runs a Windows launch smoke test of Rampart.exe. Uploads dist as an artifact.
+# Called by: GitHub Actions, manual run (workflow_dispatch) for a numbered release.
+# Calls: actions/checkout, actions/setup-dotnet, tools/publish.ps1, actions/upload-artifact.
+# Invariants: Read-only token. This workflow never creates or edits a GitHub Release. The operator attaches the artifact files to the release by hand after checking them.
+# Sisters: ci.yml (tests and desktop builds on every push).
+# Map: docs/CODEMAP.md
+name: Release build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: "8.0.x"
+          global-json-file: global.json
+      - name: Publish (tests, Rampart.exe, desktop zips, SHA256SUMS)
+        shell: pwsh
+        run: ./tools/publish.ps1
+      - name: Windows launch smoke test (CI runner, not a real device)
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path dist/Rampart.exe
+          $p = Start-Process -FilePath $exe -PassThru
+          $deadline = (Get-Date).AddSeconds(60)
+          do { Start-Sleep -Seconds 2; $p.Refresh() } until ($p.HasExited -or $p.MainWindowHandle -ne 0 -or (Get-Date) -gt $deadline)
+          if ($p.HasExited) { throw "Rampart.exe exited early with code $($p.ExitCode)." }
+          if ($p.MainWindowHandle -eq 0) { Stop-Process -Id $p.Id -Force; throw "No main window within 60 seconds." }
+          Start-Sleep -Seconds 10
+          $p.Refresh()
+          if ($p.HasExited) { throw "Rampart.exe exited after the window appeared (code $($p.ExitCode))." }
+          "Window title: $($p.MainWindowTitle)"
+          "Process stayed up; main window handle $($p.MainWindowHandle)."
+          $v = (Get-Item $exe).VersionInfo
+          "FileVersion $($v.FileVersion) ProductVersion $($v.ProductVersion)"
+          [void]$p.CloseMainWindow()
+          if (-not $p.WaitForExit(15000)) { Stop-Process -Id $p.Id -Force; "Closed with Stop-Process." } else { "Closed through the main window." }
+      - name: Upload release assets
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rampart-release
+          path: |
+            dist/Rampart.exe
+            dist/Rampart-*.zip
+            dist/SHA256SUMS.txt
+            dist/*.md
+            dist/*.txt
+            dist/LICENSE
+            dist/LICENSE.MOBILE
+            dist/NOTICE
+          if-no-files-found: error
