@@ -1,10 +1,27 @@
+// CODEMAP FILE: src/SiteCheck.Core/Models.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record.
+// Called by: Every Core module and all three UI shells. UIs display these; they must not invent findings.
+// Calls: None (pure records/enums).
+// Invariants: Present means the healthy case (including 'correctly absent'). Incomplete is neither all-clear nor a confirmed gap. How-to lines live on NextStep, not on Finding.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
+/// <summary>
+/// Shared types for one Rampart run. See docs/CODEMAP.md.
+/// UI shells only display these; they do not invent findings.
+/// </summary>
 public enum FindingState
 {
+    /// <summary>The check completed and the public surface matches the healthy case (including “this thing is correctly absent”).</summary>
     Present,
+    /// <summary>The check completed and the record or path was not there. Not always a chore; Advice decides.</summary>
     NotFound,
+    /// <summary>The network or parser step did not finish. Do not treat as all-clear or as a confirmed gap.</summary>
     Incomplete,
+    /// <summary>The check completed and the operator should read How to fix this.</summary>
     Attention
 }
 

@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.Core/Checker.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Orchestrator for one permissioned run. Parse host, resolve public A/AAAA, pin sockets, TLS leaf, parallel HEAD/GET and DNS, fingerprint, catalogue match, allowlisted extra GETs, then Advice + FixGuides.
+// Called by: SiteCheck.App.MainWindow, SiteCheck.Desktop.MainWindow, SiteCheck.Maui.MainPage. Never call from a background service without the two consent boxes.
+// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
+// Invariants: GET/HEAD only. Redirects off. Sockets pinned to a remaining public IP. Body cap 256 KiB. Timeout 8s. UA must stay operation-locked-in-rampart/1.9.0 until a numbered release. No exploit payloads, no POST, no private RFC1918/CGNAT.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
@@ -10,9 +19,12 @@ using System.Text;
 namespace SiteCheck.Core;
 
 /// <summary>
-/// Read-only checks against a public hostname the operator confirmed they may test.
-/// Never follows redirects. Never contacts blocked addresses. Never sends a request body.
-/// Never sends exploit traffic. Extra RFC public files run only in Authorized assessment.
+/// Orchestrator for one Rampart run. See docs/CODEMAP.md.
+/// Entry: <see cref="RunAsync"/>. Callers: SiteCheck.App, Desktop, Maui.
+/// Downstream: Hostname, PrivateIp, Fingerprint, AdvisoryDb, LoginSurface,
+/// ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
+/// Invariants: redirects off, sockets pinned to a public IP, GET/HEAD only, bodies capped,
+/// no exploit payloads. User-Agent must stay operation-locked-in-rampart/1.9.0 until a numbered release.
 /// </summary>
 public static class Checker
 {
@@ -47,6 +59,30 @@ public static class Checker
         IProgress<string>? progress = null,
         CancellationToken cancellationToken = default,
         CheckScope scope = CheckScope.Standard)
+    {
+        try
+        {
+            return await RunCoreAsync(rawHost, progress, cancellationToken, scope);
+        }
+        catch (CheckException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            throw new CheckException("The check did not finish. Confirm the hostname is public, that you have permission, and try again.");
+        }
+    }
+
+    private static async Task<CheckReport> RunCoreAsync(
+        string rawHost,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken,
+        CheckScope scope)
     {
         var hostname = Hostname.Parse(rawHost)
             ?? throw new CheckException("Use a public hostname such as example.com. Do not enter an IP address, localhost, or a home network name.");
@@ -97,9 +133,6 @@ public static class Checker
         var http80 = await http80Task;
 
         var headers = MergeHeaders(http.Headers, page.Headers);
-        var stack = Fingerprint.FromPublicSurface(headers, page.Body);
-        var plugins = Fingerprint.WordPressPluginSlugs(page.Body);
-
         var findings = new List<Finding>
         {
             HttpsFinding(http),
@@ -107,35 +140,153 @@ public static class Checker
             TlsFinding(cert),
             HttpRedirectFinding(http80),
         };
-        findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
+
+        IReadOnlyList<StackHint> stack;
+        try
+        {
+            stack = Fingerprint.FromPublicSurface(headers, page.Body);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            stack = Array.Empty<StackHint>();
+            findings.Add(IncompleteFinding("Advertised stack"));
+        }
+
+        IReadOnlyList<string> plugins;
+        try
+        {
+            plugins = Fingerprint.WordPressPluginSlugs(page.Body);
+        }
+        catch (Exception)
+        {
+            plugins = Array.Empty<string>();
+        }
+
+        try
+        {
+            findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Security headers"));
+        }
+
         var cookies = (http.Cookies ?? Array.Empty<string>()).Concat(page.Cookies ?? Array.Empty<string>()).ToArray();
-        findings.Add(HeaderFacts.CookieFinding(cookies));
-        findings.Add(ServerDisclosureFinding(headers));
-        findings.Add(CorsFinding(headers));
-        findings.Add(XssProtectionFinding(headers));
-        findings.Add(AddressFamilyFinding(publicIps, ip));
-        findings.Add(HomepageTypeFinding(page));
+        findings.Add(SafeFinding("Cookie flags", () => HeaderFacts.CookieFinding(cookies)));
+        findings.Add(SafeFinding("Server header", () => ServerDisclosureFinding(headers)));
+        findings.Add(SafeFinding("CORS", () => CorsFinding(headers)));
+        findings.Add(SafeFinding("X-XSS-Protection", () => XssProtectionFinding(headers)));
+        findings.Add(SafeFinding("Address family", () => AddressFamilyFinding(publicIps, ip)));
+        findings.Add(SafeFinding("Homepage", () => HomepageTypeFinding(page)));
         findings.Add(SpfFinding(spf));
         findings.Add(DmarcFinding(dmarc));
         findings.Add(MxFinding(mx));
         findings.Add(NsFinding(ns));
-        var edge = EdgeSurface.Classify(ns.Record, headers, stack);
-        findings.Add(EdgeSurface.PublicEdgeFinding(edge));
-        findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
-        findings.AddRange(CveFindings(stack));
-        findings.Add(HtmlSurface.MixedContent(page.Body));
-        findings.Add(HtmlSurface.SubresourceIntegrity(page.Body));
-        findings.Add(HtmlSurface.Tabnabbing(page.Body));
-        findings.Add(HtmlSurface.InsecureForms(page.Body));
-        findings.Add(HtmlSurface.HttpCanonical(page.Body));
+        EdgeProfile edge;
+        try
+        {
+            edge = EdgeSurface.Classify(ns.Record, headers, stack);
+            findings.Add(EdgeSurface.PublicEdgeFinding(edge));
+            findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            edge = new EdgeProfile(EdgeKind.Origin, "Origin", false, false, false);
+            findings.Add(IncompleteFinding("Public edge"));
+        }
+        try
+        {
+            findings.AddRange(CveFindings(stack));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Known CVEs (advertised versions)"));
+        }
+        findings.Add(SafeFinding("Mixed content", () => HtmlSurface.MixedContent(page.Body)));
+        findings.Add(SafeFinding("Subresource Integrity", () => HtmlSurface.SubresourceIntegrity(page.Body)));
+        findings.Add(SafeFinding("Tabnabbing", () => HtmlSurface.Tabnabbing(page.Body)));
+        findings.Add(SafeFinding("Form action", () => HtmlSurface.InsecureForms(page.Body)));
+        findings.Add(SafeFinding("Canonical URL", () => HtmlSurface.HttpCanonical(page.Body)));
         progress?.Report("Reading common public sign-in, admin, and private-file paths.");
         var loginHits = await ProbeLoginPathsAsync(hostname, ip, cancellationToken);
-        findings.Add(LoginSurface.Summary(loginHits));
-        findings.Add(LoginSurface.AdminSummary(loginHits));
-        findings.AddRange(LoginSurface.Issues(loginHits));
-        var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
-        findings.Add(ExposedSurface.Summary(exposedHits));
-        findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
+        findings.Add(SafeFinding("Sign-in pages", () => LoginSurface.Summary(loginHits, stack.Any(s => s.Product.Equals("WordPress", StringComparison.OrdinalIgnoreCase)))));
+        findings.Add(SafeFinding("Admin pages", () => LoginSurface.AdminSummary(loginHits)));
+        try
+        {
+            findings.AddRange(LoginSurface.Issues(loginHits));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Sign-in pages"));
+        }
+        progress?.Report("Reading private-file, enterprise portal, and identity-metadata paths.");
+        var extraPaths = ExposedSurface.Paths
+            .Concat(PeopleSoftSurface.Paths)
+            .Concat(EnterpriseSurface.AllPaths)
+            .Concat(WellKnownIdpSurface.Paths)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var extraHits = await ProbeNamedPathsAsync(hostname, ip, extraPaths, 8 * 1024, cancellationToken);
+        findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(extraHits)));
+        findings.Add(SafeFinding(
+            "Oracle PeopleSoft",
+            () => PeopleSoftSurface.Summary(extraHits, page.Body, cookies)));
+        try
+        {
+            findings.AddRange(EnterpriseSurface.Findings(extraHits, page.Body, cookies, headers));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Internet-facing enterprise portals"));
+        }
+        try
+        {
+            findings.AddRange(WellKnownIdpSurface.Findings(extraHits));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("OpenID Provider"));
+        }
+        try
+        {
+            findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("WWW and apex"));
+        }
         if (scope == CheckScope.AuthorizedAssessment)
         {
             progress?.Report("Reading RFC public files and extra DNS (CAA, DKIM, MTA-STS, BIMI, TLS-RPT, DNSSEC).");
@@ -175,16 +326,24 @@ public static class Checker
             ? (int?)null
             : (int)Math.Floor((cert.NotAfter.Value - DateTimeOffset.UtcNow).TotalDays);
 
-        var next = Advice.Build(
-            hostname,
-            findings,
-            stack,
-            plugins,
-            certDays,
-            cert.TlsProtocol,
-            http80.Status,
-            http80.Location,
-            edge);
+        IReadOnlyList<NextStep> next;
+        try
+        {
+            next = Advice.Build(
+                hostname,
+                findings,
+                stack,
+                plugins,
+                certDays,
+                cert.TlsProtocol,
+                http80.Status,
+                http80.Location,
+                edge);
+        }
+        catch (Exception)
+        {
+            next = Array.Empty<NextStep>();
+        }
 
         var limits = new List<string>
         {
@@ -620,12 +779,16 @@ public static class Checker
         return await Task.WhenAll(tasks);
     }
 
-    private static async Task<IReadOnlyList<FileHit>> ProbeExposedPathsAsync(
-        string hostname, IPAddress ip, CancellationToken ct)
+    private static Task<IReadOnlyList<FileHit>> ProbeExposedPathsAsync(
+        string hostname, IPAddress ip, CancellationToken ct) =>
+        ProbeNamedPathsAsync(hostname, ip, ExposedSurface.Paths, 8 * 1024, ct);
+
+    private static async Task<IReadOnlyList<FileHit>> ProbeNamedPathsAsync(
+        string hostname, IPAddress ip, IReadOnlyList<string> paths, int cap, CancellationToken ct)
     {
         using var handler = PinnedHandler(hostname, ip, 443);
         using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(TimeoutMs) };
-        var tasks = ExposedSurface.Paths.Select(async path =>
+        var tasks = paths.Select(async path =>
         {
             try
             {
@@ -633,8 +796,9 @@ public static class Checker
                 request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
                 request.Headers.Host = hostname;
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-                var body = await ReadCappedBodyAsync(response, 8 * 1024, ct);
-                return new FileHit(path, (int)response.StatusCode, body);
+                var body = await ReadCappedBodyAsync(response, cap, ct);
+                var location = response.Headers.Location?.ToString();
+                return new FileHit(path, (int)response.StatusCode, body, location);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -899,7 +1063,7 @@ public static class Checker
             };
             var state = status is null
                 ? FindingState.Incomplete
-                : hstsDisabled || hstsShort || hstsNoSub || cspUnsafe
+                : hstsDisabled || hstsShort || cspUnsafe
                     ? FindingState.Attention
                     : present
                         ? FindingState.Present
@@ -911,7 +1075,7 @@ public static class Checker
                     : hstsShort
                         ? $"{name} is present with max-age {HeaderFacts.HstsMaxAge(headers[name])} seconds, which is shorter than 180 days. {hint}"
                         : hstsNoSub
-                            ? $"{name} is present without includeSubDomains. Child names will not inherit this policy. {hint}"
+                            ? $"{name} is present without includeSubDomains. Child names will not inherit this policy. That is recorded; it is not a defect by itself. {hint}"
                             : cspUnsafe
                                 ? $"{name} is present. script-src includes unsafe-inline. {hint}"
                                 : present
@@ -923,6 +1087,30 @@ public static class Checker
                 observation,
                 "Read response headers from HTTPS HEAD / and GET /. Names are compared without regard to case. Redirects are not followed. Compressed bodies are decompressed before HTML is read.",
                 "A missing header is a fact about this response, not proof of a breach. Extra headers on other paths are not shown.");
+        }
+    }
+
+    private static Finding IncompleteFinding(string title) =>
+        new(
+            title,
+            FindingState.Incomplete,
+            "This check did not finish.",
+            "The rest of the report still applies.",
+            "A failed parser is not a finding about the hostname.");
+
+    private static Finding SafeFinding(string title, Func<Finding> make)
+    {
+        try
+        {
+            return make();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return IncompleteFinding(title);
         }
     }
 
@@ -1024,6 +1212,16 @@ public static class Checker
 
     private static IEnumerable<Finding> CveFindings(IReadOnlyList<StackHint> stack)
     {
+        if (!AdvisoryDb.CatalogueLoaded)
+        {
+            yield return new Finding(
+                "Known CVEs (advertised versions)",
+                FindingState.Incomplete,
+                "The local advisory catalogue could not be read, so advertised versions were not compared.",
+                "The catalogue is embedded in the executable and is not fetched at run time.",
+                "This is a program defect, not a finding about the hostname.");
+            yield break;
+        }
         var hits = CveCatalog.Match(stack);
         if (hits.Count == 0)
         {
@@ -1033,7 +1231,7 @@ public static class Checker
                 stack.Count == 0
                     ? "The homepage and headers did not advertise a product version this catalogue knows."
                     : "Advertised versions did not match the small sourced catalogue in this program.",
-                $"Compared advertised versions from headers and homepage HTML with a local catalogue of {AdvisoryDb.ProductCount} products and {AdvisoryDb.AdvisoryCount} advisories (built {AdvisoryDb.Built}). JavaScript matches use Retire.js ranges on homepage URLs. Next.js matches use GitHub Advisory ranges. PHP end of life is included. Plugin files were not downloaded. NVD was not queried live.",
+                $"Compared advertised versions from headers and homepage HTML with a local catalogue of {AdvisoryDb.ProductCount} products and {AdvisoryDb.AdvisoryCount} advisories (built {AdvisoryDb.Built}). JavaScript matches use Retire.js ranges on homepage URLs. Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core use GitHub Advisory ranges when a version is advertised. PHP end of life is included. Plugin files were not downloaded. NVD was not queried live.",
                 "A clean result is not clearance. The catalogue is short on purpose so we do not invent matches.");
             yield break;
         }

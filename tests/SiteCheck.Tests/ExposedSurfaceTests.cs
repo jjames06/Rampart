@@ -1,3 +1,12 @@
+// CODEMAP FILE: tests/SiteCheck.Tests/ExposedSurfaceTests.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Locks private-file path allowlist and 200-vs-404 interpretation.
+// Called by: dotnet test.
+// Calls: ExposedSurface.
+// Invariants: Keep in sync with oli-web-kits packages/oli-site-kit/src/blocked-paths.ts.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using SiteCheck.Core;
 
 namespace SiteCheck.Tests;
@@ -24,6 +33,19 @@ public class ExposedSurfaceTests
     }
 
     [Fact]
+    public void Short_html_is_not_leaked()
+    {
+        Assert.False(ExposedSurface.LooksLeaked(new FileHit("/.env", 200, "<h1>Not found</h1>")));
+    }
+
+    [Fact]
+    public void Package_json_is_leaked()
+    {
+        var hit = new FileHit("/package.json", 200, "{\"name\":\"app\",\"private\":true}");
+        Assert.True(ExposedSurface.LooksLeaked(hit));
+    }
+
+    [Fact]
     public void Missing_files_are_present()
     {
         var hits = ExposedSurface.Paths.Select(p => new FileHit(p, 404, "not found")).ToArray();
@@ -43,6 +65,13 @@ public class ExposedSurfaceTests
     {
         var f = HostPair.Summary("www.example.com", "example.com", 301, "http://example.com/", true);
         Assert.Equal(FindingState.Attention, f.State);
+    }
+
+    [Fact]
+    public void Sibling_404_is_present()
+    {
+        var f = HostPair.Summary("www.example.com", "example.com", 404, null, true);
+        Assert.Equal(FindingState.Present, f.State);
     }
 
     [Fact]

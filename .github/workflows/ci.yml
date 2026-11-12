@@ -1,0 +1,28 @@
+# CODEMAP FILE: .github/workflows/ci.yml
+# Product: Rampart — read-only public-surface hostname checker, public pin 1.9.0
+# Role: Windows CI. Runs SiteCheck.Tests on push and pull request to main.
+# Called by: GitHub Actions.
+# Calls: actions/checkout, actions/setup-dotnet, dotnet test.
+# Invariants: No live network against customer hosts. Do not bump 1.9.0 here.
+# Sisters: Bastion (bastion-hardening). Storefront bastion-web /rampart.
+# Map: docs/CODEMAP.md
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      # v7.0.1: drops vulnerable uuid and moves undici off 5.29.0. SHA pin, not a floating tag.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v6.1.0: Nov 2026 security bump (undici 6.29.1, fast-xml-parser 5.10.1, brace-expansion 5.0.12).
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: "8.0.x"
+      - name: Test
+        run: dotnet test tests/SiteCheck.Tests/SiteCheck.Tests.csproj -c Release --nologo

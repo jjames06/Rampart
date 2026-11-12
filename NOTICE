@@ -22,6 +22,8 @@ Licensed under the Apache License, Version 2.0
 https://github.com/RetireJS/retire.js
 
 This product includes advisory ranges from the GitHub Advisory Database
-for the npm package next, used under Creative Commons Attribution 4.0
+for npm packages next, react, react-dom, vue, nuxt, jquery, and bootstrap,
+and for WordPress core when a version is advertised, used under
+Creative Commons Attribution 4.0
 https://github.com/advisories
 https://creativecommons.org/licenses/by/4.0/

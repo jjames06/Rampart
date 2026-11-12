@@ -24,7 +24,7 @@ Apache-2.0 includes an express patent licence and does not forbid the extra term
 
 DnsClient.NET (TXT lookups) remains Apache License 2.0 in every build. Apache-2.0 code may be combined with a GPLv3 program. The combination as a whole, for desktop, is distributed under GPLv3. DnsClient itself is still Apache-2.0.
 
-Retire.js advisory data is Apache-2.0. GitHub Advisory ranges for npm `next` are CC BY 4.0. See `THIRD-PARTY.md`.
+Retire.js advisory data is Apache-2.0. GitHub Advisory ranges for Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core are CC BY 4.0. See `THIRD-PARTY.md`.
 
 Avalonia (macOS and Linux UI) is MIT. .NET MAUI (iOS and Android UI) is MIT. Those UI toolkits stay under their own licences; they do not relicense SiteCheck.Core.
 

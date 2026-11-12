@@ -19,7 +19,7 @@ Results live in the window until you close it. If you choose Copy, they go to th
 
 ## Encryption
 
-TLS 1.2 or TLS 1.3 is used to speak to the target site on port 443. That is the encryption that protects the check in transit.
+TLS 1.2 or TLS 1.3 is used to speak to the target site on port 443. That is the encryption that protects the check in transit. Windows can optionally protect a saved report for this Windows user only. The executable is not packed. See encryption.md in the repository.
 
 Reports on disk are ordinary UTF-8 text because you chose to save them and you need to be able to read them. Rampart does not wrap the file in a password vault. A vault would stop you opening the report in Notepad, and this program does not have a key-recovery desk. If you need the file protected at rest, save it to a BitLocker volume or another encrypted disk you already use.
 

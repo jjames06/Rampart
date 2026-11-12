@@ -21,9 +21,13 @@ Results live in the window until you close it. If you choose Copy, they go to th
 
 TLS 1.2 or TLS 1.3 is used to speak to the target site on port 443. That is the encryption that protects the check in transit.
 
-Reports on disk are ordinary UTF-8 text because you chose to save them and you need to be able to read them. Rampart does not wrap the file in a password vault. A vault would stop you opening the report in Notepad, and this program does not have a key-recovery desk. If you need the file protected at rest, save it to a BitLocker volume or another encrypted disk you already use.
+The Windows, Linux, and macOS **executables are not packed or encrypted**. Desktop Rampart is GPLv3; the source is public. Packing the EXE would not hide the source.
+
+On **Windows**, Save report can optionally protect the file for this Windows user only (DPAPI). Other accounts on the same PC cannot read it. There is no recovery password. If you skip that box, the file is ordinary UTF-8. On **Linux and macOS** testing copies, save to a disk you already encrypt (LUKS or FileVault). On **iPhone and Android**, the app sandbox holds data until you share it.
 
 The program stores no passwords, no session cookies of yours, and no API keys. Do not paste access tokens into the hostname field. The field accepts a DNS name only.
+
+Full notes: [encryption.md](encryption.md).
 
 ## Personal information
 

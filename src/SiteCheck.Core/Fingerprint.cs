@@ -1,8 +1,18 @@
+// CODEMAP FILE: src/SiteCheck.Core/Fingerprint.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Product/version from Server/X-Powered-By/generator meta/script comments. Feeds AdvisoryDb. Plugin slugs are not versions.
+// Called by: Checker after headers + HTML.
+// Calls: StackHint records.
+// Invariants: No advertised version means no CVE match. Do not download wp-content/plugins to guess versions.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Text.RegularExpressions;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Public-surface fingerprints from headers and a capped homepage body only.
 /// Does not fetch plugin files, admin paths, or version.php.
 /// </summary>
@@ -35,6 +45,10 @@ public static class Fingerprint
         if (headers.TryGetValue("cf-ray", out _) || headers.TryGetValue("cf-cache-status", out _))
         {
             hints.Add(new StackHint("Cloudflare", null, "Cloudflare response headers were present."));
+        }
+        if (headers.TryGetValue("X-Jenkins", out var jenkinsVer) && !string.IsNullOrWhiteSpace(jenkinsVer))
+        {
+            hints.Add(new StackHint("Jenkins", jenkinsVer.Trim(), "Header X-Jenkins was present."));
         }
         AddEdgeFromHeaders(hints, headers);
 
@@ -83,9 +97,21 @@ public static class Fingerprint
             hints.Add(new StackHint("IIS", null, $"Header {header}: {Trim(v)}"));
             return;
         }
+        var nginx = Regex.Match(v, @"nginx/([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+        if (nginx.Success)
+        {
+            hints.Add(new StackHint("nginx", nginx.Groups[1].Value, $"Header {header}: {Trim(v)}"));
+            return;
+        }
         if (v.Contains("nginx", StringComparison.OrdinalIgnoreCase))
         {
             hints.Add(new StackHint("nginx", null, $"Header {header}: {Trim(v)}"));
+            return;
+        }
+        var apache = Regex.Match(v, @"Apache/([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+        if (apache.Success)
+        {
+            hints.Add(new StackHint("Apache HTTP Server", apache.Groups[1].Value, $"Header {header}: {Trim(v)}"));
         }
     }
 
@@ -144,6 +170,26 @@ public static class Fingerprint
             && hints.All(h => !h.Product.Equals("Wix", StringComparison.OrdinalIgnoreCase)))
         {
             hints.Add(new StackHint("Wix", null, "Homepage HTML named static.wixstatic.com."));
+        }
+        if (AdvertisedMatch.ContainsAny(html, PeopleSoftSurface.EvidenceNeedles)
+            && !AdvertisedMatch.IsGenericWebAppShell(html)
+            && hints.All(h => !h.Product.Equals("Oracle PeopleSoft", StringComparison.OrdinalIgnoreCase)))
+        {
+            var ver = Regex.Match(html, @"PeopleTools\s+([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
+            hints.Add(new StackHint(
+                "Oracle PeopleSoft",
+                ver.Success ? ver.Groups[1].Value : null,
+                "Homepage HTML included PeopleSoft portal chrome."));
+        }
+        foreach (var product in EnterpriseSurface.Products)
+        {
+            if (hints.Any(h => h.Product.Equals(product.Title, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            if (AdvertisedMatch.IsGenericWebAppShell(html))
+                continue;
+            if (!AdvertisedMatch.ContainsAny(html, product.HtmlNeedles))
+                continue;
+            hints.Add(new StackHint(product.Title, null, "Homepage HTML included " + product.Title + " runtime chrome."));
         }
     }
 

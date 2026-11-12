@@ -66,15 +66,21 @@ Product names and versions are taken only from:
 
 Plugin files and `readme.html` are not fetched. A GET of `/wp-admin/` is only a public-surface check for a login wall; plugin zip files are not downloaded. If `/wp-admin/` and `/admin` do not answer 2xx or 3xx, that finding is **Present**: those common dashboards are not published. An open dashboard HTML response is **Needs attention**.
 
-**Private files.** GET `/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, and `/server-status`. A 200 with a short non-HTML body is **Needs attention**. An HTML 404 page that still returns 200 is treated as not leaked.
+**Private files.** GET `/.env`, `/.env.local`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, `/server-status`, `/composer.json`, and `/package.json`. A 200 with a **non-HTML** body is **Needs attention**. HTML, including an HTML 404 page that still returns 200, is treated as not leaked.
 
-**WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**.
+**OpenID Provider.** GET `/.well-known/openid-configuration` and `/.well-known/oauth-authorization-server`. A card appears **only** when the body is JSON with an `issuer`. An `http://` issuer needs attention. No token is requested. Brochure 404s stay silent.
 
-**HSTS includeSubDomains.** When Strict-Transport-Security is present without `includeSubDomains`, the card is **Needs attention**. Child names will not inherit the policy.
+**WWW and apex.** One extra HEAD `/` on the sibling www or apex name when that name has a public address. An `http://` Location is **Needs attention**. A 404 on the sibling means that name is not published and is **Present**.
+
+**HSTS includeSubDomains.** When Strict-Transport-Security is present without `includeSubDomains`, the observation records that child names will not inherit the policy. That alone is not **Needs attention**.
 
 **Certificate key size.** An RSA leaf shorter than 2048 bits is **Needs attention**.
 
-CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live.
+**Oracle PeopleSoft.** GET `/psp/`, `/psc/`, `/ps/`, `/PSIGW/`, `/PSEMHUB/`. `PSJSESSIONID` is also read. The card is **Needs attention** only when those responses look like a PeopleSoft portal or that cookie is present. A page that merely writes the word PeopleSoft stays **Present**. CVE-2026-35273 is named as a patch prompt. Rampart does not send exploit traffic.
+
+**Internet-facing enterprise portals.** The same GET batch also asks a short allowlist of distinctive public paths for on-premises products that CISA currently lists as known exploited when they are left on the internet: Microsoft SharePoint (`/_layouts/15/start.aspx`, never ToolPane), Citrix NetScaler Gateway, FortiGate SSL-VPN (`/remote/login` only), F5 BIG-IP TMUI/APM, Ivanti Connect Secure (`/dana-na/`), Palo Alto GlobalProtect, Confluence `/login.action`, Jira `/secure/Dashboard.jspa`, Microsoft Exchange `/owa/` and `/ecp/`, Jenkins (`X-Jenkins`), WSO2 Carbon, phpMyAdmin, Grafana, MOVEit Transfer, ScreenConnect SetupWizard, JFrog Artifactory, GitLab `/users/sign_in`, Adobe Commerce (homepage `X-Magento-Vary` / mage cookies), Oracle WebLogic `/console/` (never `/wls-wsat/`), Oracle E-Business Suite `OA_HTML`, SAP NetWeaver Web GUI, SonicWall SMA, VMware vSphere Client, and Zimbra. A card appears **only when that product was advertised**. Spring Boot `/actuator/env` and `/actuator/configprops` are treated as private files when they return non-HTML 200. A Next.js brochure that 404s those paths stays quiet. Each Attention card names the CISA KEV CVE as a **patch prompt**. It is not proof of RCE. A WAF rule is not the patch.
+
+CVE matching uses the embedded file `data/advisories.json` (Retire.js JavaScript ranges, GitHub Advisory ranges for Next.js, React, Vue, Nuxt, jQuery, Bootstrap, and WordPress core when a version is advertised, and PHP end of life). See `docs/cve-catalogue.md`. Homepage script URLs are compared with Retire.js extractors. Plugin files are not downloaded. NVD is not queried live. A library with no advertised version is not matched.
 
 A match is a prompt to upgrade. It is not proof of exploitability. Absence of a match is not clearance.
 

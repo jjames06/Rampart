@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/FixGuides.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Copyable how-to lines and when-to/when-not notes. Ensure() attaches a panel to every non-Present finding so Admin Not-found still explains itself.
+// Called by: Checker after Advice.Build. All three UIs render NextStep.Lines via FindingGuide.
+// Calls: EdgeProfile, hostname, stack booleans.
+// Invariants: How-to follows the advertised stack. Never tell a kit operator to create /account/sign-in. Never send Cloudflare steps to a Vercel-only origin.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Full-sentence, copyable how-to lines for a finding that needs work.
 /// Wording follows the advertised edge (Cloudflare, Vercel, origin) so the
 /// operator is not sent to the wrong dashboard.
@@ -32,6 +42,7 @@ public static class FixGuides
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// Every finding that is not a clean Present gets a How to fix this panel:
     /// full sentences, when-to / when-not, and copyable lines.
     /// </summary>
@@ -48,8 +59,9 @@ public static class FixGuides
         var filled = WithLines(steps, hostname, edge, nextJs, wordpress, vercel, cloudflare).ToList();
         foreach (var f in findings)
         {
-            if (f.State == FindingState.Present && f.Title != "Admin pages") continue;
+            if (f.State == FindingState.Present) continue;
             var already = filled.Any(s => s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase));
+            if (!already && f.State == FindingState.NotFound && !CoreHygieneNotFound(f.Title)) continue;
             if (!already && OptionalUntilAdvised(f.Title)) continue;
             var existing = filled.FirstOrDefault(s => s.Related.Equals(f.Title, StringComparison.OrdinalIgnoreCase));
             IReadOnlyList<FixLine>? lines;
@@ -90,6 +102,30 @@ public static class FixGuides
         }
         return filled;
     }
+
+    /// <summary>
+/// See docs/CODEMAP.md.
+    /// NotFound cards that always need a how-to. Optional headers and brochure
+    /// sign-in gaps stay observations unless Advice already added a step.
+    /// </summary>
+    private static bool CoreHygieneNotFound(string title) => title is
+        "HTTPS" or
+        "Certificate" or
+        "Admin pages" or
+        "HTTP" or
+        "Strict-Transport-Security" or
+        "Content-Security-Policy" or
+        "X-Content-Type-Options" or
+        "X-Frame-Options" or
+        "Referrer-Policy" or
+        "Cookie flags" or
+        "SPF" or
+        "DMARC" or
+        "Private files" or
+        "Oracle PeopleSoft" or
+        "WWW and apex" or
+        "Internet-facing enterprise portals" or
+        "security.txt";
 
     private static bool OptionalUntilAdvised(string title) => title is
         "Cross-Origin-Embedder-Policy" or
@@ -167,7 +203,7 @@ public static class FixGuides
 
         return new NextStep(
             "Put a CDN edge in front of this hostname",
-            originNote + " Rampart cannot log in to Cloudflare. The steps below are the public-surface path Operation Locked In uses for a Vercel origin.",
+            originNote + " Rampart cannot log in to Cloudflare. The steps below are the public-surface path for a Vercel origin behind grey-cloud DNS.",
             "Public edge",
             vercel || nextJs ? "Cloudflare in front of Vercel" : "Cloudflare",
             new[]
@@ -217,6 +253,9 @@ public static class FixGuides
         bool vercel,
         bool cloudflare)
     {
+        var enterpriseLines = EnterpriseSurface.FixLines(related);
+        if (enterpriseLines is { Count: > 0 }) return enterpriseLines;
+
         var apex = Hostname.Apex(hostname);
         var cf = cloudflare || edge.Kind is EdgeKind.CloudflareProxied or EdgeKind.CloudflareDnsOnly;
         var headerPlace = nextJs
@@ -325,9 +364,7 @@ public static class FixGuides
             {
                 L("For cookies that authenticate a person, set HttpOnly, Secure, and SameSite=Lax or Strict."),
                 L("Session cookies should not be readable by page scripts."),
-                L(nextJs
-                    ? "Production session cookies on Operation Locked In sites use the __Host- prefix and SameSite=Lax. Match that pattern on this hostname if it has accounts."
-                    : "Confirm the flags in the browser developer tools after you deploy.")
+                L("Confirm the flags in the browser developer tools after you deploy. If this hostname has accounts, session cookies should use HttpOnly, Secure, and SameSite=Lax or Strict.")
             },
             "security.txt" => new[]
             {
@@ -402,7 +439,7 @@ public static class FixGuides
             "Cross-Origin-Embedder-Policy" => nextJs
                 ? new[]
                 {
-                    L("When to do this: you need SharedArrayBuffer or a cross-origin isolated page. Operation Locked In uses credentialless so third-party Insights can still load."),
+                    L("When to do this: you need SharedArrayBuffer or a cross-origin isolated page. Use credentialless if third-party scripts must still load."),
                     L("When not to: a brochure site with no such APIs. require-corp will break embeds that do not send Cross-Origin-Resource-Policy."),
                     L("In next.config.ts headers(), add:", "Cross-Origin-Embedder-Policy: credentialless"),
                     L("Keep Cross-Origin-Opener-Policy: same-origin. Deploy, then open the homepage and confirm scripts still load."),
@@ -451,7 +488,7 @@ public static class FixGuides
                 L("When to do this: a public login page posts to http://. That sends passwords without TLS."),
                 L("When not to: the form already posts to https:// or to a relative path such as /api/auth/sign-in."),
                 L("Search the sign-in template for action=\"http://\" and change it to https:// or a relative path."),
-                L("In Next.js, open the account sign-in route (often app/account/sign-in) and any <form action=. Keep the action relative or https."),
+                L("Open the public sign-in page this hostname actually uses. Keep the form action relative or https."),
                 L("In WordPress, set the site URL to https and re-save permalinks.", "https://example.com/wp-admin/options-general.php")
             },
             "Sign-in redirect" => new[]
@@ -459,7 +496,7 @@ public static class FixGuides
                 L("When to do this: GET on a login path returned Location: http://..."),
                 L("When not to: Location already starts with https:// on the same hostname."),
                 L("Change that redirect to https:// on the same hostname. In Next.js that is often next.config.ts redirects()."),
-                L("Example redirect in next.config.ts:", "source: '/login'\ndestination: 'https://" + hostname + "/account/sign-in'\npermanent: false"),
+                L("If you use Next.js redirects, send leftover /login URLs to the sign-in path this hostname already publishes."),
                 L("In Cloudflare, SSL/TLS, Edge Certificates, Always Use HTTPS should already catch http:// hops.", "https://dash.cloudflare.com/")
             },
             "Sign-in mixed content" => new[]
@@ -511,11 +548,12 @@ public static class FixGuides
             },
             "Sign-in pages" => new[]
             {
-                L("When to do this: people can sign in on this hostname and none of the common public login paths answered."),
-                L("When not to: this is a brochure site with no accounts. Then missing /login is correct. Accounts on Operation Locked In live under /account/sign-in."),
-                L("If you have accounts, publish one stable sign-in URL and send it HTTPS only.", "https://" + hostname + "/account/sign-in"),
-                L("In Next.js App Router that is usually app/account/sign-in/page.tsx. Do not also expose /login unless you redirect it."),
-                L("Copyable redirect in next.config.ts:", "source: '/login'\ndestination: '/account/sign-in'\npermanent: false"),
+                L("When to do this: this hostname advertised WordPress or another account product, and none of the common public login paths answered."),
+                L("When not to: this is a brochure hostname with no public accounts. Missing /login is then correct."),
+                L("If people sign in here, publish one stable HTTPS sign-in URL and keep it on this hostname.", "https://" + hostname + "/"),
+                L(wordpress
+                    ? "WordPress usually uses /wp-login.php. Restore that path or the custom login you already chose."
+                    : "Use the login URL this product already documents. Do not invent a path from another site."),
                 L("A custom login URL outside the allowlist is not found by this check. That is not proof there are no accounts.")
             },
             "HTTPS" => new[]
@@ -608,14 +646,33 @@ public static class FixGuides
                 L("Upgrade the named product, or stop publishing the version in HTML generators and headers."),
                 L("This program does not send exploit traffic.")
             },
+            "Oracle PeopleSoft" => new[]
+            {
+                L("When to do this: this hostname advertised a public PeopleSoft portal or cookie. That is an internet-facing HR or campus system."),
+                L("When not to: those paths do not return PeopleSoft portal chrome and there is no PSJSESSIONID cookie. A brochure that mentions PeopleSoft stays Present."),
+                L("Install Oracle's Critical Patch Update that covers CVE-2026-35273 for PeopleTools 8.61 and 8.62. A firewall or WAF rule that only blocks one request shape is not the patch."),
+                L("Oracle security alerts:", "https://www.oracle.com/security-alerts/"),
+                L("CISA Known Exploited Vulnerabilities catalogue:", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"),
+                L("Take the portal off the public internet if it does not need to be there. Rampart does not send exploit traffic and cannot see whether the CPU is installed.")
+            },
             "Private files" => new[]
             {
-                L("When to do this: a path such as /.env or /.git/HEAD answered 200 with a short non-HTML body."),
-                L("When not to: those paths 404 or 403, or they return a normal HTML 404 page."),
+                L("When to do this: a path such as /.env, /.git/HEAD, /composer.json, or /package.json answered 200 with a non-HTML body."),
+                L("When not to: those paths 404 or 403, or they return HTML (including an HTML 404 page that still returns 200)."),
                 L("Remove the file from the public document root. Rotate any secret that was in it."),
-                L("On Vercel and Next.js, do not put .env in public/. Keep secrets in the host environment.", "https://vercel.com/dashboard"),
+                L(vercel || nextJs
+                    ? "Do not put .env or package.json in the public folder. Keep secrets in the host environment."
+                    : "Keep secrets off the document root. A .env file belongs only on the server, not under the website folder."),
                 L("Confirm /.env in a private window.", "https://" + hostname + "/.env"),
-                L("Confirm /.git/HEAD the same way.", "https://" + hostname + "/.git/HEAD")
+                L("Confirm /package.json the same way.", "https://" + hostname + "/package.json")
+            },
+            "OpenID Provider" => new[]
+            {
+                L("When to do this: /.well-known/openid-configuration or oauth-authorization-server returned JSON with an issuer."),
+                L("When not to: those paths 404. A brochure site should not publish an identity provider. Rampart then shows no card."),
+                L("Confirm the issuer URL is https. An http:// issuer is not a public identity provider people should trust."),
+                L("Take the metadata off the public internet if this host is not meant to be an IdP."),
+                L("OpenID Discovery document:", "https://" + hostname + "/.well-known/openid-configuration")
             },
             "WWW and apex" => new[]
             {

@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/VersionCmp.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Dotted version compare for advisory ranges (including x wildcards from Retire.js).
+// Called by: AdvisoryDb.
+// Calls: None.
+// Invariants: Unknown junk versions do not match. Do not SemVer-coerce 'latest'.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Numeric dotted-version compare used for advisory ranges. Pre-release suffixes
 /// on a segment are ignored (1.9.0b1 compares as 1.9.0).
 /// </summary>

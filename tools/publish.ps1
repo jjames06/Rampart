@@ -1,3 +1,11 @@
+# CODEMAP FILE: tools/publish.ps1
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+# Role: Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.0.
+# Called by: Operator on this Windows PC after dotnet test.
+# Calls: dotnet publish App and Desktop. Optional sign-windows.ps1.
+# Invariants: Unsigned EXE is acceptable. Do not pay for Authenticode unless asked. Copy dist/Rampart.exe to Desktop for Jesse to run.
+# Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+# Map: docs/CODEMAP.md — read that file first for the run/load graph.
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $dotnet = "C:\Program Files\dotnet\dotnet.exe"

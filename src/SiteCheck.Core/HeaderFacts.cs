@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/HeaderFacts.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Parse HSTS, CSP, cookies, CORS, X-Frame-Options and friends from response headers into Findings.
+// Called by: Checker after the HTTPS HEAD/GET of /.
+// Calls: Models.Finding.
+// Invariants: HSTS without includeSubDomains is an observation, not Attention, unless the operator asked for that bar. Missing headers on a failed TLS handshake must not become chores (Advice filters Incomplete).
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Header observations that must stay testable without opening a socket.
 /// </summary>
 public static class HeaderFacts
@@ -56,6 +66,7 @@ public static class HeaderFacts
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// True when HSTS is present but tells the browser to forget HTTPS (max-age is zero or negative).
     /// </summary>
     public static bool HstsDisablesHttps(string value)
@@ -76,6 +87,7 @@ public static class HeaderFacts
         CspDirectiveContains(value, "script-src", "unsafe-inline");
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// True when a named directive (exact name, so script-src does not match script-src-attr)
     /// includes the token.
     /// </summary>
@@ -106,6 +118,7 @@ public static class HeaderFacts
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// True when the SPF all mechanism is +all or ?all (too open for production mail).
     /// </summary>
     public static bool SpfAllIsPermissive(string record)
@@ -151,6 +164,7 @@ public static class HeaderFacts
         value != null && value.Trim() == "*";
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// Modern browsers ignore X-XSS-Protection. A non-zero value on old IE can introduce XSS.
     /// </summary>
     public static bool XssProtectionIsLegacyEnabled(string? value)

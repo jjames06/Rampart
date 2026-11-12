@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/Advice.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Decide which findings get a NextStep. Incomplete HTTPS does not invent header chores. Wording follows advertised stack (Next.js, WordPress, Vercel, Cloudflare).
+// Called by: Checker after all probes. Then FixGuides.Ensure fills lines.
+// Calls: Models.NextStep, EdgeProfile, StackHint.
+// Invariants: A card with no applicable work must not grow a fake how-to. Environment-specific copy only.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Next steps only for what this run actually observed.
 /// Wording follows the advertised stack (Next.js, WordPress, Vercel, Cloudflare)
 /// so a fix is written for that environment, not a generic lab.
@@ -135,17 +145,22 @@ public static class Advice
             "Referrer-Policy",
             "Send Referrer-Policy: strict-origin-when-cross-origin or stricter.");
 
-        MissingHeader(
+        void AttentionOnly(string title, string body)
+        {
+            var f = findings.FirstOrDefault(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+            if (f is null || f.State != FindingState.Attention) return;
+            steps.Add(new NextStep($"Fix {title}", body, title, HeaderEnv()));
+        }
+
+        AttentionOnly(
             "Permissions-Policy",
-            "Send Permissions-Policy disabling camera, microphone, geolocation, and payment unless a page truly needs them.");
-
-        MissingHeader(
+            "This header is present in a form that needs a change. Brochure sites may omit it. Only change it if this run marked it Needs attention.");
+        AttentionOnly(
             "Cross-Origin-Opener-Policy",
-            "Send Cross-Origin-Opener-Policy: same-origin unless a page must be opened as a cross-origin popup.");
-
-        MissingHeader(
+            "This header is present in a form that needs a change. Many brochure sites omit COOP. Only change it if this run marked it Needs attention.");
+        AttentionOnly(
             "Cross-Origin-Resource-Policy",
-            "Send Cross-Origin-Resource-Policy: same-origin or same-site unless you intentionally serve this response to other origins.");
+            "This header is present in a form that needs a change. Many brochure sites omit CORP. Only change it if this run marked it Needs attention.");
 
         var coop = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Opener-Policy");
         var coep = findings.FirstOrDefault(x => x.Title == "Cross-Origin-Embedder-Policy");
@@ -157,7 +172,7 @@ public static class Advice
                 "Cross-Origin-Embedder-Policy",
                 HeaderEnv(),
                 Optional: true,
-                WhenTo: "Do this when this origin uses SharedArrayBuffer, high-resolution timers, or other APIs that require a cross-origin isolated context. Operation Locked In brochure sites use credentialless so Vercel Insights and fonts keep loading.",
+                WhenTo: "Do this when this origin uses SharedArrayBuffer, high-resolution timers, or other APIs that require a cross-origin isolated context.",
                 WhenNot: "Skip require-corp on a marketing site with third-party scripts or embeds. Skip entirely if you do not need those APIs. Rampart cannot see whether your JavaScript uses SharedArrayBuffer."));
         }
 
@@ -443,8 +458,21 @@ public static class Advice
             "Bypass Cloudflare cache for HTML document routes. Cache fingerprinted static files only, then purge after a deploy.");
 
         MissingHeader(
+            "Oracle PeopleSoft",
+            "Internet-facing PeopleSoft was advertised. Install the Oracle Critical Patch Update for CVE-2026-35273. A WAF rule is not the patch. Rampart does not send exploit traffic.");
+
+        foreach (var title in EnterpriseSurface.Titles)
+        {
+            MissingHeader(title, EnterpriseSurface.AdviceBody(title));
+        }
+
+        MissingHeader(
             "Private files",
-            "A path such as /.env or /.git/HEAD answered 200 with a short body. Remove that file from the public root and rotate any secret in it.");
+            "A path such as /.env, /.git/HEAD, composer.json, or package.json answered 200 with a non-HTML body. Remove that file from the public root and rotate any secret in it.");
+
+        MissingHeader(
+            "OpenID Provider",
+            "This hostname advertised OpenID Connect or OAuth metadata. Confirm the issuer is https and that this identity provider is meant to be public. Rampart does not request tokens.");
 
         MissingHeader(
             "WWW and apex",

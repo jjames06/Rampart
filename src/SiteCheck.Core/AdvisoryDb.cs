@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.Core/AdvisoryDb.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Load embedded data/advisories.json and match advertised product versions against ranges.
+// Called by: Checker via CveCatalog facade. Built at release by tools/build-advisories.mjs.
+// Calls: VersionCmp.
+// Invariants: Runtime never calls NVD, OSV, or GitHub. Catalogue is Apache-2.0 Retire.js + CC BY 4.0 GHSA ranges. Embedded resource LogicalName advisories.json.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,6 +15,7 @@ using System.Text.RegularExpressions;
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Local advisory catalogue shipped inside the executable. Built from Retire.js
 /// (Apache-2.0) and GitHub Advisory ranges for Next.js. Runtime matching never
 /// contacts NVD, GitHub, or Retire.js.
@@ -22,9 +32,24 @@ public static class AdvisoryDb
     private static readonly Lazy<FileDto> File = new(Load);
     private static readonly Lazy<IReadOnlyList<CompiledProduct>> Compiled = new(Compile);
 
-    public static string Built => File.Value.Built ?? "";
-    public static int ProductCount => File.Value.Products.Count;
-    public static int AdvisoryCount => File.Value.Products.Sum(p => p.Vulns?.Count ?? 0);
+    public static bool CatalogueLoaded
+    {
+        get
+        {
+            try
+            {
+                return File.Value.Products.Count >= 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+    }
+
+    public static string Built => CatalogueLoaded ? File.Value.Built ?? "" : "";
+    public static int ProductCount => CatalogueLoaded ? File.Value.Products.Count : 0;
+    public static int AdvisoryCount => CatalogueLoaded ? File.Value.Products.Sum(p => p.Vulns?.Count ?? 0) : 0;
 
     public static IReadOnlyList<StackHint> DetectFromHtml(string html)
     {
@@ -61,6 +86,18 @@ public static class AdvisoryDb
     }
 
     public static IReadOnlyList<(CveCatalog.Entry Entry, StackHint Hint)> Match(IEnumerable<StackHint> stack)
+    {
+        try
+        {
+            return MatchCore(stack);
+        }
+        catch (Exception)
+        {
+            return Array.Empty<(CveCatalog.Entry, StackHint)>();
+        }
+    }
+
+    private static IReadOnlyList<(CveCatalog.Entry Entry, StackHint Hint)> MatchCore(IEnumerable<StackHint> stack)
     {
         var hits = new List<(CveCatalog.Entry, StackHint)>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

@@ -1,3 +1,12 @@
+// CODEMAP FILE: src/SiteCheck.Desktop/MainWindow.axaml.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Avalonia code-behind. Same Core call graph as WPF.
+// Called by: User on Linux/macOS testing builds.
+// Calls: Checker, FindingGuide, ReportText. ReportProtect no-op off Windows.
+// Invariants: Do not add desktop-only findings. Keep cards identical to Windows.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,6 +16,11 @@ using Avalonia.Platform.Storage;
 using SiteCheck.Core;
 
 namespace SiteCheck.Desktop;
+
+/// <summary>
+/// Avalonia shell for Linux/macOS testing zips (and Windows if built). Same Core as WPF.
+/// See docs/CODEMAP.md. DPAPI protect is a no-op off Windows.
+/// </summary>
 
 public partial class MainWindow : Window
 {
@@ -149,10 +163,14 @@ public partial class MainWindow : Window
         if (file is null) return;
         var json = file.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
         var body = json ? ReportJson.Format(_report) : ReportText.Format(_report);
+        var protect = ProtectFileBox?.IsChecked == true && ReportProtect.WindowsUserProtectAvailable;
+        if (protect) body = ReportProtect.ProtectForCurrentWindowsUser(body);
         await using var stream = await file.OpenWriteAsync();
         await using var writer = new StreamWriter(stream);
         await writer.WriteAsync(body);
-        StatusText.Text = "Report saved on this computer. Rampart does not upload it.";
+        StatusText.Text = protect
+            ? "Report saved and protected for this Windows user only. Rampart does not upload it."
+            : "Report saved on this computer. Rampart does not upload it.";
     }
 
     private void Lawful_Click(object? sender, RoutedEventArgs e) =>

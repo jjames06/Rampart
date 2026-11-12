@@ -1,19 +1,46 @@
+// CODEMAP FILE: src/SiteCheck.Maui/MainPage.xaml.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: MAUI shell. Same Core as WPF. Share sheet instead of Win32 SaveFileDialog.
+// Called by: User on iPhone/Android once stores accept the build.
+// Calls: Checker, FindingGuide, ReportText.
+// Invariants: Do not upload reports to Operation Locked In. LICENSE.MOBILE for store binaries.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using SiteCheck.Core;
 
 namespace SiteCheck.Maui;
 
+/// <summary>
+/// MAUI shell for iPhone/Android. Same Core as WPF. Store binaries use LICENSE.MOBILE.
+/// Reports leave the device only through the OS share sheet. See docs/CODEMAP.md.
+/// </summary>
+
 public partial class MainPage : ContentPage
 {
     private CheckReport? _report;
+    private CancellationTokenSource? _runCts;
 
     public MainPage()
     {
         InitializeComponent();
+        PermissionLabel.Text = LawfulUse.OwnerAttestation;
+        LawLabel.Text = LawfulUse.RefusalAttestation;
     }
 
     private void Consent_Changed(object? sender, CheckedChangedEventArgs e)
     {
-        RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked;
+        RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked && _runCts is null;
+    }
+
+    private CheckScope SelectedScope() =>
+        AssessmentScope.IsChecked ? CheckScope.AuthorizedAssessment : CheckScope.Standard;
+
+    private void Cancel_Clicked(object? sender, EventArgs e)
+    {
+        try { _runCts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+        StatusText.Text = "Stopping this check.";
     }
 
     private async void Run_Clicked(object? sender, EventArgs e)
@@ -31,15 +58,20 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        _runCts?.Cancel();
+        _runCts?.Dispose();
+        _runCts = new CancellationTokenSource();
+        var ct = _runCts.Token;
         RunButton.IsEnabled = false;
         SaveButton.IsEnabled = false;
+        CancelButton.IsVisible = true;
         FindingsHost.Children.Clear();
         SummaryText.IsVisible = false;
         StatusText.Text = "Resolving public Internet addresses.";
         var progress = new Progress<string>(msg => MainThread.BeginInvokeOnMainThread(() => StatusText.Text = msg));
         try
         {
-            _report = await Task.Run(() => Checker.RunAsync(host, progress, CancellationToken.None, CheckScope.AuthorizedAssessment));
+            _report = await Checker.RunAsync(host, progress, ct, SelectedScope());
             var attn = _report.Findings.Count(f => f.State == FindingState.Attention);
             var missing = _report.Findings.Count(f => f.State == FindingState.NotFound);
             var incomplete = _report.Findings.Count(f => f.State == FindingState.Incomplete);
@@ -54,6 +86,10 @@ public partial class MainPage : ContentPage
             }
             SaveButton.IsEnabled = true;
         }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "The check was stopped. Nothing further was requested from the hostname.";
+        }
         catch (CheckException ex)
         {
             StatusText.Text = ex.Message;
@@ -64,6 +100,9 @@ public partial class MainPage : ContentPage
         }
         finally
         {
+            CancelButton.IsVisible = false;
+            _runCts?.Dispose();
+            _runCts = null;
             RunButton.IsEnabled = PermissionBox.IsChecked && LawBox.IsChecked;
         }
     }
@@ -127,6 +166,7 @@ public partial class MainPage : ContentPage
     {
         if (_report is null) return;
         var text = ReportText.Format(_report);
+        // Share is the user's choice. The app sandbox is the at-rest boundary on phone; we do not pack the binary.
         await Share.Default.RequestAsync(new ShareTextRequest
         {
             Title = "Rampart report",

@@ -1,9 +1,19 @@
+// CODEMAP FILE: src/SiteCheck.Core/Hostname.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Parse operator input into a DNS hostname. Strips scheme/path, lowercases, rejects IPs, localhost, home suffixes, ports, control characters.
+// Called by: Checker.RunAsync first line. Tests in HostnameTests.
+// Calls: None beyond string/Uri parsing.
+// Invariants: An IP is never a hostname here. Rejecting private names is the first half of 'this program does not contact private networks' (PrivateIp is the second).
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Public DNS hostnames only. No IP literals, ports, or home-network suffixes.
 /// International names are converted to ASCII (punycode) before checks run.
 /// </summary>
@@ -61,6 +71,7 @@ public static class Hostname
     }
 
     /// <summary>
+/// See docs/CODEMAP.md.
     /// True for names we will send to DNS: a parsed hostname, _dmarc. plus a parsed apex,
     /// or selector._domainkey. plus a parsed apex.
     /// </summary>

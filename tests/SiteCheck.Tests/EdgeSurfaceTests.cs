@@ -1,3 +1,12 @@
+// CODEMAP FILE: tests/SiteCheck.Tests/EdgeSurfaceTests.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Locks Cloudflare NS vs CF-Ray vs Vercel vs origin classification.
+// Called by: dotnet test.
+// Calls: EdgeSurface.
+// Invariants: Wrong edge class would send FixGuides to the wrong dashboard.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using SiteCheck.Core;
 
 namespace SiteCheck.Tests;
@@ -89,6 +98,14 @@ public class EdgeSurfaceTests
     {
         var f = new Finding("Strict-Transport-Security", FindingState.Present, "obs", "method", "caveat");
         var step = new NextStep("Fix HSTS", "body", "Strict-Transport-Security", Lines: new[] { new FixLine("Set the header.") });
+        Assert.False(FindingGuide.ShowsHowTo(f, step));
+    }
+
+    [Fact]
+    public void Present_admin_does_not_show_how_to()
+    {
+        var f = new Finding("Admin pages", FindingState.Present, "obs", "method", "caveat");
+        var step = new NextStep("Address Admin pages", "body", "Admin pages", Lines: new[] { new FixLine("x") });
         Assert.False(FindingGuide.ShowsHowTo(f, step));
     }
 }

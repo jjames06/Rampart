@@ -1,7 +1,20 @@
+// CODEMAP FILE: src/SiteCheck.Core/ReportText.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: UTF-8 plaintext report for clipboard and Save. Includes findings, next steps, limits, authorization.
+// Called by: All three UIs Copy/Save.
+// Calls: CheckReport.
+// Invariants: Must not claim a pentest. Limits section is mandatory so a saved file cannot overclaim.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Text;
 
 namespace SiteCheck.Core;
 
+/// <summary>
+/// See docs/CODEMAP.md. UTF-8 plaintext report for clipboard and Save.
+/// Includes method, caveat, and how-to lines via FindingGuide.
+/// </summary>
 public static class ReportText
 {
     public static string Format(CheckReport report)

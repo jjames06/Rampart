@@ -1,7 +1,19 @@
 /**
+ * CODEMAP FILE: tools/build-advisories.mjs
+ * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+ * Role: Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …).
+ * Called by: Human/CI before publish: node tools/build-advisories.mjs from repo root.
+ * Calls: HTTPS GET to Retire.js raw + GitHub Advisory API at build time only.
+ * Invariants: Runtime Rampart never runs this. Do not add Cloudflare Radar (CC BY-NC). WordPress core ranges only when a version is advertised.
+ * Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+ * Map: docs/CODEMAP.md — read that file first for the run/load graph.
+ */
+/**
  * Builds data/advisories.json from:
  * - Retire.js jsrepository.json (Apache-2.0) for JavaScript libraries
- * - GitHub Advisory API for npm package "next"
+ * - GitHub Advisory API for npm packages this checker can actually see on a
+ *   public homepage or in Server / X-Powered-By / generator (next, react, vue,
+ *   jquery, bootstrap, lodash, axios, svelte, angular, and peers)
  *
  * Run from the repository root: node tools/build-advisories.mjs
  * The resulting file is shipped inside SiteCheck.exe. Runtime checks do not
@@ -16,8 +28,27 @@ const outPath = join(root, "data", "advisories.json");
 
 const RETIRE_URL =
   "https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json";
-const GHSA_NEXT =
-  "https://api.github.com/advisories?ecosystem=npm&affects=next&per_page=100";
+const GHSA_NPM = [
+  ["next", "Next.js"],
+  ["react", "React"],
+  ["react-dom", "React"],
+  ["vue", "Vue.js"],
+  ["nuxt", "Nuxt"],
+  ["jquery", "jQuery"],
+  ["bootstrap", "Bootstrap"],
+  ["lodash", "Lodash"],
+  ["axios", "axios"],
+  ["svelte", "svelte"],
+  ["handlebars", "Handlebars"],
+  ["ember-source", "Ember.js"],
+  ["@angular/core", "@angular/core"],
+  ["moment", "moment.js"],
+  ["marked", "marked"],
+  ["dompurify", "DOMPurify"],
+  ["tinymce", "tinyMCE"],
+  ["underscore", "underscore.js"],
+  ["three", "threejs"],
+];
 
 function displayName(key, rec) {
   if (key === "jquery") return "jQuery";
@@ -86,10 +117,12 @@ function extractors(rec) {
 }
 
 async function fetchJson(url, headers = {}) {
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   const res = await fetch(url, {
     headers: {
       "User-Agent": "operation-locked-in-site-check-advisory-build",
-      Accept: "application/json",
+      Accept: "application/vnd.github+json",
+      ...(token ? { Authorization: "Bearer " + token } : {}),
       ...headers,
     },
   });
@@ -109,11 +142,13 @@ function parseGhsaRange(range) {
   return constraints;
 }
 
-async function ghsaNext() {
-  const products = [];
+async function ghsaNpm(pkg, display) {
   const vulns = [];
-  let url = GHSA_NEXT;
-  for (let page = 0; page < 5 && url; page++) {
+  let url =
+    "https://api.github.com/advisories?ecosystem=npm&affects=" +
+    encodeURIComponent(pkg) +
+    "&per_page=100";
+  for (let page = 0; page < 4 && url; page++) {
     const { json, res } = await fetchJson(url);
     const items = Array.isArray(json) ? json : [];
     for (const adv of items) {
@@ -122,7 +157,7 @@ async function ghsaNext() {
       if (!id) continue;
       const ranges = [];
       for (const vul of adv.vulnerabilities || []) {
-        if (vul.package?.name !== "next") continue;
+        if (vul.package?.name !== pkg) continue;
         const constraints = parseGhsaRange(vul.vulnerable_version_range);
         if (constraints.length) ranges.push({ constraints });
       }
@@ -139,13 +174,57 @@ async function ghsaNext() {
     const next = link.match(/<([^>]+)>;\s*rel="next"/);
     url = next ? next[1] : null;
   }
-  products.push({
-    name: "Next.js",
-    aliases: ["next", "Next.js"],
+  return {
+    name: display,
+    aliases: [pkg, display],
     extractors: [],
     vulns,
-  });
-  return products;
+  };
+}
+
+async function ghsaWordpress() {
+  const vulns = [];
+  let url = "https://api.github.com/advisories?search=wordpress&type=reviewed&per_page=100";
+  try {
+    for (let page = 0; page < 3 && url; page++) {
+      const { json, res } = await fetchJson(url);
+      const items = Array.isArray(json) ? json : [];
+      for (const adv of items) {
+        if (adv.withdrawn_at) continue;
+        const id = adv.ghsa_id;
+        if (!id) continue;
+        const ranges = [];
+        for (const vul of adv.vulnerabilities || []) {
+          const name = String(vul.package?.name || "").toLowerCase();
+          if (name !== "wordpress" && name !== "wordpress/wordpress") continue;
+          const constraints = parseGhsaRange(vul.vulnerable_version_range);
+          if (constraints.length) ranges.push({ constraints });
+        }
+        if (ranges.length === 0) continue;
+        vulns.push({
+          id,
+          summary: String(adv.summary || id).replace(/\s+/g, " ").trim().slice(0, 280),
+          source: adv.html_url || `https://github.com/advisories/${id}`,
+          severity: adv.severity || null,
+          ranges,
+        });
+      }
+      const link = res.headers.get("link") || "";
+      const next = link.match(/<([^>]+)>;\s*rel="next"/);
+      url = next ? next[1] : null;
+    }
+  } catch (err) {
+    console.error("WordPress GHSA fetch failed:", err.message);
+  }
+  if (vulns.length === 0) return [];
+  return [
+    {
+      name: "WordPress",
+      aliases: ["WordPress", "wordpress"],
+      extractors: [],
+      vulns,
+    },
+  ];
 }
 
 const extras = [
@@ -157,10 +236,52 @@ const extras = [
       {
         id: "PHP-EOL",
         summary:
-          "PHP 5 and 7.x are past end of life. Public CVE volume on those lines is large. Move to a currently supported PHP 8 release from php.net.",
+          "PHP 5, 7, 8.0, and 8.1 are past end of life. Public CVE volume on those lines is large. Move to a currently supported PHP 8.2 or later release from php.net.",
         source: "https://www.php.net/supported-versions.php",
         severity: "high",
-        ranges: [{ atOrAbove: "5.0.0", below: "8.0.0" }],
+        ranges: [{ atOrAbove: "5.0.0", below: "8.2.0" }],
+      },
+    ],
+  },
+  {
+    name: "WordPress",
+    aliases: ["WordPress", "wordpress"],
+    extractors: [],
+    vulns: [
+      {
+        id: "CVE-2026-87902",
+        summary:
+          "WordPress core page-template resolution could include a chosen local PHP file (GHSA-7hp8-65ch-5whp). CISA lists this as known exploited. Upgrade to the patched branch (7.1.2, 7.0.6, 6.9.9, or the matching older-branch floor). This is a prompt from an advertised generator version, not RCE proof.",
+        source: "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp",
+        severity: "critical",
+        ranges: [
+          ["4.7.0", "4.7.37"], ["4.8.0", "4.8.32"], ["4.9.0", "4.9.33"],
+          ["5.0.0", "5.0.29"], ["5.1.0", "5.1.26"], ["5.2.0", "5.2.28"],
+          ["5.3.0", "5.3.25"], ["5.4.0", "5.4.23"], ["5.5.0", "5.5.22"],
+          ["5.6.0", "5.6.21"], ["5.7.0", "5.7.19"], ["5.8.0", "5.8.17"],
+          ["5.9.0", "5.9.18"], ["6.0.0", "6.0.16"], ["6.1.0", "6.1.14"],
+          ["6.2.0", "6.2.13"], ["6.3.0", "6.3.12"], ["6.4.0", "6.4.12"],
+          ["6.5.0", "6.5.12"], ["6.6.0", "6.6.9"], ["6.7.0", "6.7.9"],
+          ["6.8.0", "6.8.10"], ["6.9.0", "6.9.9"], ["7.0.0", "7.0.6"],
+          ["7.1.0", "7.1.2"],
+        ].map(([atOrAbove, below]) => ({ atOrAbove, below })),
+      },
+    ],
+  },
+  {
+    name: "Oracle PeopleSoft",
+    aliases: ["Oracle PeopleSoft", "PeopleSoft", "PeopleTools"],
+    extractors: [],
+    vulns: [
+      {
+        id: "CVE-2026-35273",
+        summary:
+          "Oracle PeopleSoft Enterprise PeopleTools 8.61 and 8.62. Critical remote issue. Oracle published a patch in the June 2026 Critical Patch Update. CISA added this CVE to the Known Exploited Vulnerabilities catalogue. A WAF workaround is not the patch.",
+        source: "https://nvd.nist.gov/vuln/detail/CVE-2026-35273",
+        severity: "critical",
+        ranges: [
+          { constraints: [{ op: ">=", version: "8.61.0" }, { op: "<", version: "8.63.0" }] },
+        ],
       },
     ],
   },
@@ -224,20 +345,27 @@ for (const [key, rec] of Object.entries(jsRepo)) {
   });
 }
 
-let nextProducts = [];
+const ghsaProducts = [];
+for (const [pkg, display] of GHSA_NPM) {
+  try {
+    ghsaProducts.push(await ghsaNpm(pkg, display));
+  } catch (err) {
+    console.error("GHSA fetch failed for", pkg, err.message);
+  }
+}
 try {
-  nextProducts = await ghsaNext();
+  ghsaProducts.push(...(await ghsaWordpress()));
 } catch (err) {
-  console.error("GHSA fetch failed, continuing with Retire.js only:", err.message);
+  console.error("WordPress GHSA failed:", err.message);
 }
 
 const file = {
   built: new Date().toISOString().slice(0, 10),
   sources: [
     "https://github.com/RetireJS/retire.js (Apache-2.0 jsrepository.json)",
-    "https://github.com/advisories (GitHub Advisory Database, npm package next)",
+    "https://github.com/advisories (GitHub Advisory Database: npm packages this checker can fingerprint on a public homepage, plus WordPress core when the generator names a version)",
   ],
-  products: mergeProducts([...jsProducts, ...nextProducts, ...extras]),
+  products: mergeProducts([...jsProducts, ...ghsaProducts, ...extras]),
 };
 
 writeFileSync(outPath, JSON.stringify(file));

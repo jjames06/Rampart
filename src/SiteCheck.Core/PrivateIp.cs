@@ -1,9 +1,19 @@
+// CODEMAP FILE: src/SiteCheck.Core/PrivateIp.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges.
+// Called by: Checker after DNS; HostPair when comparing apex/www.
+// Calls: System.Net.IPAddress only.
+// Invariants: If every A/AAAA is private, Checker throws and never opens a socket. Same policy as bastion-web src/lib/site-check/private-ip.ts.
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 using System.Net;
 using System.Net.Sockets;
 
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Addresses this tool must never contact: loopback, RFC1918, link-local, CGNAT,
 /// documentation, multicast, discard, unique-local, and IPv4 embedded in NAT64 or 6to4.
 /// </summary>

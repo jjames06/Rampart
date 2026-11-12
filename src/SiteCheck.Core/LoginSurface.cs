@@ -1,6 +1,16 @@
+// CODEMAP FILE: src/SiteCheck.Core/LoginSurface.cs
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Role: Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention.
+// Called by: Checker parallel probes. ProbeNamedPathsAsync is shared with ExposedSurface and PeopleSoftSurface.
+// Calls: HttpClient GET only, no auth, no POST.
+// Invariants: Do not send credentials. Do not treat a marketing CMS login as a confirmed compromise. How-to must follow the advertised stack (no OLI /account/sign-in on a client kit).
+// Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
+// Map: docs/CODEMAP.md — read that file first for the run/load graph.
+
 namespace SiteCheck.Core;
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// Public account, sign-in, and admin URLs only. GET, no body, no passwords, no extra ports.
 /// Paths are an allowlist of common addresses, not a crawl and not a credential test.
 /// </summary>
@@ -29,7 +39,7 @@ public static class LoginSurface
 
     public static readonly string[] Paths = AccountPaths.Concat(AdminPaths).ToArray();
 
-    public static Finding Summary(IReadOnlyList<LoginHit> hits)
+    public static Finding Summary(IReadOnlyList<LoginHit> hits, bool wordpressAdvertised = false)
     {
         var live = hits
             .Where(h => AccountPaths.Contains(h.Path) && h.Alive)
@@ -38,10 +48,20 @@ public static class LoginSurface
             .ToArray();
         if (live.Length == 0)
         {
+            if (wordpressAdvertised)
+            {
+                return new Finding(
+                    "Sign-in pages",
+                    FindingState.NotFound,
+                    "This hostname advertised WordPress, but none of the common public sign-in paths answered 2xx or 3xx.",
+                    "GET each allowlisted account path on the same public address, redirects disabled, body capped at 64 KB.",
+                    "A renamed wp-login.php is not found this way.");
+            }
+
             return new Finding(
                 "Sign-in pages",
-                FindingState.NotFound,
-                "None of the common public sign-in paths answered 2xx or 3xx: " + string.Join(", ", AccountPaths) + ".",
+                FindingState.Present,
+                "None of the common public sign-in paths answered 2xx or 3xx. That is expected on a hostname with no public accounts.",
                 "GET each allowlisted account path on the same public address, redirects disabled, body capped at 64 KB.",
                 "A custom login URL is not found this way. That is not proof the site has no accounts.");
         }
@@ -244,6 +264,7 @@ public static class LoginSurface
 }
 
 /// <summary>
+/// See docs/CODEMAP.md.
 /// One GET of an allowlisted account or admin path. Redirects are not followed.
 /// </summary>
 public sealed record LoginHit(
