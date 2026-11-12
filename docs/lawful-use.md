@@ -10,6 +10,8 @@ Rampart is a **read-only public-surface assessment**. After you attest permissio
 
 Every run also GETs a short allowlist of common public account, sign-in, and admin URLs on the same hostname (for example `/account/sign-in` and `/wp-login.php`). Redirects are not followed. Passwords are never sent. That is how Rampart notices a login form that posts to `http://`, a login page that can be framed, or an admin URL that looks like an open dashboard.
 
+The same run GETs distinctive public paths for internet-facing enterprise portals (SharePoint layouts, NetScaler logon, FortiGate `/remote/login`, PeopleSoft `/psp/`, and peers listed in `docs/what-is-checked.md`). Those extra cards appear only when the product is advertised. Paths used in past exploits (SharePoint ToolPane, WebLogic `wls-wsat`, FortiGate `fgt_lang` probes, BIG-IP `/mgmt/tm/util/bash`) are not requested.
+
 The **Authorized public-surface assessment** option adds RFC public files (`/.well-known/security.txt`, `/robots.txt`, `/.well-known/change-password`) on the typed hostname, the MTA-STS policy file on `mta-sts.` plus the apex, and extra DNS (CAA, DKIM selectors, DNSSEC, MTA-STS, BIMI, TLS-RPT). Those files are published for the public to read. The program still does not crawl, follow redirects, or send a request body.
 
 ## What this program is not

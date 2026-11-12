@@ -12,6 +12,8 @@ Rampart is a **read-only** public-surface checker. After two permission boxes, i
 
 Public version pin: **1.9.0**. User-Agent: `operation-locked-in-rampart/1.9.0`. Catalogue rebuilds replace the v1.9.0 asset; do not bump the number unless you intend a numbered release.
 
+GitHub repository: **https://github.com/jjames06/Rampart** (renamed from `oli-site-check`; old URLs redirect). Handbook on GitHub Pages: **https://jjames06.github.io/Rampart/**. CI: `.github/workflows/ci.yml` runs `dotnet test` on Windows. Storefront IA: `/rampart` overview, `/rampart/get` download landing, `/rampart/checks` catalogue, `/rampart/lawful` permission text, `/rampart/download` EXE 302.
+
 ## Solution layout
 
 ```
@@ -31,7 +33,7 @@ All three shells call `Checker.RunAsync` then `FindingGuide` so a card cannot ex
 4. TLS handshake (`ReadCertificateAsync`) records the leaf even if Windows does not fully trust it.
 5. Parallel: HTTPS HEAD/GET `/`, homepage body (256 KB cap), SPF/DMARC/MX/NS/CAA, port 80 HEAD.
 6. `Fingerprint` + `AdvisoryDb` (embedded `data/advisories.json`, built by `tools/build-advisories.mjs`).
-7. Allowlisted GETs: sign-in, admin, private files, PeopleSoft portal paths, www/apex HEAD.
+7. Allowlisted GETs: sign-in, admin, private files, PeopleSoft portal paths, other CISA-KEV enterprise portal paths (SharePoint, NetScaler, FortiGate, and peers), www/apex HEAD.
 8. Authorized scope adds RFC files and extra DNS.
 9. `Advice.Build` + `FixGuides.Ensure` attach how-to **only** for work that applies to this stack.
 10. UI groups by `FindingState`. Save may DPAPI-protect on Windows (`ReportProtect`).
@@ -71,7 +73,10 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Core/LawfulUse.cs` | Consent checkbox strings and CheckScope names shown in every shell. Criminal Code s. 342.1 / 342.2 framing lives in docs/lawful-use.md; this file is UI copy only. |
 | `src/SiteCheck.Core/LoginSurface.cs` | Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention. |
 | `src/SiteCheck.Core/Models.cs` | Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record. |
-| `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
+| `src/SiteCheck.Core/AdvertisedMatch.cs` | False-positive guards: 2xx/3xx is not enough; Next.js brochure shells and trailing-slash redirects are not portals. Marketing copy that names PeopleSoft is ignored. |
+| `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Attention only with portal chrome or that cookie, not the word PeopleSoft on a brochure. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
+| `src/SiteCheck.Core/EnterpriseSurface.cs` | Table of other internet-facing enterprise portals. Attention cards only when advertised (runtime chrome, cookies, headers). CISA KEV CVE as patch prompt. |
+| `src/SiteCheck.Core/WellKnownIdpSurface.cs` | GET-only OpenID/OAuth metadata. Attention only when JSON issuer is advertised. |
 | `src/SiteCheck.Core/PrivateIp.cs` | Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges. |
 | `src/SiteCheck.Core/ReportJson.cs` | Machine-readable sibling of ReportText for operators who archive JSON. |
 | `src/SiteCheck.Core/ReportProtect.cs` | Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile. |
@@ -105,14 +110,19 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `tests/SiteCheck.Tests/HostnameTests.cs` | Locks accept/reject table: public DNS names in, IPs/localhost/home suffixes/ports out. |
 | `tests/SiteCheck.Tests/HtmlSurfaceTests.cs` | Locks mixed-content / SRI / tabnabbing / form-action observations on capped HTML. |
 | `tests/SiteCheck.Tests/LoginSurfaceTests.cs` | Locks sign-in/admin allowlist and Present-when-absent for brochure sites. |
-| `tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs` | Locks PeopleSoft path list and CVE-2026-35273 prompt-only wording (not RCE proof). |
+| `tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs` | Locks PeopleSoft path list, brochure/Next-shell silence, and CVE-2026-35273 prompt-only wording (not RCE proof). |
+| `tests/SiteCheck.Tests/EnterpriseSurfaceTests.cs` | Locks brochure silence, SharePoint/NetScaler/Magento prompts, and omitted exploit paths. |
 | `tests/SiteCheck.Tests/PrivateIpTests.cs` | Locks RFC1918/CGNAT/ULA/etc. classification. |
 | `tests/SiteCheck.Tests/ReportProtectTests.cs` | Locks DPAPI round-trip on Windows and no-op/skip elsewhere. |
 | `tests/SiteCheck.Tests/ReportTextTests.cs` | Locks plaintext report sections: hostname, findings, limits, authorization. |
 | `tests/SiteCheck.Tests/SiteCheck.Tests.csproj` | xUnit test project referencing Core. No network to live origins in CI. |
 | `tests/SiteCheck.Tests/TlsFactsTests.cs` | Locks protocol labels and expiry-window copy. |
 | `tools/build-advisories.mjs` | Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …). |
-| `tools/publish-wiki.ps1` | Push docs/wiki/* to the GitHub wiki remote. |
+| `.github/workflows/ci.yml` | Windows GitHub Actions: `dotnet test` on push and pull request to main. |
+| `docs/index.html` | GitHub Pages home for the handbook (https://jjames06.github.io/Rampart/). |
+| `docs/index.md` | Markdown sibling of the Pages home. |
+| `docs/.nojekyll` | Tells GitHub Pages to serve `docs/` as static files. |
+| `tools/publish-wiki.ps1` | Push docs/wiki/* to the GitHub wiki remote once GitHub has created that remote. |
 | `tools/publish.ps1` | Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.0. |
 | `tools/sign-windows.ps1` | Optional Azure Artifact Signing of Rampart.exe. Needs az login + RAMPART_SIGNING_* env. See docs/signing.md. |
 
@@ -127,3 +137,5 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 ## Licence
 
 Desktop: GNU GPLv3. Store binaries: additional Apache-2.0 (`LICENSE.MOBILE`). DnsClient and Retire.js data: Apache-2.0. GitHub Advisory ranges: CC BY 4.0. Do not query Cloudflare Radar (CC BY-NC vs GPLv3).
+
+Honest product judgment: `docs/PRODUCT.md`.
