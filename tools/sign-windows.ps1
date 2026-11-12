@@ -1,5 +1,5 @@
 # CODEMAP FILE: tools/sign-windows.ps1
-# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 # Role: Optional Azure Artifact Signing of Rampart.exe. Needs az login + RAMPART_SIGNING_* env. See docs/signing.md.
 # Called by: publish.ps1 when identity is configured; otherwise skipped with a warning.
 # Calls: az / signtool.

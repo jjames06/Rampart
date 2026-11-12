@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/ReportText.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: UTF-8 plaintext report for clipboard and Save. Includes findings, next steps, limits, authorization.
 // Called by: All three UIs Copy/Save.
 // Calls: CheckReport.

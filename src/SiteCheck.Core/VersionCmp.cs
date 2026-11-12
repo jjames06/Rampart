@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/VersionCmp.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Dotted version compare for advisory ranges (including x wildcards from Retire.js).
 // Called by: AdvisoryDb.
 // Calls: None.

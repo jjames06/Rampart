@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/HeaderFactsTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks HSTS/CSP/cookie parsers including includeSubDomains observation.
 // Called by: dotnet test.
 // Calls: HeaderFacts.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/HeaderFacts.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Parse HSTS, CSP, cookies, CORS, X-Frame-Options and friends from response headers into Findings.
 // Called by: Checker after the HTTPS HEAD/GET of /.
 // Calls: Models.Finding.

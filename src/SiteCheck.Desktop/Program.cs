@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Desktop/Program.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Avalonia process entry. [STAThread] required on Windows if this project is ever run there.
 // Called by: dotnet / published native host.
 // Calls: AppBuilder → App.

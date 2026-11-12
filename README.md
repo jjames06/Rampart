@@ -2,7 +2,7 @@
 
 **Read-only public-surface assessment of a hostname you operate**
 
-Version **1.9.0**
+Version **1.9.1**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](#run-a-release-build)
@@ -31,7 +31,7 @@ It is not a penetration test, not a red-team engagement, and not a guarantee. Pa
 | Document | Topic |
 |----------|--------|
 | [docs/CODEMAP.md](docs/CODEMAP.md) | File-by-file map. Start here if you did not write this code. Every source file has a matching header. |
-| [docs/PRODUCT.md](docs/PRODUCT.md) | Honest product judgment: what 1.9.0 is, what it will not become |
+| [docs/PRODUCT.md](docs/PRODUCT.md) | Honest product judgment: what 1.9.1 is, what it will not become |
 | [Official site](https://www.operationlockedin.com/rampart) | Product home and download |
 | [docs/how-to-use.md](docs/how-to-use.md) | Permission boxes, states, How to fix this |
 | [docs/what-is-checked.md](docs/what-is-checked.md) | Every check and how it was gathered |
@@ -91,4 +91,4 @@ It will not crawl every URL, follow redirects, post credentials, download plugin
 
 ## Version
 
-This tree is Rampart 1.9.0. The User-Agent is `operation-locked-in-rampart/1.9.0`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.
+This tree is Rampart 1.9.1. The User-Agent is `operation-locked-in-rampart/1.9.1`. Findings are grouped (needs attention first). Next steps name the stack they were written for. Lawful use: [docs/lawful-use.md](docs/lawful-use.md). Rebuild the local catalogue with `node tools\build-advisories.mjs` before a release that should pick up new Retire.js or GitHub Advisory ranges.

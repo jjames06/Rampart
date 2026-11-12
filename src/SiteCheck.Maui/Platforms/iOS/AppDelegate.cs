@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Maui/Platforms/iOS/AppDelegate.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: iOS app delegate. Boots MauiProgram. Store licence is LICENSE.MOBILE.
 // Called by: iOS.
 // Calls: MauiProgram.CreateMauiApp().

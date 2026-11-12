@@ -1,6 +1,6 @@
 /**
  * CODEMAP FILE: tools/build-advisories.mjs
- * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+ * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
  * Role: Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …).
  * Called by: Human/CI before publish: node tools/build-advisories.mjs from repo root.
  * Calls: HTTPS GET to Retire.js raw + GitHub Advisory API at build time only.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/AdvertisedMatch.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Shared false-positive guards for enterprise portal cards. A 2xx/3xx on an allowlisted path is not enough; the response must look like that product. Marketing HTML that names the product is not advertisement.
 // Called by: PeopleSoftSurface, EnterpriseSurface.
 // Calls: FileHit.

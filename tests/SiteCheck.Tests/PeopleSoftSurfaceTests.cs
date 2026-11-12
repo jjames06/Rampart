@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks PeopleSoft path list and CVE-2026-35273 prompt-only wording (not RCE proof).
 // Called by: dotnet test.
 // Calls: PeopleSoftSurface.

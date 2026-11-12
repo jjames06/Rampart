@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/EdgeSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Classify Cloudflare (NS vs proxied/CF-Ray) vs Vercel vs origin vs other CDN. FixGuides uses this so how-to names the right dashboard.
 // Called by: Checker from headers + NS.
 // Calls: Models.EdgeProfile.

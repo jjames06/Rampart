@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/ReportJson.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Machine-readable sibling of ReportText for operators who archive JSON.
 // Called by: Optional save path in desktop shells.
 // Calls: System.Text.Json on CheckReport.

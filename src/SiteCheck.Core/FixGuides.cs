@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/FixGuides.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Copyable how-to lines and when-to/when-not notes. Ensure() attaches a panel to every non-Present finding so Admin Not-found still explains itself.
 // Called by: Checker after Advice.Build. All three UIs render NextStep.Lines via FindingGuide.
 // Calls: EdgeProfile, hostname, stack booleans.

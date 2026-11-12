@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/ExposedSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks private-file path allowlist and 200-vs-404 interpretation.
 // Called by: dotnet test.
 // Calls: ExposedSurface.

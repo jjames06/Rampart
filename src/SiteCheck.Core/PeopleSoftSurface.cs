@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/PeopleSoftSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof.
 // Called by: Checker. Tests in PeopleSoftSurfaceTests.
 // Calls: Shared ProbeNamedPathsAsync.

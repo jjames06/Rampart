@@ -1,6 +1,6 @@
 ﻿<!--
   CODEMAP FILE: src/SiteCheck.Core/SiteCheck.Core.csproj
-  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
   Role: Shared class library. net8.0, DnsClient, ProtectedData, embedded advisories.json.
   Called by: App, Desktop, Maui, Tests project references.
   Calls: NuGet DnsClient 1.8.0 (Apache-2.0).

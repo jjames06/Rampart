@@ -10,4 +10,4 @@ Rampart is a .NET 8 solution. **SiteCheck.Core** runs every check. Three shells 
 
 Checks are GET or HEAD on an allowlist, sockets pinned to a resolved public address, redirects off, bodies capped. How-to-fix text lives in `FixGuides` and `FindingGuide` so a card cannot appear on only one UI.
 
-Public version pin: **1.9.0**. Publish with `tools/publish.ps1`.
+Public version pin: **1.9.1**. Publish with `tools/publish.ps1`.

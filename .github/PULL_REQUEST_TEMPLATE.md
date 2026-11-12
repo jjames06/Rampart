@@ -8,4 +8,4 @@
 
 ## Version
 
-Public pin stays **1.9.0** unless this PR is a deliberate numbered release.
+Public pin stays **1.9.1** unless this PR is a deliberate numbered release.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/AdviceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks Advice: no header chores on Incomplete HTTPS; stack-specific next steps; Present admin is not a chore.
 // Called by: dotnet test.
 // Calls: Advice, Models.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/ReportTextTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks plaintext report sections: hostname, findings, limits, authorization.
 // Called by: dotnet test.
 // Calls: ReportText.
@@ -56,6 +56,6 @@ public class ReportTextTests
         var json = ReportJson.Format(report);
         Assert.Contains("\"hostname\": \"example.com\"", json, StringComparison.Ordinal);
         Assert.Contains("\"present\": 1", json, StringComparison.Ordinal);
-        Assert.Contains("operation-locked-in-rampart/1.9.0", json, StringComparison.Ordinal);
+        Assert.Contains("operation-locked-in-rampart/1.9.1", json, StringComparison.Ordinal);
     }
 }

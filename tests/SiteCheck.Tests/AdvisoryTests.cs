@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/AdvisoryTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks catalogue matching: version in range hits, unknown product misses, plugin slug is not a version.
 // Called by: dotnet test.
 // Calls: AdvisoryDb, VersionCmp.

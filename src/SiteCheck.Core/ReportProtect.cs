@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/ReportProtect.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile.
 // Called by: WPF save checkbox. Avalonia no-op off Windows.
 // Calls: ProtectedData (System.Security.Cryptography.ProtectedData).
@@ -21,6 +21,7 @@ namespace SiteCheck.Core;
 public static class ReportProtect
 {
     public const string Header = "RAMPART-DPAPI-1";
+    // DPAPI entropy is fixed at the 1.9.0 string so reports saved by earlier versions still open. Do not change it with the version.
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("operation-locked-in-rampart/1.9.0");
 
     public static bool WindowsUserProtectAvailable => OperatingSystem.IsWindows();

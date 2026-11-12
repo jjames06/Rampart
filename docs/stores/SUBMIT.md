@@ -56,7 +56,7 @@ xcrun stapler staple Rampart
 
 On Linux, `chmod +x Rampart` then run it. GTK/X11 or Wayland is enough; no extra .NET runtime. There is no SmartScreen on Linux.
 
-Windows SmartScreen on `Rampart.exe` is an unsigned-publisher warning. Defender antivirus reports no threats. Sign the Windows EXE with Authenticode and keep version 1.9.0: [signing.md](../signing.md).
+Windows SmartScreen on `Rampart.exe` is an unsigned-publisher warning. Defender antivirus reports no threats. Sign the Windows EXE with Authenticode and keep version 1.9.1: [signing.md](../signing.md).
 
 ## Build Android (Windows or Mac, after the MAUI workload)
 

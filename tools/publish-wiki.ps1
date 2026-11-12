@@ -1,5 +1,5 @@
 # CODEMAP FILE: tools/publish-wiki.ps1
-# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 # Role: Push docs/wiki/* to the GitHub wiki remote.
 # Called by: Operator after handbook edits.
 # Calls: git clone of the .wiki repo.
@@ -49,7 +49,7 @@ try {
     git config user.name "jjames06"
     git add $pages
     if (git status --porcelain) {
-        git commit -m "Sync Rampart 1.9.0 handbook from docs/wiki"
+        git commit -m "Sync Rampart 1.9.1 handbook from docs/wiki"
         git push
         Write-Host "Wiki published: https://github.com/jjames06/Rampart/wiki"
     } else {

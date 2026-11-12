@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   CODEMAP FILE: src/SiteCheck.Desktop/app.manifest
-  Product: Rampart 1.9.0
+  Product: Rampart 1.9.1
   Role: Win32 application manifest (dpiAwareness, requestedExecutionLevel asinvoker). Rampart does not require admin.
   Called by: csproj ApplicationManifest.
   Invariants: asInvoker — this is not Bastion. Checking a hostname must not UAC-prompt.
@@ -9,7 +9,7 @@
 -->
 
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.9.0.0" name="Rampart"/>
+  <assemblyIdentity version="1.9.1.0" name="Rampart"/>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">

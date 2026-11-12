@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/Fingerprint.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Product/version from Server/X-Powered-By/generator meta/script comments. Feeds AdvisoryDb. Plugin slugs are not versions.
 // Called by: Checker after headers + HTML.
 // Calls: StackHint records.

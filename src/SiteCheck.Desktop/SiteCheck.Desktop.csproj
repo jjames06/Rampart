@@ -1,6 +1,6 @@
 <!--
   CODEMAP FILE: src/SiteCheck.Desktop/SiteCheck.Desktop.csproj
-  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
   Role: Avalonia desktop csproj. Publishes linux-x64, osx-x64, osx-arm64 zips via tools/publish.ps1.
   Called by: publish.ps1.
   Calls: SiteCheck.Core.
@@ -16,10 +16,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.9.0</Version>
-    <InformationalVersion>1.9.0</InformationalVersion>
-    <AssemblyVersion>1.9.0.0</AssemblyVersion>
-    <FileVersion>1.9.0.0</FileVersion>
+    <Version>1.9.1</Version>
+    <InformationalVersion>1.9.1</InformationalVersion>
+    <AssemblyVersion>1.9.1.0</AssemblyVersion>
+    <FileVersion>1.9.1.0</FileVersion>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <Product>Rampart</Product>
     <Authors>Jesse Mosier-Bowers</Authors>

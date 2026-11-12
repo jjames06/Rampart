@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/FindingGuide.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Single place for 'does this card show How to fix this'. All shells must call this so a copy change cannot land on Windows only.
 // Called by: MainWindow (WPF), MainWindow (Avalonia), MainPage (MAUI).
 // Calls: Finding + NextStep match on Title/Related.

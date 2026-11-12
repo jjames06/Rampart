@@ -10,7 +10,7 @@ Rampart is a **read-only** public-surface checker. After two permission boxes, i
 
 **Bastion** hardens the PC you administer. **Rampart** inspects a hostname you operate. The practice site (`bastion-web`) is the public storefront that links both downloads. Kits (`oli-web-kits`) are client brochures that should already pass Rampart's origin probes (`blocked-paths.ts` 404s `/.env`, `/.git/HEAD`, `/admin`, and friends).
 
-Public version pin: **1.9.0**. User-Agent: `operation-locked-in-rampart/1.9.0`. Catalogue rebuilds replace the v1.9.0 asset; do not bump the number unless you intend a numbered release.
+Public version pin: **1.9.1**. User-Agent: `operation-locked-in-rampart/1.9.1`. Catalogue rebuilds replace the v1.9.1 asset; do not bump the number unless you intend a numbered release.
 
 GitHub repository: **https://github.com/jjames06/Rampart** (renamed from `oli-site-check`; old URLs redirect). Handbook on GitHub Pages: **https://jjames06.github.io/Rampart/**. CI: `.github/workflows/ci.yml` runs `dotnet test` on Windows and builds `SiteCheck.Desktop` in Release on Windows and Linux. Storefront IA: `/rampart` overview, `/rampart/get` download landing, `/rampart/checks` catalogue, `/rampart/lawful` permission text, `/rampart/download` EXE 302.
 
@@ -54,7 +54,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.App/MainWindow.xaml` | Windows desktop layout: consent boxes, hostname, scope, findings grouped by FindingState, How to fix this expander, save/copy. |
 | `src/SiteCheck.App/MainWindow.xaml.cs` | Windows WPF shell for Rampart.exe. Consent → Checker.RunAsync → FindingGuide → ReportProtect on save. |
 | `src/SiteCheck.App/ResponsiveCardPanel.cs` | Wrap panel for finding cards so the window reflows instead of a single tall stack. |
-| `src/SiteCheck.App/SiteCheck.App.csproj` | WinExe net8.0-windows WPF. Version properties pinned 1.9.0. Embeds LICENSE and lawful-use.md. ApplicationManifest + icon. |
+| `src/SiteCheck.App/SiteCheck.App.csproj` | WinExe net8.0-windows WPF. Version properties pinned 1.9.1. Embeds LICENSE and lawful-use.md. ApplicationManifest + icon. |
 | `src/SiteCheck.App/app.manifest` | Win32 application manifest (dpiAwareness, requestedExecutionLevel asinvoker). Rampart does not require admin. |
 | `src/SiteCheck.Core/Advice.cs` | Decide which findings get a NextStep. Incomplete HTTPS does not invent header chores. Wording follows advertised stack (Next.js, WordPress, Vercel, Cloudflare). |
 | `src/SiteCheck.Core/AdvisoryDb.cs` | Load embedded data/advisories.json and match advertised product versions against ranges. |
@@ -123,7 +123,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `docs/index.md` | Markdown sibling of the Pages home. |
 | `docs/.nojekyll` | Tells GitHub Pages to serve `docs/` as static files. |
 | `tools/publish-wiki.ps1` | Push docs/wiki/* to the GitHub wiki remote once GitHub has created that remote. |
-| `tools/publish.ps1` | Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.0. |
+| `tools/publish.ps1` | Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.1. |
 | `tools/sign-windows.ps1` | Optional Azure Artifact Signing of Rampart.exe. Needs az login + RAMPART_SIGNING_* env. See docs/signing.md. |
 
 ## Config and data that are not in the table

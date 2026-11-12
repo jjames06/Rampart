@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   CODEMAP FILE: src/SiteCheck.Maui/MainPage.xaml
-  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
   Role: Phone layout: consent, hostname, findings, how-to, share.
   Called by: App.xaml.cs.
   Calls: MainPage.xaml.cs.

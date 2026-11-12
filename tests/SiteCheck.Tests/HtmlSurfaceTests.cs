@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/HtmlSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks mixed-content / SRI / tabnabbing / form-action observations on capped HTML.
 // Called by: dotnet test.
 // Calls: HtmlSurface.

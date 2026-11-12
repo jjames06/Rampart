@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/PrivateIp.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges.
 // Called by: Checker after DNS; HostPair when comparing apex/www.
 // Calls: System.Net.IPAddress only.

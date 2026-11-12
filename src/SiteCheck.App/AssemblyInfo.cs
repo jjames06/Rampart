@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.App/AssemblyInfo.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: WPF ThemeInfo: generic dictionary in this assembly, no theme-specific dictionaries.
 // Called by: WPF resource lookup.
 // Calls: None.

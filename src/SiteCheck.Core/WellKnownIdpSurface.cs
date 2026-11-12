@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/WellKnownIdpSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: GET-only fingerprint of a public OpenID Provider at /.well-known/openid-configuration. Attention only when advertised.
 // Called by: Checker. Tests in WellKnownIdpSurfaceTests.
 // Calls: Shared ProbeNamedPathsAsync.

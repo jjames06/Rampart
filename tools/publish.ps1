@@ -1,6 +1,6 @@
 # CODEMAP FILE: tools/publish.ps1
-# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
-# Role: Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.0.
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+# Role: Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.1.
 # Called by: Operator on this Windows PC after dotnet test.
 # Calls: dotnet publish App and Desktop. Optional sign-windows.ps1.
 # Invariants: Unsigned EXE is acceptable. Do not pay for Authenticode unless asked. Copy dist/Rampart.exe to Desktop for Jesse to run.
@@ -73,6 +73,7 @@ Copy-Item (Join-Path $root "docs\how-to-use.md") (Join-Path $out "how-to-use.md"
 Copy-Item (Join-Path $root "docs\lawful-use.md") (Join-Path $out "lawful-use.md") -Force
 Copy-Item (Join-Path $root "docs\TESTING.txt") (Join-Path $out "TESTING.txt") -Force
 Copy-Item (Join-Path $root "docs\signing.md") (Join-Path $out "signing.md") -Force
+Copy-Item (Join-Path $root "docs\what-is-checked.md") (Join-Path $out "what-is-checked.md") -Force
 Copy-Item (Join-Path $root "licenses\APACHE-2.0.txt") $out -Force
 
 function Zip-Folder([string]$folder, [string]$zipName) {

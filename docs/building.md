@@ -25,7 +25,7 @@ The executable is self-contained. The person who runs it does not install the .N
 
 Do not enable `PublishTrimmed`. Trimming has broken WPF resource lookup on this project before. Compression of the single file stays on so the download stays a reasonable size. SmartScreen is about Authenticode, not that flag.
 
-After the EXE is named `Rampart.exe`, `tools\sign-windows.ps1` Authenticode-signs it when `RAMPART_SIGN_PFX` or a Code Signing certificate is present. Keep the product version at 1.9.0 when you only add a signature. Full notes: [signing.md](signing.md).
+After the EXE is named `Rampart.exe`, `tools\sign-windows.ps1` Authenticode-signs it when `RAMPART_SIGN_PFX` or a Code Signing certificate is present. Keep the product version at 1.9.1 when you only add a signature. Full notes: [signing.md](signing.md).
 
 ## User interfaces
 
@@ -45,7 +45,7 @@ dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-
 dotnet publish src\SiteCheck.Desktop\SiteCheck.Desktop.csproj -c Release -r osx-arm64 --self-contained true -o dist\osx-arm64
 ```
 
-`tools\publish.ps1` also writes those folders. Zip each folder with `LICENSE`, `NOTICE`, `THIRD-PARTY.md`, `LICENSE.MOBILE`, `how-to-use.md`, `lawful-use.md`, and `TESTING.txt`, then attach `Rampart-linux-x64.zip`, `Rampart-osx-arm64.zip`, and `Rampart-osx-x64.zip` to the v1.9.0 release. Notarize macOS copies with a Developer ID before you treat them as a finished Mac distribution. Store steps: [stores/SUBMIT.md](stores/SUBMIT.md).
+`tools\publish.ps1` also writes those folders. Zip each folder with `LICENSE`, `NOTICE`, `THIRD-PARTY.md`, `LICENSE.MOBILE`, `how-to-use.md`, `lawful-use.md`, and `TESTING.txt`, then attach `Rampart-linux-x64.zip`, `Rampart-osx-arm64.zip`, and `Rampart-osx-x64.zip` to the v1.9.1 release. Notarize macOS copies with a Developer ID before you treat them as a finished Mac distribution. Store steps: [stores/SUBMIT.md](stores/SUBMIT.md).
 
 ## Tests
 
@@ -57,6 +57,6 @@ dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release
 
 ## Signing
 
-The grey **Windows protected your PC** box is Microsoft Defender SmartScreen (unrecognized publisher), not a Defender malware finding. A Defender scan of `Rampart.exe` reports no threats. The public 1.9.0 EXE was `NotSigned`.
+The grey **Windows protected your PC** box is Microsoft Defender SmartScreen (unrecognized publisher), not a Defender malware finding. A Defender scan of `Rampart.exe` reports no threats. The public 1.9.1 EXE was `NotSigned`.
 
-Sign with an OV/EV Authenticode certificate or Microsoft Trusted Signing, then replace the v1.9.0 `Rampart.exe` asset. Until that certificate is on this PC, `tools\sign-windows.ps1` warns and the handbook still says **More info**, then **Run anyway**. See [signing.md](signing.md).
+Sign with an OV/EV Authenticode certificate or Microsoft Trusted Signing, then replace the v1.9.1 `Rampart.exe` asset. Until that certificate is on this PC, `tools\sign-windows.ps1` warns and the handbook still says **More info**, then **Run anyway**. See [signing.md](signing.md).

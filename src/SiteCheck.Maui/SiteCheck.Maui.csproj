@@ -1,6 +1,6 @@
 <!--
   CODEMAP FILE: src/SiteCheck.Maui/SiteCheck.Maui.csproj
-  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
   Role: MAUI csproj for iOS/Android. Additional Apache-2.0 for store distribution.
   Called by: docs/stores/SUBMIT.md (not yet submitted).
   Calls: SiteCheck.Core.
@@ -22,10 +22,10 @@
     <Nullable>enable</Nullable>
     <ApplicationTitle>Rampart</ApplicationTitle>
     <ApplicationId>com.operationlockedin.rampart</ApplicationId>
-    <ApplicationDisplayVersion>1.9.0</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>1.9.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <Version>1.9.0</Version>
-    <FileVersion>1.9.0.0</FileVersion>
+    <Version>1.9.1</Version>
+    <FileVersion>1.9.1.0</FileVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
     <Authors>Jesse Mosier-Bowers</Authors>

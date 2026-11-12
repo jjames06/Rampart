@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/EnterpriseSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks enterprise portal allowlists, brochure silence, and KEV patch-prompt wording (not RCE proof).
 // Called by: dotnet test.
 // Calls: EnterpriseSurface.
