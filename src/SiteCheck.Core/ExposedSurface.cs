@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/ExposedSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Allowlisted GET of paths that should 404: /.env, /.git/HEAD, phpinfo, wp-config, server-status, etc. Kits bake these 404s in @oli/site-kit blocked-paths.
 // Called by: Checker. Tests in ExposedSurfaceTests.
 // Calls: Shared ProbeNamedPathsAsync.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Desktop/App.axaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Avalonia application host. Creates MainWindow.
 // Called by: Program.cs BuildAvaloniaApp.
 // Calls: MainWindow.

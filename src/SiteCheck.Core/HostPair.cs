@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/HostPair.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: HEAD www vs apex so a split (one live, one parking, mismatched cert) is visible.
 // Called by: Checker after the primary host run.
 // Calls: PrivateIp (skip if the pair is private).

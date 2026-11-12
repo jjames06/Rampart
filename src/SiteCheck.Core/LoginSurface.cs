@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/LoginSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention.
 // Called by: Checker parallel probes. ProbeNamedPathsAsync is shared with ExposedSurface and PeopleSoftSurface.
 // Calls: HttpClient GET only, no auth, no POST.

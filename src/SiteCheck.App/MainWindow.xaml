@@ -1,6 +1,6 @@
 <!--
   CODEMAP FILE: src/SiteCheck.App/MainWindow.xaml
-  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+  Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
   Role: Windows desktop layout: consent boxes, hostname, scope, findings grouped by FindingState, How to fix this expander, save/copy.
   Called by: App.xaml StartupUri.
   Calls: MainWindow.xaml.cs code-behind.

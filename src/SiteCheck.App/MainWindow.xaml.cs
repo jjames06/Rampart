@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.App/MainWindow.xaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Windows WPF shell for Rampart.exe. Consent → Checker.RunAsync → FindingGuide → ReportProtect on save.
 // Called by: User. Enter runs, Escape cancels.
 // Calls: SiteCheck.Core only for the actual check.

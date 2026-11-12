@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/ReportProtectTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks DPAPI round-trip on Windows and no-op/skip elsewhere.
 // Called by: dotnet test.
 // Calls: ReportProtect.

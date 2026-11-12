@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.App/ResponsiveCardPanel.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Wrap panel for finding cards so the window reflows instead of a single tall stack.
 // Called by: MainWindow.xaml ItemsPanel.
 // Calls: WPF Panel measure/arrange.

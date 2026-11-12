@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.App/App.xaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: WPF Application subclass. DispatcherUnhandledException so a failed check does not vanish the window.
 // Called by: WPF entry (App.xaml).
 // Calls: MainWindow.

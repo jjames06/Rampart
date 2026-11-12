@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/LawfulUse.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Consent checkbox strings and CheckScope names shown in every shell. Criminal Code s. 342.1 / 342.2 framing lives in docs/lawful-use.md; this file is UI copy only.
 // Called by: All three UIs bind these strings so wording cannot drift per platform.
 // Calls: None.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/Hostname.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Parse operator input into a DNS hostname. Strips scheme/path, lowercases, rejects IPs, localhost, home suffixes, ports, control characters.
 // Called by: Checker.RunAsync first line. Tests in HostnameTests.
 // Calls: None beyond string/Uri parsing.

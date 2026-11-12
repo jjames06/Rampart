@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/Advice.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Decide which findings get a NextStep. Incomplete HTTPS does not invent header chores. Wording follows advertised stack (Next.js, WordPress, Vercel, Cloudflare).
 // Called by: Checker after all probes. Then FixGuides.Ensure fills lines.
 // Calls: Models.NextStep, EdgeProfile, StackHint.

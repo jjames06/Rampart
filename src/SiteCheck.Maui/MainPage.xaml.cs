@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Maui/MainPage.xaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: MAUI shell. Same Core as WPF. Share sheet instead of Win32 SaveFileDialog.
 // Called by: User on iPhone/Android once stores accept the build.
 // Calls: Checker, FindingGuide, ReportText.

@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/DnsTxt.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: SPF, DMARC, MX, NS, CAA, DNSSEC DS/RRSIG via DnsClient (UDP/TCP 53 to public resolvers).
 // Called by: Checker parallel with HTTPS.
 // Calls: DnsClient NuGet (Apache-2.0).

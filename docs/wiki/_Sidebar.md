@@ -10,7 +10,7 @@
 
 **Downloads**
 
-- [v1.9.0 release](https://github.com/jjames06/Rampart/releases/tag/v1.9.0) (Windows plus Linux and macOS testing zips)
+- [v1.9.1 release](https://github.com/jjames06/Rampart/releases/tag/v1.9.1) (Windows plus Linux and macOS testing zips)
 - [Source](https://github.com/jjames06/Rampart)
 
 **On the site**

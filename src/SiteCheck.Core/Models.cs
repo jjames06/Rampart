@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/Models.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record.
 // Called by: Every Core module and all three UI shells. UIs display these; they must not invent findings.
 // Calls: None (pure records/enums).

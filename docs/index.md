@@ -2,7 +2,7 @@
 
 Rampart is a Windows program that inspects a public hostname you operate. **Bastion** hardens a Windows PC you administer.
 
-The recommended download is **Rampart 1.9.0** for 64-bit Windows (`Rampart.exe`).
+The recommended download is **Rampart 1.9.1** for 64-bit Windows (`Rampart.exe`).
 
 - [How to use](wiki/How-to-use.md)
 - [What is checked](wiki/What-is-checked.md)

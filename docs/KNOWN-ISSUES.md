@@ -10,7 +10,7 @@
 
 ## Linux and macOS
 
-The zips on the v1.9.0 release are testing copies. Linux needs `chmod +x Rampart`. macOS Gatekeeper may ask to open from Finder. [TESTING.txt](TESTING.txt).
+The zips on the v1.9.1 release are testing copies. Linux needs `chmod +x Rampart`. macOS Gatekeeper may ask to open from Finder. [TESTING.txt](TESTING.txt).
 
 ## iPhone and Android
 

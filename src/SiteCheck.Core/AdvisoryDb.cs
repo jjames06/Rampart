@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/AdvisoryDb.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Load embedded data/advisories.json and match advertised product versions against ranges.
 // Called by: Checker via CveCatalog facade. Built at release by tools/build-advisories.mjs.
 // Calls: VersionCmp.

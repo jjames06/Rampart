@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/EnterpriseSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: GET-only fingerprints for internet-facing enterprise portals (SharePoint, NetScaler, FortiGate, and peers). Each advertised product becomes an Attention card that names the CISA KEV CVE as a patch prompt, not RCE proof.
 // Called by: Checker after PeopleSoft. Tests in EnterpriseSurfaceTests.
 // Calls: Shared ProbeNamedPathsAsync via Checker; homepage HTML, cookies, and headers already read.

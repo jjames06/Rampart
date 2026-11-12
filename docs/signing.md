@@ -4,17 +4,17 @@
 
 That box is **Microsoft Defender SmartScreen**, not a malware detection.
 
-A scan of the public `Rampart.exe` with Windows Defender (`MpCmdRun -Scan -ScanType 3`) reports **no threats**. SmartScreen still blocks **first run of an unrecognized publisher**. Rampart 1.9.0 was shipped **without an Authenticode signature** (`Get-AuthenticodeSignature` status `NotSigned`). Windows then has no trusted publisher to attach reputation to.
+A scan of the public `Rampart.exe` with Windows Defender (`MpCmdRun -Scan -ScanType 3`) reports **no threats**. SmartScreen still blocks **first run of an unrecognized publisher**. Rampart 1.9.1 was shipped **without an Authenticode signature** (`Get-AuthenticodeSignature` status `NotSigned`). Windows then has no trusted publisher to attach reputation to.
 
-Choosing **More info**, then **Run anyway**, is the correct path for a copy from this repository or from https://www.operationlockedin.com/rampart until a signed build is on the v1.9.0 release.
+Choosing **More info**, then **Run anyway**, is the correct path for a copy from this repository or from https://www.operationlockedin.com/rampart until a signed build is on the v1.9.1 release.
 
 A self-signed certificate does **not** fix SmartScreen. The certificate has to come from a public code-signing CA, or from Microsoft Artifact Signing (formerly Trusted Signing).
 
 Signing does **not** instantly silence SmartScreen on a brand-new hash. Microsoft now treats OV, EV, and Artifact Signing the same: the publisher name appears, then reputation builds from clean downloads. An unsigned file never gets that publisher name.
 
-## Windows (WPF `Rampart.exe`, version 1.9.0)
+## Windows (WPF `Rampart.exe`, version 1.9.1)
 
-Keep the product version at **1.9.0**. Sign the same version; do not bump it for a signature-only republish.
+Keep the product version at **1.9.1**. Sign the same version; do not bump it for a signature-only republish.
 
 This PC already has:
 
@@ -53,7 +53,7 @@ RAMPART_SIGNING_ENDPOINT=https://eus.codesigning.azure.net/
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\publish.ps1
 ```
 
-`tools\sign-windows.ps1` will Authenticode-sign `Rampart.exe` and we replace the **existing** GitHub `v1.9.0` asset. Do not create v1.10.0 for a signature.
+`tools\sign-windows.ps1` will Authenticode-sign `Rampart.exe` and we replace the **existing** GitHub `v1.9.1` asset. Do not create v1.10.0 for a signature.
 
 Artifact Signing timestamps at `http://timestamp.acs.microsoft.com`.
 
@@ -68,7 +68,7 @@ RAMPART_SIGN_PFX_PASSWORD=...
 
 Do not put the PFX in git. `RAMPART_REQUIRE_SIGN=1` makes a missing certificate fail the publish.
 
-## macOS (Avalonia testing zips, version 1.9.0)
+## macOS (Avalonia testing zips, version 1.9.1)
 
 Gatekeeper is the macOS equivalent. It fires because the testing zip has **no Developer ID** and is **not notarized**.
 
@@ -80,17 +80,17 @@ xcrun notarytool submit Rampart-osx-arm64.zip --apple-id YOUR_APPLE_ID --team-id
 xcrun stapler staple Rampart
 ```
 
-Until that is done, `docs/TESTING.txt` in each zip tells the tester to open from Finder or drop the quarantine attribute. Keep version **1.9.0**.
+Until that is done, `docs/TESTING.txt` in each zip tells the tester to open from Finder or drop the quarantine attribute. Keep version **1.9.1**.
 
 This Windows PC cannot codesign or notarize a Mac binary.
 
-## Linux (Avalonia testing zip, version 1.9.0)
+## Linux (Avalonia testing zip, version 1.9.1)
 
 There is no SmartScreen. The usual first-run friction is the execute bit and, on some desktops, “untrusted download”. `chmod +x Rampart` then `./Rampart`. Checksums are `SHA256SUMS.txt` on the GitHub release.
 
-## iPhone and Android (MAUI, version 1.9.0)
+## iPhone and Android (MAUI, version 1.9.1)
 
-Store review is the gate, not SmartScreen. Play Protect can still nag an sideloaded APK. Ship through App Store and Google Play with the upload keys in [stores/SUBMIT.md](stores/SUBMIT.md). Application version stays **1.9.0**.
+Store review is the gate, not SmartScreen. Play Protect can still nag an sideloaded APK. Ship through App Store and Google Play with the upload keys in [stores/SUBMIT.md](stores/SUBMIT.md). Application version stays **1.9.1**.
 
 ## After a signed Windows build exists
 

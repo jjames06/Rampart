@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/HtmlSurface.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Homepage HTML (capped) for mixed content, missing SRI on third-party scripts, target=_blank without rel, form action, canonical host.
 // Called by: Checker after the GET / body.
 // Calls: Models.Finding.

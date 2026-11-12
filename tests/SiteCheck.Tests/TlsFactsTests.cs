@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/TlsFactsTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks protocol labels and expiry-window copy.
 // Called by: dotnet test.
 // Calls: TlsFacts.

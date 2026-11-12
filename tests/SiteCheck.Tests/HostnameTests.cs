@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/HostnameTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
 // Role: Locks accept/reject table: public DNS names in, IPs/localhost/home suffixes/ports out.
 // Called by: dotnet test.
 // Calls: Hostname.Parse.
