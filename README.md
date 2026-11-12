@@ -9,11 +9,12 @@ Version **1.9.0**
 
 <p align="center">
   <a href="https://www.operationlockedin.com/rampart"><strong>Official site</strong></a> ·
-  <a href="https://www.operationlockedin.com/rampart/download"><strong>Download</strong></a> ·
+  <a href="https://www.operationlockedin.com/rampart/get"><strong>Download</strong></a> ·
+  <a href="https://www.operationlockedin.com/rampart/checks"><strong>What is checked</strong></a> ·
   <a href="docs/how-to-use.md"><strong>How to use</strong></a> ·
-  <a href="docs/wiki/Home.md"><strong>Handbook</strong></a> ·
-  <a href="https://github.com/jjames06/oli-site-check/releases/latest"><strong>Latest release</strong></a> ·
-  <a href="https://github.com/jjames06/oli-site-check/issues"><strong>Issues</strong></a> ·
+  <a href="https://jjames06.github.io/Rampart/"><strong>Handbook</strong></a> ·
+  <a href="https://github.com/jjames06/Rampart/releases/latest"><strong>Latest release</strong></a> ·
+  <a href="https://github.com/jjames06/Rampart/issues"><strong>Issues</strong></a> ·
   <a href="SECURITY.md"><strong>Security</strong></a>
 </p>
 
@@ -21,7 +22,7 @@ Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In 
 
 The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
 
-It reports what that hostname presents on HTTPS: certificate and TLS, security headers, cookies, homepage markup, public edge (Cloudflare and similar), mail records, common public sign-in and admin paths, paths that should not publish private files, the www and apex pair, and advertised versions against a **local** CVE catalogue. After the run it lists **only the next steps that apply to that hostname**, with copyable how-to lines.
+It reports what that hostname presents on HTTPS: certificate and TLS, security headers, cookies, homepage markup, public edge (Cloudflare and similar), mail records, common public sign-in and admin paths, paths that should not publish private files, the www and apex pair, advertised versions against a **local** CVE catalogue, and internet-facing enterprise portals (SharePoint, NetScaler, FortiGate, PeopleSoft, and peers) when those products are advertised. After the run it lists **only the next steps that apply to that hostname**, with copyable how-to lines. If an enterprise portal is on the public internet it names the CISA Known Exploited CVE as a patch to confirm. It does not send exploit traffic.
 
 It is not a penetration test, not a red-team engagement, and not a guarantee. Paid website work still begins after a written quote.
 
@@ -30,6 +31,7 @@ It is not a penetration test, not a red-team engagement, and not a guarantee. Pa
 | Document | Topic |
 |----------|--------|
 | [docs/CODEMAP.md](docs/CODEMAP.md) | File-by-file map. Start here if you did not write this code. Every source file has a matching header. |
+| [docs/PRODUCT.md](docs/PRODUCT.md) | Honest product judgment: what 1.9.0 is, what it will not become |
 | [Official site](https://www.operationlockedin.com/rampart) | Product home and download |
 | [docs/how-to-use.md](docs/how-to-use.md) | Permission boxes, states, How to fix this |
 | [docs/what-is-checked.md](docs/what-is-checked.md) | Every check and how it was gathered |

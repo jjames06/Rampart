@@ -124,6 +124,7 @@ public static class FixGuides
         "Private files" or
         "Oracle PeopleSoft" or
         "WWW and apex" or
+        "Internet-facing enterprise portals" or
         "security.txt";
 
     private static bool OptionalUntilAdvised(string title) => title is
@@ -252,6 +253,9 @@ public static class FixGuides
         bool vercel,
         bool cloudflare)
     {
+        var enterpriseLines = EnterpriseSurface.FixLines(related);
+        if (enterpriseLines is { Count: > 0 }) return enterpriseLines;
+
         var apex = Hostname.Apex(hostname);
         var cf = cloudflare || edge.Kind is EdgeKind.CloudflareProxied or EdgeKind.CloudflareDnsOnly;
         var headerPlace = nextJs
@@ -645,7 +649,7 @@ public static class FixGuides
             "Oracle PeopleSoft" => new[]
             {
                 L("When to do this: this hostname advertised a public PeopleSoft portal or cookie. That is an internet-facing HR or campus system."),
-                L("When not to: those paths 404 and the homepage does not name PeopleSoft. Then this card should be Present."),
+                L("When not to: those paths do not return PeopleSoft portal chrome and there is no PSJSESSIONID cookie. A brochure that mentions PeopleSoft stays Present."),
                 L("Install Oracle's Critical Patch Update that covers CVE-2026-35273 for PeopleTools 8.61 and 8.62. A firewall or WAF rule that only blocks one request shape is not the patch."),
                 L("Oracle security alerts:", "https://www.oracle.com/security-alerts/"),
                 L("CISA Known Exploited Vulnerabilities catalogue:", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"),
@@ -653,14 +657,22 @@ public static class FixGuides
             },
             "Private files" => new[]
             {
-                L("When to do this: a path such as /.env or /.git/HEAD answered 200 with a short non-HTML body."),
-                L("When not to: those paths 404 or 403, or they return a normal HTML 404 page."),
+                L("When to do this: a path such as /.env, /.git/HEAD, /composer.json, or /package.json answered 200 with a non-HTML body."),
+                L("When not to: those paths 404 or 403, or they return HTML (including an HTML 404 page that still returns 200)."),
                 L("Remove the file from the public document root. Rotate any secret that was in it."),
                 L(vercel || nextJs
-                    ? "Do not put .env in the public folder. Keep secrets in the host environment."
+                    ? "Do not put .env or package.json in the public folder. Keep secrets in the host environment."
                     : "Keep secrets off the document root. A .env file belongs only on the server, not under the website folder."),
                 L("Confirm /.env in a private window.", "https://" + hostname + "/.env"),
-                L("Confirm /.git/HEAD the same way.", "https://" + hostname + "/.git/HEAD")
+                L("Confirm /package.json the same way.", "https://" + hostname + "/package.json")
+            },
+            "OpenID Provider" => new[]
+            {
+                L("When to do this: /.well-known/openid-configuration or oauth-authorization-server returned JSON with an issuer."),
+                L("When not to: those paths 404. A brochure site should not publish an identity provider. Rampart then shows no card."),
+                L("Confirm the issuer URL is https. An http:// issuer is not a public identity provider people should trust."),
+                L("Take the metadata off the public internet if this host is not meant to be an IdP."),
+                L("OpenID Discovery document:", "https://" + hostname + "/.well-known/openid-configuration")
             },
             "WWW and apex" => new[]
             {

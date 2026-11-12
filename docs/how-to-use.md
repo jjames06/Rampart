@@ -21,7 +21,7 @@ Do not type a hostname you do not control. Do not use this program as a scanner 
 ## Start the program
 
 1. Double-click `Rampart.exe` on your Desktop, or in the `dist` folder if you built from source.
-2. Windows may show **Windows protected your PC**. That is Microsoft Defender SmartScreen, because the publisher is not Authenticode-signed yet. It is not a Defender malware detection. If you built the file yourself, or downloaded it from this page’s GitHub release `jjames06/oli-site-check`, choose **More info**, then **Run anyway**. Details: [signing.md](signing.md).
+2. Windows may show **Windows protected your PC**. That is Microsoft Defender SmartScreen, because the publisher is not Authenticode-signed yet. It is not a Defender malware detection. If you built the file yourself, or downloaded it from this page’s GitHub release `jjames06/Rampart`, choose **More info**, then **Run anyway**. Details: [signing.md](signing.md).
 3. A navy window titled **Rampart · Operation Locked In** should open, with the teal hairline under the title, matching the colours used on https://www.operationlockedin.com.
 
 If nothing opens, confirm you are on 64-bit Windows and that antivirus did not quarantine the file. Rebuild with `tools\publish.ps1` if you have the source. Email Info@operationlockedin.com if a rebuilt copy still will not start, and include the Windows version, not a screenshot of unrelated software.
@@ -59,7 +59,7 @@ Read the states as follows:
 - **Present** means this check saw the control or record on the paths it requested, or that a common admin dashboard is not published on this hostname.
 - **Not found** means this check did not see it on those paths. It does not mean the rest of the site is broken.
 - **Could not complete** means the network step timed out or failed. Try again, confirm the host is reachable from this computer, and confirm you are not blocked by a firewall that only allows browsers.
-- **Needs attention** means an advertised version matched a sourced catalogue entry, a certificate name did not match, HSTS is present with `max-age` at or below zero or shorter than 180 days, DMARC is published as monitor-only (`p=none`), SPF uses `+all` or `?all`, a TLS cipher is legacy, homepage markup has mixed content, tabnabbing, or an http form, or the homepage disclosed plugin directory names.
+- **Needs attention** means an advertised version matched a sourced catalogue entry, a certificate name did not match, HSTS is present with `max-age` at or below zero or shorter than 180 days, DMARC is published as monitor-only (`p=none`), SPF uses `+all` or `?all`, a TLS cipher is legacy, homepage markup has mixed content, tabnabbing, or an http form, the homepage disclosed plugin directory names, or this hostname advertised an internet-facing enterprise portal (SharePoint, NetScaler, FortiGate, PeopleSoft, and peers) that CISA lists as known exploited. That last case is a prompt to install the vendor patch. It is not proof of access.
 
 The left-hand colour on each card follows the state: teal for Present, amber for Not found and Needs attention, and slate for Could not complete.
 
