@@ -12,7 +12,7 @@ Rampart is a **read-only** public-surface checker. After two permission boxes, i
 
 Public version pin: **1.9.0**. User-Agent: `operation-locked-in-rampart/1.9.0`. Catalogue rebuilds replace the v1.9.0 asset; do not bump the number unless you intend a numbered release.
 
-GitHub repository: **https://github.com/jjames06/Rampart** (renamed from `oli-site-check`; old URLs redirect). Handbook on GitHub Pages: **https://jjames06.github.io/Rampart/**. CI: `.github/workflows/ci.yml` runs `dotnet test` on Windows. Storefront IA: `/rampart` overview, `/rampart/get` download landing, `/rampart/checks` catalogue, `/rampart/lawful` permission text, `/rampart/download` EXE 302.
+GitHub repository: **https://github.com/jjames06/Rampart** (renamed from `oli-site-check`; old URLs redirect). Handbook on GitHub Pages: **https://jjames06.github.io/Rampart/**. CI: `.github/workflows/ci.yml` runs `dotnet test` on Windows and builds `SiteCheck.Desktop` in Release on Windows and Linux. Storefront IA: `/rampart` overview, `/rampart/get` download landing, `/rampart/checks` catalogue, `/rampart/lawful` permission text, `/rampart/download` EXE 302.
 
 ## Solution layout
 
@@ -118,7 +118,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `tests/SiteCheck.Tests/SiteCheck.Tests.csproj` | xUnit test project referencing Core. No network to live origins in CI. |
 | `tests/SiteCheck.Tests/TlsFactsTests.cs` | Locks protocol labels and expiry-window copy. |
 | `tools/build-advisories.mjs` | Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …). |
-| `.github/workflows/ci.yml` | Windows GitHub Actions: `dotnet test` on push and pull request to main. |
+| `.github/workflows/ci.yml` | GitHub Actions: `dotnet test` on Windows, and a Release build of `SiteCheck.Desktop` on Windows and Linux. Uses the SDK in `global.json`. |
 | `docs/index.html` | GitHub Pages home for the handbook (https://jjames06.github.io/Rampart/). |
 | `docs/index.md` | Markdown sibling of the Pages home. |
 | `docs/.nojekyll` | Tells GitHub Pages to serve `docs/` as static files. |
@@ -131,6 +131,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | Path | Why it has no CODEMAP header |
 |------|------------------------------|
 | `data/advisories.json` | Generated. Run `node tools/build-advisories.mjs`. |
+| `global.json` | Selects the .NET 10.0 SDK so the Avalonia 12.1.3 source generators run. Projects stay on net8.0. |
 | `dist/` | Publish output. |
 | `SiteCheck.sln` | Solution wrapper; projects above are the map. |
 
