@@ -73,8 +73,9 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Core/LawfulUse.cs` | Consent checkbox strings and CheckScope names shown in every shell. Criminal Code s. 342.1 / 342.2 framing lives in docs/lawful-use.md; this file is UI copy only. |
 | `src/SiteCheck.Core/LoginSurface.cs` | Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention. |
 | `src/SiteCheck.Core/Models.cs` | Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record. |
-| `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
-| `src/SiteCheck.Core/EnterpriseSurface.cs` | Table of other internet-facing enterprise portals. Attention cards only when advertised. CISA KEV CVE as patch prompt. |
+| `src/SiteCheck.Core/AdvertisedMatch.cs` | False-positive guards: 2xx/3xx is not enough; Next.js brochure shells and trailing-slash redirects are not portals. Marketing copy that names PeopleSoft is ignored. |
+| `src/SiteCheck.Core/PeopleSoftSurface.cs` | GET-only detection of public PeopleSoft portal paths (/psp/, /psc/, /ps/, /PSIGW/, /PSEMHUB/) plus PSJSESSIONID. Attention only with portal chrome or that cookie, not the word PeopleSoft on a brochure. Names CVE-2026-35273 as a patch prompt, not RCE proof. |
+| `src/SiteCheck.Core/EnterpriseSurface.cs` | Table of other internet-facing enterprise portals. Attention cards only when advertised (runtime chrome, cookies, headers). CISA KEV CVE as patch prompt. |
 | `src/SiteCheck.Core/WellKnownIdpSurface.cs` | GET-only OpenID/OAuth metadata. Attention only when JSON issuer is advertised. |
 | `src/SiteCheck.Core/PrivateIp.cs` | Classify resolved addresses: RFC1918, loopback, link-local, CGNAT 100.64/10, NAT64, 6to4, unique-local, documentation ranges. |
 | `src/SiteCheck.Core/ReportJson.cs` | Machine-readable sibling of ReportText for operators who archive JSON. |
@@ -109,7 +110,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `tests/SiteCheck.Tests/HostnameTests.cs` | Locks accept/reject table: public DNS names in, IPs/localhost/home suffixes/ports out. |
 | `tests/SiteCheck.Tests/HtmlSurfaceTests.cs` | Locks mixed-content / SRI / tabnabbing / form-action observations on capped HTML. |
 | `tests/SiteCheck.Tests/LoginSurfaceTests.cs` | Locks sign-in/admin allowlist and Present-when-absent for brochure sites. |
-| `tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs` | Locks PeopleSoft path list and CVE-2026-35273 prompt-only wording (not RCE proof). |
+| `tests/SiteCheck.Tests/PeopleSoftSurfaceTests.cs` | Locks PeopleSoft path list, brochure/Next-shell silence, and CVE-2026-35273 prompt-only wording (not RCE proof). |
 | `tests/SiteCheck.Tests/EnterpriseSurfaceTests.cs` | Locks brochure silence, SharePoint/NetScaler/Magento prompts, and omitted exploit paths. |
 | `tests/SiteCheck.Tests/PrivateIpTests.cs` | Locks RFC1918/CGNAT/ULA/etc. classification. |
 | `tests/SiteCheck.Tests/ReportProtectTests.cs` | Locks DPAPI round-trip on Windows and no-op/skip elsewhere. |

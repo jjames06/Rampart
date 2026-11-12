@@ -171,23 +171,25 @@ public static class Fingerprint
         {
             hints.Add(new StackHint("Wix", null, "Homepage HTML named static.wixstatic.com."));
         }
-        if ((html.Contains("PeopleSoft", StringComparison.OrdinalIgnoreCase)
-             || html.Contains("PSIGW", StringComparison.OrdinalIgnoreCase))
+        if (AdvertisedMatch.ContainsAny(html, PeopleSoftSurface.EvidenceNeedles)
+            && !AdvertisedMatch.IsGenericWebAppShell(html)
             && hints.All(h => !h.Product.Equals("Oracle PeopleSoft", StringComparison.OrdinalIgnoreCase)))
         {
             var ver = Regex.Match(html, @"PeopleTools\s+([0-9]+\.[0-9]+(?:\.[0-9]+)?)", RegexOptions.IgnoreCase);
             hints.Add(new StackHint(
                 "Oracle PeopleSoft",
                 ver.Success ? ver.Groups[1].Value : null,
-                "Homepage HTML named PeopleSoft."));
+                "Homepage HTML included PeopleSoft portal chrome."));
         }
         foreach (var product in EnterpriseSurface.Products)
         {
             if (hints.Any(h => h.Product.Equals(product.Title, StringComparison.OrdinalIgnoreCase)))
                 continue;
-            if (!product.HtmlNeedles.Any(n => html.Contains(n, StringComparison.OrdinalIgnoreCase)))
+            if (AdvertisedMatch.IsGenericWebAppShell(html))
                 continue;
-            hints.Add(new StackHint(product.Title, null, "Homepage HTML named " + product.Title + "."));
+            if (!AdvertisedMatch.ContainsAny(html, product.HtmlNeedles))
+                continue;
+            hints.Add(new StackHint(product.Title, null, "Homepage HTML included " + product.Title + " runtime chrome."));
         }
     }
 

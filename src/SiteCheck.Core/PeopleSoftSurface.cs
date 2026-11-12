@@ -26,31 +26,41 @@ public static class PeopleSoftSurface
         "/PSEMHUB/"
     };
 
+    /// <summary>
+    /// Runtime portal chrome. The word "PeopleSoft" on a brochure or docs page is not evidence.
+    /// </summary>
+    public static readonly string[] EvidenceNeedles =
+    {
+        "PORTAL_HOMEPAGE",
+        "ICType",
+        "psCHROME",
+        "cmd=login",
+        "cmd=start",
+        "PSJSESSIONID"
+    };
+
     public static Finding Summary(IReadOnlyList<FileHit> hits, string? homepageHtml, IReadOnlyList<string> cookies)
     {
+        _ = homepageHtml;
         var live = hits
-            .Where(h => Paths.Contains(h.Path, StringComparer.Ordinal) && h.Status is >= 200 and < 400)
+            .Where(h => Paths.Contains(h.Path, StringComparer.Ordinal) && AdvertisedMatch.PathLooksLike(h, EvidenceNeedles))
             .Select(h => h.Path + " HTTP " + h.Status)
             .Take(8)
             .ToArray();
-        var htmlHint = !string.IsNullOrEmpty(homepageHtml)
-            && (homepageHtml.Contains("PeopleSoft", StringComparison.OrdinalIgnoreCase)
-                || homepageHtml.Contains("PSIGW", StringComparison.OrdinalIgnoreCase));
         var cookieHint = cookies.Any(c => c.StartsWith("PSJSESSIONID", StringComparison.OrdinalIgnoreCase));
 
-        if (live.Length == 0 && !htmlHint && !cookieHint)
+        if (live.Length == 0 && !cookieHint)
         {
             return new Finding(
                 "Oracle PeopleSoft",
                 FindingState.Present,
-                "No common public PeopleSoft portal paths answered, and the homepage did not advertise PeopleSoft.",
-                "GET allowlisted PeopleSoft paths on the same public address, redirects disabled. Homepage HTML and cookies were also read.",
+                "No common public PeopleSoft portal paths answered with PeopleSoft portal chrome, and no PSJSESSIONID cookie was present.",
+                "GET allowlisted PeopleSoft paths on the same public address, redirects disabled. Cookies were also read. Copy that names PeopleSoft on a brochure is ignored.",
                 "A renamed portal URL is not found this way. Absence is not clearance for other Oracle products.");
         }
 
         var bits = new List<string>();
         if (live.Length > 0) bits.Add("Paths: " + string.Join("; ", live));
-        if (htmlHint) bits.Add("Homepage HTML named PeopleSoft.");
         if (cookieHint) bits.Add("A PeopleSoft session cookie name was present.");
         return new Finding(
             "Oracle PeopleSoft",
