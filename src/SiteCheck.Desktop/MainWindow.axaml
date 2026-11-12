@@ -44,7 +44,7 @@
         <Border Background="#162033" CornerRadius="18" Padding="24" Margin="0,22,0,0" BorderBrush="#243247" BorderThickness="1">
           <StackPanel Spacing="8">
             <TextBlock Text="Hostname" FontWeight="SemiBold"/>
-            <TextBox Name="HostBox" Watermark="www.example.com" MaxLength="253"/>
+            <TextBox Name="HostBox" PlaceholderText="www.example.com" MaxLength="253"/>
             <TextBlock Foreground="#C5D0DE" FontSize="13" TextWrapping="Wrap"
                        Text="Type a public hostname. You may paste a full https address; only the hostname is kept."/>
             <TextBlock Text="Scope" FontWeight="SemiBold" Margin="0,8,0,0"/>
