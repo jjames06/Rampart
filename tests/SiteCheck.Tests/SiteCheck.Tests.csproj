@@ -25,6 +25,9 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <!-- xunit 2.5.3 pulls NETStandard.Library 1.6.1, which resolves these to vulnerable 4.3.0 builds. Direct pins select the patched releases. They are not used by the net8.0 shared framework at runtime. -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
