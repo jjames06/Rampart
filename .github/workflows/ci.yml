@@ -1,9 +1,9 @@
 # CODEMAP FILE: .github/workflows/ci.yml
 # Product: Rampart — read-only public-surface hostname checker, public pin 1.9.0
-# Role: Windows CI. Runs SiteCheck.Tests on push and pull request to main.
+# Role: CI. Runs SiteCheck.Tests on Windows. Builds SiteCheck.Desktop in Release on Windows and Linux.
 # Called by: GitHub Actions.
-# Calls: actions/checkout, actions/setup-dotnet, dotnet test.
-# Invariants: No live network against customer hosts. Do not bump 1.9.0 here.
+# Calls: actions/checkout, actions/setup-dotnet, dotnet test, dotnet build.
+# Invariants: No live network against customer hosts. Do not bump 1.9.0 here. global.json selects the .NET 10.0 SDK so the Avalonia generators run. The Windows job also installs the .NET 8 SDK so the net8.0 tests have a runtime.
 # Sisters: Bastion (bastion-hardening). Storefront bastion-web /rampart.
 # Map: docs/CODEMAP.md
 name: CI
@@ -21,8 +21,25 @@ jobs:
       # v7.0.1: drops vulnerable uuid and moves undici off 5.29.0. SHA pin, not a floating tag.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # v6.1.0: Nov 2026 security bump (undici 6.29.1, fast-xml-parser 5.10.1, brace-expansion 5.0.12).
+      # global.json installs the .NET 10.0 SDK (Roslyn 4.14 or newer). 8.0.x keeps the net8.0 runtime for the test host.
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: "8.0.x"
+          global-json-file: global.json
       - name: Test
         run: dotnet test tests/SiteCheck.Tests/SiteCheck.Tests.csproj -c Release --nologo
+      - name: Build SiteCheck.Desktop
+        run: dotnet build src/SiteCheck.Desktop/SiteCheck.Desktop.csproj -c Release --nologo
+
+  desktop-linux:
+    runs-on: ubuntu-latest
+    steps:
+      # v7.0.1: drops vulnerable uuid and moves undici off 5.29.0. SHA pin, not a floating tag.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v6.1.0: Nov 2026 security bump (undici 6.29.1, fast-xml-parser 5.10.1, brace-expansion 5.0.12).
+      # global.json installs the .NET 10.0 SDK. The net8.0 reference assemblies restore from NuGet.
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Build SiteCheck.Desktop
+        run: dotnet build src/SiteCheck.Desktop/SiteCheck.Desktop.csproj -c Release --nologo
