@@ -1,6 +1,10 @@
 # Building Rampart
 
-You need the .NET 8 SDK (64-bit). The **recommended public ship** is the Windows WPF EXE. The same SDK publishes testing copies of the Avalonia UI for Linux and macOS. Those zips go on the GitHub release with `TESTING.txt` and the GPLv3 files. iOS and Android need the .NET MAUI workload and a Mac for iOS. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
+Install the 64-bit .NET 10.0 SDK and the .NET 8 runtime. `global.json` selects SDK 10.0.100 or any later 10.0 release. Avalonia 12.1.3 generates the desktop window with a source generator built against Roslyn 4.14.0.0. The .NET 10.0 SDK ships Roslyn 5.0 or newer, so the generator runs. The projects stay on net8.0, and the .NET 10 SDK compiles that target. Running the tests and `SiteCheck.Desktop` uses the .NET 8 runtime.
+
+A `Microsoft.Net.Compilers.Toolset` package can swap in a newer compiler for one project. `global.json` covers the desktop program, the tests, and CI, and the `dotnet` host stops with an SDK message when the installed compiler is older than the generators require. The .NET 9 SDK is out of support. The pin stays on the .NET 10.0 line, which is the supported SDK that meets the compiler requirement.
+
+The **recommended public ship** is the Windows WPF EXE. The same SDK publishes testing copies of the Avalonia UI for Linux and macOS. Those zips go on the GitHub release with `TESTING.txt` and the GPLv3 files. iOS and Android need the .NET MAUI workload and a Mac for iOS. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
 
 Rebuild the local CVE catalogue (needs network once per release):
 

@@ -70,7 +70,13 @@ Check only hostnames you operate or for which you have written permission. Unaut
 
 The GitHub release contains `Rampart.exe` (Windows), testing zips for Linux and macOS, and `LICENSE`, `NOTICE`, and `THIRD-PARTY.md`. On Windows, double-click the executable. If Microsoft Defender SmartScreen shows **Windows protected your PC**, that is an unsigned-publisher warning, not a malware finding. Choose **More info**, then **Run anyway**, for a copy from this repository. Then tick the permission box, enter a hostname such as `www.example.com`, and choose **Check this hostname** or press Enter. Choose **Stop this check** or press Escape if you need to cancel.
 
-To build from source on 64-bit Windows with the .NET 8 SDK:
+To build from source, install the .NET 10.0 SDK and the .NET 8 runtime. `global.json` selects SDK 10.0.100 or any later 10.0 release. That line ships Roslyn 5.0 or newer.
+
+Avalonia 12.1.3 needs Roslyn 4.14.0.0 or newer for its XAML source generator, and the generator in the 12.1.3 package was built against 4.14.0.0. SDK 8.0.428 ships Roslyn 4.11.0.0, so the generator does not load and a Release build of SiteCheck.Desktop reports missing `InitializeComponent` and named controls.
+
+The programs stay on net8.0. The .NET 10 SDK compiles that target, and the .NET 8 runtime runs the tests and the desktop program. This repo uses `global.json` so every build, including CI, gets that compiler. The .NET 9 SDK is out of support. The .NET 10.0 line is the supported SDK that meets the compiler requirement, and the pin stays on 10.0 when a newer major is also installed.
+
+On 64-bit Windows, from the repository root:
 
 ```
 dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release

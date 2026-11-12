@@ -36,7 +36,7 @@ The MAUI project in `src/SiteCheck.Maui` is the store app: same permission boxes
 
 ## Build desktop (Linux and macOS)
 
-From the repository root, with the .NET 8 SDK:
+From the repository root. `global.json` selects the .NET 10.0 SDK. The publish still targets net8.0:
 
 ```
 dotnet publish src/SiteCheck.Desktop/SiteCheck.Desktop.csproj -c Release -r linux-x64 --self-contained true -o dist/linux-x64
