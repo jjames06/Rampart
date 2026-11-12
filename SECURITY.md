@@ -9,8 +9,10 @@ Rampart is a read-only checker for a hostname the operator confirms they may tes
 - Send HTTP HEAD `/` and one GET `/` (body capped at 256 kilobytes, compressed bodies decompressed) with redirects disabled
 - Send HTTP HEAD `/` on port 80 to the same public address
 - GET a short allowlist of common public account, sign-in, and admin URLs on that same address (body capped at 64 kilobytes, no passwords, redirects off)
-- GET a short allowlist of private-file paths (`/.env`, `/.git/HEAD`, `/wp-config.php`, `/phpinfo.php`, `/server-status`) with the body capped at 8 kilobytes
+- GET a short allowlist of private-file paths (`/.env`, `/.env.local`, `/.git/HEAD`, `/.git/config`, `/wp-config.php`, `/phpinfo.php`, `/server-status`, `/composer.json`, `/package.json`, `/actuator/env`, `/actuator/configprops`) with the body capped at 8 kilobytes
+- GET `/.well-known/openid-configuration` and `/.well-known/oauth-authorization-server` (metadata only; no token request)
 - GET a short allowlist of public Oracle PeopleSoft portal paths (`/psp/`, `/psc/`, `/ps/`, `/PSIGW/`, `/PSEMHUB/`) with GET only and no exploit payload
+- GET a short allowlist of distinctive public enterprise-portal paths (SharePoint layouts, NetScaler logon, FortiGate `/remote/login`, BIG-IP TMUI, Ivanti `/dana-na/`, GlobalProtect, Confluence `/login.action`, MOVEit, ScreenConnect SetupWizard, Artifactory, GitLab `/users/sign_in`, WebLogic console, E-Business Suite `OA_HTML`, SAP Web GUI, SonicWall SMA, vSphere Client, Zimbra). GET only. No ToolPane, no `wls-wsat`, no exploit payload
 - HEAD `/` on the www or apex sibling when that name has a public address
 - Request TXT records for that hostname, its www parent, and `_dmarc.` plus the apex, only after `Hostname.IsSafeDnsName` accepts the name
 
@@ -30,7 +32,7 @@ Unauthorized use of a computer system can be an offence in Canada (Criminal Code
 
 ## Reporting a problem in this program
 
-Open a private GitHub issue on `jjames06/oli-site-check` or email Info@operationlockedin.com. Describe the hostname class (not a live exploit) and what you expected. Do not attach exploit proof-of-concept traffic.
+Open a private GitHub issue on `jjames06/Rampart` or email Info@operationlockedin.com. Describe the hostname class (not a live exploit) and what you expected. Do not attach exploit proof-of-concept traffic.
 
 ## Keeping the CVE catalogue current
 

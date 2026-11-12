@@ -2,7 +2,7 @@
 // Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.0
 // Role: Orchestrator for one permissioned run. Parse host, resolve public A/AAAA, pin sockets, TLS leaf, parallel HEAD/GET and DNS, fingerprint, catalogue match, allowlisted extra GETs, then Advice + FixGuides.
 // Called by: SiteCheck.App.MainWindow, SiteCheck.Desktop.MainWindow, SiteCheck.Maui.MainPage. Never call from a background service without the two consent boxes.
-// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
+// Calls: Hostname, PrivateIp, HeaderFacts, TlsFacts, HtmlSurface, LoginSurface, ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, Fingerprint, AdvisoryDb, DnsTxt, Advice, FixGuides.
 // Invariants: GET/HEAD only. Redirects off. Sockets pinned to a remaining public IP. Body cap 256 KiB. Timeout 8s. UA must stay operation-locked-in-rampart/1.9.0 until a numbered release. No exploit payloads, no POST, no private RFC1918/CGNAT.
 // Sisters: Bastion (bastion-hardening) hardens the local Windows PC. bastion-web is the public storefront and hosts /rampart plus the GitHub asset redirect. oli-web-kits client brochures should already 404 the probe paths this checker GETs.
 // Map: docs/CODEMAP.md — read that file first for the run/load graph.
@@ -22,7 +22,7 @@ namespace SiteCheck.Core;
 /// Orchestrator for one Rampart run. See docs/CODEMAP.md.
 /// Entry: <see cref="RunAsync"/>. Callers: SiteCheck.App, Desktop, Maui.
 /// Downstream: Hostname, PrivateIp, Fingerprint, AdvisoryDb, LoginSurface,
-/// ExposedSurface, PeopleSoftSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
+/// ExposedSurface, PeopleSoftSurface, EnterpriseSurface, HostPair, EdgeSurface, HtmlSurface, Advice, FixGuides.
 /// Invariants: redirects off, sockets pinned to a public IP, GET/HEAD only, bodies capped,
 /// no exploit payloads. User-Agent must stay operation-locked-in-rampart/1.9.0 until a numbered release.
 /// </summary>
@@ -59,6 +59,30 @@ public static class Checker
         IProgress<string>? progress = null,
         CancellationToken cancellationToken = default,
         CheckScope scope = CheckScope.Standard)
+    {
+        try
+        {
+            return await RunCoreAsync(rawHost, progress, cancellationToken, scope);
+        }
+        catch (CheckException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            throw new CheckException("The check did not finish. Confirm the hostname is public, that you have permission, and try again.");
+        }
+    }
+
+    private static async Task<CheckReport> RunCoreAsync(
+        string rawHost,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken,
+        CheckScope scope)
     {
         var hostname = Hostname.Parse(rawHost)
             ?? throw new CheckException("Use a public hostname such as example.com. Do not enter an IP address, localhost, or a home network name.");
@@ -109,9 +133,6 @@ public static class Checker
         var http80 = await http80Task;
 
         var headers = MergeHeaders(http.Headers, page.Headers);
-        var stack = Fingerprint.FromPublicSurface(headers, page.Body);
-        var plugins = Fingerprint.WordPressPluginSlugs(page.Body);
-
         var findings = new List<Finding>
         {
             HttpsFinding(http),
@@ -119,22 +140,84 @@ public static class Checker
             TlsFinding(cert),
             HttpRedirectFinding(http80),
         };
-        findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
+
+        IReadOnlyList<StackHint> stack;
+        try
+        {
+            stack = Fingerprint.FromPublicSurface(headers, page.Body);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            stack = Array.Empty<StackHint>();
+            findings.Add(IncompleteFinding("Advertised stack"));
+        }
+
+        IReadOnlyList<string> plugins;
+        try
+        {
+            plugins = Fingerprint.WordPressPluginSlugs(page.Body);
+        }
+        catch (Exception)
+        {
+            plugins = Array.Empty<string>();
+        }
+
+        try
+        {
+            findings.AddRange(HeaderFindings(http.Status ?? page.Status, headers));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Security headers"));
+        }
+
         var cookies = (http.Cookies ?? Array.Empty<string>()).Concat(page.Cookies ?? Array.Empty<string>()).ToArray();
-        findings.Add(HeaderFacts.CookieFinding(cookies));
-        findings.Add(ServerDisclosureFinding(headers));
-        findings.Add(CorsFinding(headers));
-        findings.Add(XssProtectionFinding(headers));
-        findings.Add(AddressFamilyFinding(publicIps, ip));
-        findings.Add(HomepageTypeFinding(page));
+        findings.Add(SafeFinding("Cookie flags", () => HeaderFacts.CookieFinding(cookies)));
+        findings.Add(SafeFinding("Server header", () => ServerDisclosureFinding(headers)));
+        findings.Add(SafeFinding("CORS", () => CorsFinding(headers)));
+        findings.Add(SafeFinding("X-XSS-Protection", () => XssProtectionFinding(headers)));
+        findings.Add(SafeFinding("Address family", () => AddressFamilyFinding(publicIps, ip)));
+        findings.Add(SafeFinding("Homepage", () => HomepageTypeFinding(page)));
         findings.Add(SpfFinding(spf));
         findings.Add(DmarcFinding(dmarc));
         findings.Add(MxFinding(mx));
         findings.Add(NsFinding(ns));
-        var edge = EdgeSurface.Classify(ns.Record, headers, stack);
-        findings.Add(EdgeSurface.PublicEdgeFinding(edge));
-        findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
-        findings.AddRange(CveFindings(stack));
+        EdgeProfile edge;
+        try
+        {
+            edge = EdgeSurface.Classify(ns.Record, headers, stack);
+            findings.Add(EdgeSurface.PublicEdgeFinding(edge));
+            findings.AddRange(EdgeSurface.CloudflareSurface(page.Body, headers, edge));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            edge = new EdgeProfile(EdgeKind.Origin, "Origin", false, false, false);
+            findings.Add(IncompleteFinding("Public edge"));
+        }
+        try
+        {
+            findings.AddRange(CveFindings(stack));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Known CVEs (advertised versions)"));
+        }
         findings.Add(SafeFinding("Mixed content", () => HtmlSurface.MixedContent(page.Body)));
         findings.Add(SafeFinding("Subresource Integrity", () => HtmlSurface.SubresourceIntegrity(page.Body)));
         findings.Add(SafeFinding("Tabnabbing", () => HtmlSurface.Tabnabbing(page.Body)));
@@ -156,12 +239,42 @@ public static class Checker
         {
             findings.Add(IncompleteFinding("Sign-in pages"));
         }
-        var exposedHits = await ProbeExposedPathsAsync(hostname, ip, cancellationToken);
-        findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(exposedHits)));
-        var peopleSoftHits = await ProbeNamedPathsAsync(hostname, ip, PeopleSoftSurface.Paths, 8 * 1024, cancellationToken);
+        progress?.Report("Reading private-file, enterprise portal, and identity-metadata paths.");
+        var extraPaths = ExposedSurface.Paths
+            .Concat(PeopleSoftSurface.Paths)
+            .Concat(EnterpriseSurface.AllPaths)
+            .Concat(WellKnownIdpSurface.Paths)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var extraHits = await ProbeNamedPathsAsync(hostname, ip, extraPaths, 8 * 1024, cancellationToken);
+        findings.Add(SafeFinding("Private files", () => ExposedSurface.Summary(extraHits)));
         findings.Add(SafeFinding(
             "Oracle PeopleSoft",
-            () => PeopleSoftSurface.Summary(peopleSoftHits, page.Body, cookies)));
+            () => PeopleSoftSurface.Summary(extraHits, page.Body, cookies)));
+        try
+        {
+            findings.AddRange(EnterpriseSurface.Findings(extraHits, page.Body, cookies, headers));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("Internet-facing enterprise portals"));
+        }
+        try
+        {
+            findings.AddRange(WellKnownIdpSurface.Findings(extraHits));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            findings.Add(IncompleteFinding("OpenID Provider"));
+        }
         try
         {
             findings.Add(await ProbeHostPairAsync(hostname, cancellationToken));
@@ -684,7 +797,8 @@ public static class Checker
                 request.Headers.Host = hostname;
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
                 var body = await ReadCappedBodyAsync(response, cap, ct);
-                return new FileHit(path, (int)response.StatusCode, body);
+                var location = response.Headers.Location?.ToString();
+                return new FileHit(path, (int)response.StatusCode, body, location);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {

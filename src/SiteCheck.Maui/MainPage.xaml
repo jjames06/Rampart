@@ -19,21 +19,25 @@
         <VerticalStackLayout Padding="20" Spacing="12">
             <Label Text="OPERATION LOCKED IN" TextColor="#5EEAD4" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
             <Label Text="Rampart" FontSize="32" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
-            <Label Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. Each finding includes how it was gathered, what it does not mean, and, when work is needed, How to fix this with copyable lines. The check covers HTTPS, headers, sign-in paths, private-file paths, and the www and apex pair. Reports stay on this phone. No exploit traffic."
+            <Label Text="Read-only public-surface assessment of a hostname you operate. Tick both boxes. Each finding includes how it was gathered, what it does not mean, and, when work is needed, How to fix this with copyable lines. The check is the same Core as Windows: HTTPS, headers, sign-in paths, private-file paths, www and apex, mail DNS, the local CVE catalogue, and advertised enterprise portals. Reports stay on this phone. No exploit traffic."
                    TextColor="#C5D0DE" LineBreakMode="WordWrap"/>
 
             <Label Text="Hostname" FontAttributes="Bold"/>
             <Entry x:Name="HostBox" Placeholder="www.example.com" TextColor="#F8FAFC" BackgroundColor="#0C1220"/>
 
+            <Label Text="Scope" FontAttributes="Bold" Margin="0,8,0,0"/>
+            <RadioButton x:Name="StandardScope" GroupName="RampartScope" IsChecked="True" Content="Standard public-surface check" TextColor="#F8FAFC"/>
+            <RadioButton x:Name="AssessmentScope" GroupName="RampartScope" Content="Authorized public-surface assessment (RFC files and extra DNS)" TextColor="#F8FAFC"/>
+
             <CheckBox x:Name="PermissionBox" Color="#2DD4BF" CheckedChanged="Consent_Changed"/>
-            <Label Text="I operate this hostname, or I have written permission from the person who operates it." LineBreakMode="WordWrap"/>
+            <Label x:Name="PermissionLabel" LineBreakMode="WordWrap"/>
 
             <CheckBox x:Name="LawBox" Color="#2DD4BF" CheckedChanged="Consent_Changed"/>
-            <Label Text="I will not use this program against a hostname without that permission. Unauthorized use can be an offence in Canada under Criminal Code section 342.1. This screen is not legal advice."
-                   LineBreakMode="WordWrap"/>
+            <Label x:Name="LawLabel" LineBreakMode="WordWrap"/>
 
             <HorizontalStackLayout Spacing="8">
                 <Button x:Name="RunButton" Text="Check this hostname" Clicked="Run_Clicked" IsEnabled="False"/>
+                <Button x:Name="CancelButton" Text="Stop this check" Clicked="Cancel_Clicked" IsVisible="False" BackgroundColor="Transparent" TextColor="#5EEAD4" BorderColor="#2DD4BF" BorderWidth="1"/>
                 <Button x:Name="SaveButton" Text="Share report" Clicked="Save_Clicked" IsEnabled="False" BackgroundColor="Transparent" TextColor="#5EEAD4" BorderColor="#2DD4BF" BorderWidth="1"/>
             </HorizontalStackLayout>
 

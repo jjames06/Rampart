@@ -22,6 +22,11 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            // Keep the window up. The run path already maps unexpected errors to CheckException.
+            _ = args.ExceptionObject;
+        };
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             desktop.MainWindow = new MainWindow();
         base.OnFrameworkInitializationCompleted();
