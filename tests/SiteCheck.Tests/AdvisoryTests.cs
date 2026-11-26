@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/AdvisoryTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Locks catalogue matching: version in range hits, unknown product misses, plugin slug is not a version.
 // Called by: dotnet test.
 // Calls: AdvisoryDb, VersionCmp.
@@ -48,6 +48,15 @@ public class AdvisoryTests
         var good = new[] { new StackHint("Next.js", "15.5.26", "header") };
         Assert.Contains(CveCatalog.Match(bad), h => h.Entry.Id == "GHSA-vcvr-r3jv-pc5j");
         Assert.DoesNotContain(CveCatalog.Match(good), h => h.Entry.Id == "GHSA-vcvr-r3jv-pc5j");
+    }
+
+    [Fact]
+    public void WordPress_7_1_3_matches_upgrade_window_kev_and_7_1_4_does_not()
+    {
+        var bad = new[] { new StackHint("WordPress", "7.1.3", "generator") };
+        var good = new[] { new StackHint("WordPress", "7.1.4", "generator") };
+        Assert.Contains(CveCatalog.Match(bad), h => h.Entry.Id == "CVE-2026-119977");
+        Assert.DoesNotContain(CveCatalog.Match(good), h => h.Entry.Id == "CVE-2026-119977");
     }
 
     [Fact]

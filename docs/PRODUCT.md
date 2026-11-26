@@ -1,4 +1,4 @@
-# Honest assessment of Rampart 1.9.1
+# Honest assessment of Rampart 1.9.2
 
 This is a product judgment, not marketing. Jesse asked for a final pass that says what the program actually is.
 
@@ -48,4 +48,4 @@ Docs: this file, `what-is-checked.md`, `lawful-use.md`, `KNOWN-ISSUES.md`.
 
 Site: `/rampart` lists every check group in the same order as the handbook, including enterprise portals, without a wall of scanner jargon.
 
-No version bump. Public pin remains **1.9.1**.
+No version bump. Public pin remains **1.9.2**.

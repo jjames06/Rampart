@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Maui/MauiProgram.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: MAUI host builder. Fonts and the single MainPage.
 // Called by: Platform entry (Android MainApplication, iOS AppDelegate).
 // Calls: UseMauiApp<App>().

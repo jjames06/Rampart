@@ -1,6 +1,6 @@
 # CODEMAP FILE: tools/publish.ps1
-# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
-# Role: Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.1.
+# Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
+# Role: Publish Rampart.exe + linux/osx zips into dist/, SHA256SUMS, copy docs. Does not bump 1.9.2.
 # Called by: Operator on this Windows PC after dotnet test.
 # Calls: dotnet publish App and Desktop. Optional sign-windows.ps1.
 # Invariants: Unsigned EXE is acceptable. Do not pay for Authenticode unless asked. Copy dist/Rampart.exe to Desktop for Jesse to run.

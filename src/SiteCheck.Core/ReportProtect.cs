@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/ReportProtect.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Optional Windows DPAPI wrap of a saved report (CurrentUser). No-op on Linux/macOS/mobile.
 // Called by: WPF save checkbox. Avalonia no-op off Windows.
 // Calls: ProtectedData (System.Security.Cryptography.ProtectedData).

@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/EnterpriseSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Locks enterprise portal allowlists, brochure silence, and KEV patch-prompt wording (not RCE proof).
 // Called by: dotnet test.
 // Calls: EnterpriseSurface.
@@ -55,6 +55,7 @@ public class EnterpriseSurfaceTests
         var f = Assert.Single(EnterpriseSurface.Findings(hits, "", Array.Empty<string>(), null));
         Assert.Equal("Citrix NetScaler", f.Title);
         Assert.Contains("CVE-2026-88771", f.Observation);
+        Assert.Contains("CVE-2026-88779", f.Observation);
     }
 
     [Fact]
@@ -65,6 +66,7 @@ public class EnterpriseSurfaceTests
         var f = Assert.Single(EnterpriseSurface.Findings(hits, "", Array.Empty<string>(), headers));
         Assert.Equal("Adobe Commerce", f.Title);
         Assert.Contains("CVE-2026-71362", f.Observation);
+        Assert.Contains("CVE-2026-48356", f.Observation);
     }
 
     [Fact]

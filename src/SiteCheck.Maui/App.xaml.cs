@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Maui/App.xaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: MAUI Application. Sets MainPage.
 // Called by: MauiProgram.
 // Calls: MainPage.
