@@ -1,6 +1,6 @@
 /**
  * CODEMAP FILE: tools/build-advisories.mjs
- * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+ * Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
  * Role: Release-time builder for data/advisories.json from Retire.js jsrepository.json and GitHub Advisory npm packages (next, react, vue, …).
  * Called by: Human/CI before publish: node tools/build-advisories.mjs from repo root.
  * Calls: HTTPS GET to Retire.js raw + GitHub Advisory API at build time only.
@@ -264,6 +264,26 @@ const extras = [
           ["6.5.0", "6.5.12"], ["6.6.0", "6.6.9"], ["6.7.0", "6.7.9"],
           ["6.8.0", "6.8.10"], ["6.9.0", "6.9.9"], ["7.0.0", "7.0.6"],
           ["7.1.0", "7.1.2"],
+        ].map(([atOrAbove, below]) => ({ atOrAbove, below })),
+      },
+      {
+        id: "CVE-2026-119977",
+        summary:
+          "WordPress core 4.7 through 7.1.3 used predictable, web-accessible staging paths during full-package core upgrades, so code could run during the upgrade window (GHSA-p6jj-qrp3-7m4g). CISA added this to the Known Exploited catalogue on November 3, 2026. Fixed in 7.1.4; older branches got backports, so move to the newest release on your branch or to 7.1.4 or later. This is a prompt from an advertised generator version, not RCE proof.",
+        source: "https://wordpress.org/news/2026/10/wordpress-7-1-4",
+        severity: "critical",
+        // Older-branch floors are the newest release on each branch as of November 26, 2026.
+        // WordPress did not name the exact backport build per branch, so the floor is the safe one.
+        ranges: [
+          ["4.7.0", "4.7.40"], ["4.8.0", "4.8.35"], ["4.9.0", "4.9.36"],
+          ["5.0.0", "5.0.32"], ["5.1.0", "5.1.29"], ["5.2.0", "5.2.31"],
+          ["5.3.0", "5.3.28"], ["5.4.0", "5.4.26"], ["5.5.0", "5.5.25"],
+          ["5.6.0", "5.6.24"], ["5.7.0", "5.7.22"], ["5.8.0", "5.8.20"],
+          ["5.9.0", "5.9.21"], ["6.0.0", "6.0.19"], ["6.1.0", "6.1.17"],
+          ["6.2.0", "6.2.16"], ["6.3.0", "6.3.15"], ["6.4.0", "6.4.15"],
+          ["6.5.0", "6.5.15"], ["6.6.0", "6.6.12"], ["6.7.0", "6.7.12"],
+          ["6.8.0", "6.8.13"], ["6.9.0", "6.9.12"], ["7.0.0", "7.0.9"],
+          ["7.1.0", "7.1.4"],
         ].map(([atOrAbove, below]) => ({ atOrAbove, below })),
       },
     ],
