@@ -1,5 +1,5 @@
 # CODEMAP FILE: .github/workflows/release-build.yml
-# Product: Rampart: read-only public-surface hostname checker, public pin 1.9.1
+# Product: Rampart: read-only public-surface hostname checker, public pin 1.9.2
 # Role: Builds the release assets with tools/publish.ps1 on windows-latest, then runs a Windows launch smoke test of Rampart.exe. Uploads dist as an artifact.
 # Called by: GitHub Actions, manual run (workflow_dispatch) for a numbered release.
 # Calls: actions/checkout, actions/setup-dotnet, tools/publish.ps1, actions/upload-artifact.
