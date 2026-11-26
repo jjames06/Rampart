@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Desktop/MainWindow.axaml.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Avalonia code-behind. Same Core call graph as WPF.
 // Called by: User on Linux/macOS testing builds.
 // Calls: Checker, FindingGuide, ReportText. ReportProtect no-op off Windows.

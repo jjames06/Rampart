@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Desktop/ResponsiveCardPanel.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Avalonia wrap panel sibling of the WPF ResponsiveCardPanel.
 // Called by: MainWindow.axaml.
 // Calls: Avalonia layout.

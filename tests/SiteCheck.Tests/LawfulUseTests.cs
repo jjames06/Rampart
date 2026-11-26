@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/LawfulUseTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Locks authorization MethodsUsed/MethodsRefused so saved reports name enterprise GETs and refused exploit paths.
 // Called by: dotnet test.
 // Calls: LawfulUse.

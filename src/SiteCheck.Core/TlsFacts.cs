@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/TlsFacts.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Human labels for SslProtocols and leaf-certificate observations (expiry window, SAN vs hostname).
 // Called by: Checker.ReadCertificateAsync path.
 // Calls: Models.Finding.

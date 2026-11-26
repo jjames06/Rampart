@@ -1,5 +1,5 @@
 // CODEMAP FILE: tests/SiteCheck.Tests/LoginSurfaceTests.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Locks sign-in/admin allowlist and Present-when-absent for brochure sites.
 // Called by: dotnet test.
 // Calls: LoginSurface.

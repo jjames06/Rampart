@@ -1,5 +1,5 @@
 // CODEMAP FILE: src/SiteCheck.Core/CveCatalog.cs
-// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.1
+// Product: Rampart (oli-site-check) — read-only public-surface hostname checker, public pin 1.9.2
 // Role: Thin facade over AdvisoryDb so call sites read as 'catalogue' not 'json file'.
 // Called by: Checker.
 // Calls: AdvisoryDb.
