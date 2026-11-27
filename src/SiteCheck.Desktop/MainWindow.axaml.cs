@@ -130,6 +130,7 @@ public partial class MainWindow : Window
         AssessmentScope.IsEnabled = !busy;
         RunButton.IsEnabled = !busy && PermissionBox.IsChecked == true && LawBox.IsChecked == true;
         CancelButton.IsVisible = busy;
+        BusyPanel.IsVisible = busy;
         if (busy)
         {
             CopyButton.IsEnabled = false;
