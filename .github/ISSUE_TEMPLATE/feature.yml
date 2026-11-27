@@ -1,0 +1,35 @@
+name: Idea or improvement
+description: Suggest a new read-only check, a clearer message, or a usability improvement.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve Rampart. Rampart stays read-only: it never sends exploit traffic, never follows redirects to private addresses, and only checks hostnames you operate or have written permission to check. Ideas that keep that promise are very welcome.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would this help with?
+      description: Describe the situation in plain words, for example "I could not tell which header was missing".
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What Rampart could show or do differently.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Rampart version you are using
+      placeholder: "1.9.2"
+  - type: checkboxes
+    id: readonly
+    attributes:
+      label: Read-only check
+      options:
+        - label: This idea does not need Rampart to send exploit traffic or contact private addresses
+          required: true
