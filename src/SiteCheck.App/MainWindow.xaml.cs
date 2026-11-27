@@ -249,6 +249,15 @@ public partial class MainWindow : Window
         }
     }
 
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var info = System.Reflection.Assembly.GetExecutingAssembly()
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()?.InformationalVersion;
+        ShowTextWindow("About Rampart", SiteCheck.Core.AboutInfo.Text(info));
+    }
+
     private void Lawful_Click(object sender, RoutedEventArgs e)
     {
         ShowTextWindow("Lawful use  ·  Rampart", LoadEmbedded("LAWFUL-USE.md") ?? LoadEmbedded("lawful-use.md") ?? "See docs/lawful-use.md in the repository.");

@@ -46,6 +46,8 @@
                 <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="12" LineHeight="20"
                            Text="Copyright 2026 Jesse Mosier-Bowers, operating as Operation Locked In, Courtice, Ontario. Rampart is free software under the GNU General Public License version 3. There is no warranty, to the extent permitted by law."/>
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Style="{StaticResource LinkButton}" Content="About Rampart" Click="About_Click" AutomationProperties.Name="About Rampart"/>
+                    <TextBlock Text="  ·  " Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource LinkButton}" Content="Lawful use" Click="Lawful_Click"/>
                     <TextBlock Text="  ·  " Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource LinkButton}" Content="Licence and warranty" Click="Licence_Click"/>
