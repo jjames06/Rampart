@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Microsoft.Win32;
 using SiteCheck.Core;
 
@@ -160,6 +161,19 @@ public partial class MainWindow : Window
         StatusText.Text = "Stopping this check.";
     }
 
+    // Turns the spinner while a check runs. Windows "Show animations" off (ClientAreaAnimation false)
+    // keeps the spinner still; the bar and the "Check in progress" label still show the run is working.
+    private void SetSpinner(bool busy)
+    {
+        BusySpinnerRotate.BeginAnimation(RotateTransform.AngleProperty, null);
+        if (!busy || !SystemParameters.ClientAreaAnimation) return;
+        var spin = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1.1)))
+        {
+            RepeatBehavior = RepeatBehavior.Forever
+        };
+        BusySpinnerRotate.BeginAnimation(RotateTransform.AngleProperty, spin);
+    }
+
     private void SetBusy(bool busy)
     {
         HostBox.IsEnabled = !busy;
@@ -169,7 +183,8 @@ public partial class MainWindow : Window
         if (AssessmentScope != null) AssessmentScope.IsEnabled = !busy;
         if (!busy) UpdateRunEnabled();
         else RunButton.IsEnabled = false;
-        BusyBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        BusyPanel.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        SetSpinner(busy);
         CancelButton.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         if (busy)
         {

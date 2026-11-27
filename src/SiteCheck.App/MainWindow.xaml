@@ -97,9 +97,30 @@
                                 Protect a saved file for this Windows user only. Other accounts on this PC cannot read it. There is no recovery password.
                             </TextBlock>
                         </CheckBox>
-                        <ProgressBar x:Name="BusyBar" Height="3" Margin="0,18,0,0" IsIndeterminate="True" Visibility="Collapsed"
-                                     Foreground="{StaticResource TealBrush}" Background="#070B14" BorderThickness="0"/>
-                        <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,0" LineHeight="22" FontSize="14"
+                        <!-- Shown only while a check runs (SetBusy). Spinner plus indeterminate bar so the run is visibly working. -->
+                        <Grid x:Name="BusyPanel" Margin="0,18,0,0" Visibility="Collapsed"
+                              AutomationProperties.Name="Check in progress" AutomationProperties.LiveSetting="Polite">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid x:Name="BusySpinner" Width="20" Height="20" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"
+                                  AutomationProperties.Name="Check in progress">
+                                <Grid.RenderTransform>
+                                    <RotateTransform x:Name="BusySpinnerRotate" Angle="0"/>
+                                </Grid.RenderTransform>
+                                <Ellipse Stroke="{StaticResource LineBrush}" StrokeThickness="3"/>
+                                <Path Stroke="{StaticResource TealBrush}" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Data="M 10,1.5 A 8.5,8.5 0 0 1 18.5,10"/>
+                            </Grid>
+                            <TextBlock Grid.Column="1" Text="Check in progress" Foreground="{StaticResource TealSoftBrush}" FontSize="14" FontWeight="SemiBold"
+                                       VerticalAlignment="Center" Margin="10,0,14,0"/>
+                            <ProgressBar x:Name="BusyBar" Grid.Column="2" Height="6" IsIndeterminate="True" VerticalAlignment="Center"
+                                         Foreground="{StaticResource TealBrush}" Background="{StaticResource LineBrush}" BorderThickness="0"
+                                         AutomationProperties.Name="Check in progress"/>
+                        </Grid>
+                        <TextBlock x:Name="StatusText" Foreground="{StaticResource TealSoftBrush}" FontWeight="SemiBold" Margin="0,14,0,0" LineHeight="24" FontSize="15"
                                    Text="No check has been run yet. Enter a public hostname, tick both permission boxes, then choose Check this hostname or press Enter."/>
                     </StackPanel>
                 </Border>
