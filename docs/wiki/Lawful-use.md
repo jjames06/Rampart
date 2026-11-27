@@ -1,6 +1,6 @@
 # Lawful use of Rampart
 
-This page is product wording for Rampart, a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **It is not legal advice.** If you need advice about a specific engagement, speak to a lawyer licensed in the place where the system lives.
+This page is product wording for Rampart, a Windows program from Jesse Mosier-Bowers, operating as Operation Locked In, based in the Greater Toronto Area, Ontario. **It is not legal advice.** If you need advice about a specific engagement, speak to a lawyer licensed in the place where the system lives.
 
 Rampart exists to help a person **protect a public website they operate**, or a public website for which they have **written permission**. Operation Locked In does not authorize, condone, or accept any other use.
 
