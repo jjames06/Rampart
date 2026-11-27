@@ -18,7 +18,7 @@ Version **1.9.2**
   <a href="SECURITY.md"><strong>Security</strong></a>
 </p>
 
-Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In in Courtice, Ontario. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
+Rampart is a program from Jesse Mosier-Bowers, operating as Operation Locked In, based in the Greater Toronto Area, Ontario. **Bastion** hardens a Windows PC you administer. **Rampart** inspects a public hostname you operate.
 
 The **recommended download is the Windows desktop program** (`Rampart.exe`). Testing copies for Linux and macOS are on the same GitHub release. The iPhone and Android copies are ready. They still need to be submitted to the App Store and Google Play.
 
