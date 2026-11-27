@@ -21,6 +21,10 @@ Private security reports: see [SECURITY.md](SECURITY.md).
 
 `dotnet test tests\SiteCheck.Tests\SiteCheck.Tests.csproj -c Release` must pass on Windows.
 
+## Code of Conduct
+
+Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Reports go to Info@operationlockedin.com.
+
 ## Licence
 
 Desktop contributions are GNU GPLv3. Mobile store binaries also carry Apache License 2.0. See `LICENSE` and `LICENSE.MOBILE`.
