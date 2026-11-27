@@ -71,6 +71,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Core/Hostname.cs` | Parse operator input into a DNS hostname. Strips scheme/path, lowercases, rejects IPs, localhost, home suffixes, ports, control characters. |
 | `src/SiteCheck.Core/HtmlSurface.cs` | Homepage HTML (capped) for mixed content, missing SRI on third-party scripts, target=_blank without rel, form action, canonical host. |
 | `src/SiteCheck.Core/LawfulUse.cs` | Consent checkbox strings and CheckScope names shown in every shell. Criminal Code s. 342.1 / 342.2 framing lives in docs/lawful-use.md; this file is UI copy only. |
+| `src/SiteCheck.Core/AboutInfo.cs` | Text for the About Rampart window: version (from the shell assembly), publisher, licence, website, and how to check the download. |
 | `src/SiteCheck.Core/LoginSurface.cs` | Allowlisted GET of common public sign-in and admin paths. Brochure sites without /admin are Present (correctly absent), not Attention. |
 | `src/SiteCheck.Core/Models.cs` | Shared types for one run: FindingState, Finding, FixLine, NextStep, EdgeProfile, StackHint, CheckReport, authorization record. |
 | `src/SiteCheck.Core/AdvertisedMatch.cs` | False-positive guards: 2xx/3xx is not enough; Next.js brochure shells and trailing-slash redirects are not portals. Marketing copy that names PeopleSoft is ignored. |
@@ -103,6 +104,7 @@ Open any `.cs` / `.xaml` / tool. The top of the file answers: what is this, who 
 | `src/SiteCheck.Maui/Platforms/iOS/Program.cs` | iOS process entry (UIApplication.Main). |
 | `src/SiteCheck.Maui/SiteCheck.Maui.csproj` | MAUI csproj for iOS/Android. Additional Apache-2.0 for store distribution. |
 | `tests/SiteCheck.Tests/AdviceTests.cs` | Locks Advice: no header chores on Incomplete HTTPS; stack-specific next steps; Present admin is not a chore. |
+| `tests/SiteCheck.Tests/AboutInfoTests.cs` | Locks the About text: clean version, publisher, licence, website, no em dashes. |
 | `tests/SiteCheck.Tests/AdvisoryTests.cs` | Locks catalogue matching: version in range hits, unknown product misses, plugin slug is not a version. |
 | `tests/SiteCheck.Tests/EdgeSurfaceTests.cs` | Locks Cloudflare NS vs CF-Ray vs Vercel vs origin classification. |
 | `tests/SiteCheck.Tests/ExposedSurfaceTests.cs` | Locks private-file path allowlist and 200-vs-404 interpretation. |
