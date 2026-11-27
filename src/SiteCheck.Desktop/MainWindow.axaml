@@ -60,7 +60,14 @@
             </StackPanel>
             <CheckBox Name="ProtectFileBox" Margin="0,10,0,0"
                       Content="Protect a saved file for this Windows user only. Other accounts cannot read it. Linux and macOS testing copies save ordinary text."/>
-            <TextBlock Name="StatusText" Foreground="#C5D0DE" TextWrapping="Wrap" Margin="0,8,0,0"
+            <!-- Shown only while a check runs (SetBusy). -->
+            <DockPanel Name="BusyPanel" IsVisible="False" Margin="0,10,0,0" AutomationProperties.Name="Check in progress">
+              <TextBlock DockPanel.Dock="Left" Text="Check in progress" Foreground="#5EEAD4" FontWeight="SemiBold" FontSize="14"
+                         VerticalAlignment="Center" Margin="0,0,14,0"/>
+              <ProgressBar Name="BusyBar" IsIndeterminate="True" Height="6" MinHeight="6" VerticalAlignment="Center"
+                           Foreground="#2DD4BF" Background="#243247" AutomationProperties.Name="Check in progress"/>
+            </DockPanel>
+            <TextBlock Name="StatusText" Foreground="#5EEAD4" FontWeight="SemiBold" FontSize="15" TextWrapping="Wrap" Margin="0,8,0,0"
                        Text="No check has been run yet. Enter a public hostname, tick both permission boxes, then choose Check this hostname."/>
           </StackPanel>
         </Border>
